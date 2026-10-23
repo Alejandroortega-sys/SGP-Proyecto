@@ -1,0 +1,603 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model alertas_saturacion {
+  id            BigInt   @id @default(autoincrement())
+  zona_id       BigInt
+  ocupacion_pct Decimal  @db.Decimal(5, 2)
+  umbral_pct    Decimal  @db.Decimal(5, 2)
+  generada_en   DateTime @default(now()) @db.Timestamptz(6)
+  zonas         zonas    @relation(fields: [zona_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model auditoria {
+  id             BigInt    @id @default(autoincrement())
+  tabla          String    @db.VarChar(60)
+  registro_id    BigInt
+  accion         String    @db.VarChar(20)
+  valor_anterior Json?
+  valor_nuevo    Json?
+  actor_id       BigInt?
+  creado_en      DateTime  @default(now()) @db.Timestamptz(6)
+  usuarios       usuarios? @relation(fields: [actor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([creado_en], map: "idx_auditoria_fecha")
+  @@index([tabla, registro_id], map: "idx_auditoria_registro")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model cobros {
+  id         BigInt       @id @default(autoincrement())
+  permiso_id BigInt       @unique
+  tarifa_id  BigInt?
+  valor      Decimal      @db.Decimal(12, 2)
+  estado     estado_cobro @default(pendiente)
+  pagado_en  DateTime?    @db.Timestamptz(6)
+  recibo_url String?
+  creado_en  DateTime     @default(now()) @db.Timestamptz(6)
+  permisos   permisos     @relation(fields: [permiso_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tarifas    tarifas?     @relation(fields: [tarifa_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([estado], map: "idx_cobros_estado")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model comerciantes {
+  usuario_id                BigInt                      @id
+  actividad_comercial       String                      @db.VarChar(200)
+  categoria                 categoria_comercio
+  actualizado_en            DateTime                    @default(now()) @db.Timestamptz(6)
+  usuarios                  usuarios                    @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  evaluaciones_factibilidad evaluaciones_factibilidad[]
+  modulos                   modulos[]
+  permisos                  permisos[]
+  solicitudes               solicitudes[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This table contains exclusion constraints and requires additional setup for migrations. Visit https://pris.ly/d/exclusion-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model espacio_bloqueos {
+  id                  BigInt              @id @default(autoincrement())
+  espacio_id          BigInt
+  fecha_inicio        DateTime            @db.Date
+  fecha_fin           DateTime            @db.Date
+  motivo              String?             @db.VarChar(300)
+  creado_por          BigInt
+  creado_en           DateTime            @default(now()) @db.Timestamptz(6)
+  usuarios            usuarios            @relation(fields: [creado_por], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  espacios_temporales espacios_temporales @relation(fields: [espacio_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model espacios_temporales {
+  id                  BigInt                  @id @default(autoincrement())
+  nombre              String                  @db.VarChar(150)
+  zona_id             BigInt?
+  ubicacion           Unsupported("geometry")
+  actividad_permitida String?                 @db.VarChar(100)
+  estado              estado_espacio          @default(disponible)
+  creado_por          BigInt?
+  creado_en           DateTime                @default(now()) @db.Timestamptz(6)
+  espacio_bloqueos    espacio_bloqueos[]
+  usuarios            usuarios?               @relation(fields: [creado_por], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  zonas               zonas?                  @relation(fields: [zona_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  permisos            permisos[]
+  solicitudes         solicitudes[]
+
+  @@index([ubicacion], map: "idx_espacios_geom", type: Gist)
+  @@index([zona_id], map: "idx_espacios_zona")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model evaluacion_reglas {
+  id                        BigInt                    @id @default(autoincrement())
+  evaluacion_id             BigInt
+  regla                     regla_urbanistica
+  cumple                    Boolean
+  detalle                   String?                   @db.VarChar(300)
+  evaluaciones_factibilidad evaluaciones_factibilidad @relation(fields: [evaluacion_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model evaluaciones_factibilidad {
+  id                       BigInt                     @id @default(autoincrement())
+  solicitud_id             BigInt?
+  comerciante_id           BigInt?
+  es_simulacion            Boolean                    @default(false)
+  ubicacion                Unsupported("geometry")
+  producto_id              BigInt?
+  resultado                resultado_factibilidad
+  evaluado_en              DateTime                   @default(now()) @db.Timestamptz(6)
+  evaluacion_reglas        evaluacion_reglas[]
+  comerciantes             comerciantes?              @relation(fields: [comerciante_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  productos                productos?                 @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  solicitudes              solicitudes?               @relation(fields: [solicitud_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  excepciones_factibilidad excepciones_factibilidad[]
+
+  @@index([ubicacion], map: "idx_evaluaciones_geom", type: Gist)
+  @@index([solicitud_id], map: "idx_evaluaciones_solicitud")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model excepciones_factibilidad {
+  id                        BigInt                    @id @default(autoincrement())
+  evaluacion_id             BigInt
+  justificacion             String
+  autorizado_por            BigInt
+  creado_en                 DateTime                  @default(now()) @db.Timestamptz(6)
+  gestores                  gestores                  @relation(fields: [autorizado_por], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  evaluaciones_factibilidad evaluaciones_factibilidad @relation(fields: [evaluacion_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model feria_productos {
+  feria_id    BigInt
+  producto_id BigInt
+  ferias      ferias    @relation(fields: [feria_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  productos   productos @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([feria_id, producto_id])
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model feria_vendedores {
+  id                 BigInt  @id @default(autoincrement())
+  feria_id           BigInt
+  nombre_vendedor    String  @db.VarChar(150)
+  documento          String? @db.VarChar(30)
+  producto_principal String? @db.VarChar(150)
+  ferias             ferias  @relation(fields: [feria_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([feria_id, documento])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This table contains exclusion constraints and requires additional setup for migrations. Visit https://pris.ly/d/exclusion-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ferias {
+  id               BigInt             @id @default(autoincrement())
+  numero_radicado  String             @unique @default(dbgenerated("('FER-2026-'::text || lpad((nextval('seq_radicado_feria'::regclass))::text, 5, '0'::text))")) @db.VarChar(30)
+  organizador_id   BigInt
+  nombre           String             @db.VarChar(200)
+  tipo_feria       String             @db.VarChar(100)
+  zona_id          BigInt
+  fecha_inicio     DateTime           @db.Date
+  fecha_fin        DateTime           @db.Date
+  numero_puestos   Int
+  estado           estado_feria       @default(radicada)
+  revisor_id       BigInt?
+  radicada_en      DateTime           @default(now()) @db.Timestamptz(6)
+  feria_productos  feria_productos[]
+  feria_vendedores feria_vendedores[]
+  organizadores    organizadores      @relation(fields: [organizador_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  gestores         gestores?          @relation(fields: [revisor_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  zonas            zonas              @relation(fields: [zona_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([zona_id], map: "idx_ferias_zona")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model gestores {
+  usuario_id                             BigInt                     @id
+  perfil                                 perfil_gestor              @default(revisor)
+  creado_por                             BigInt?
+  excepciones_factibilidad               excepciones_factibilidad[]
+  ferias                                 ferias[]
+  usuarios_gestores_creado_porTousuarios usuarios?                  @relation("gestores_creado_porTousuarios", fields: [creado_por], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarios_gestores_usuario_idTousuarios usuarios                   @relation("gestores_usuario_idTousuarios", fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  permisos                               permisos[]
+  solicitudes                            solicitudes[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model modulos {
+  id             BigInt                  @id @default(autoincrement())
+  codigo         String                  @unique @db.VarChar(30)
+  ubicacion      Unsupported("geometry")
+  categoria      categoria_comercio
+  titular_id     BigInt?
+  titular_nombre String?                 @db.VarChar(150)
+  actividad      String                  @db.VarChar(200)
+  foto_url       String?
+  estado         estado_modulo           @default(activo)
+  registrado_por BigInt
+  creado_en      DateTime                @default(now()) @db.Timestamptz(6)
+  usuarios       usuarios                @relation(fields: [registrado_por], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  comerciantes   comerciantes?           @relation(fields: [titular_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([estado], map: "idx_modulos_estado")
+  @@index([ubicacion], map: "idx_modulos_geom", type: Gist)
+  @@index([titular_id], map: "idx_modulos_titular")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model notificaciones {
+  id         BigInt   @id @default(autoincrement())
+  usuario_id BigInt
+  tipo       String   @db.VarChar(60)
+  asunto     String   @db.VarChar(200)
+  cuerpo     String?
+  canal      String   @default("correo") @db.VarChar(10)
+  leida      Boolean  @default(false)
+  creada_en  DateTime @default(now()) @db.Timestamptz(6)
+  usuarios   usuarios @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([usuario_id, leida], map: "idx_notificaciones_usuario")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model organizadores {
+  usuario_id                                    BigInt              @id
+  nombre_organizacion                           String              @db.VarChar(200)
+  nit                                           String              @unique @db.VarChar(20)
+  representante                                 String              @db.VarChar(150)
+  tipo_feria                                    String              @db.VarChar(100)
+  contacto                                      String?             @db.VarChar(150)
+  estado                                        estado_organizacion @default(pendiente_validacion)
+  validado_por                                  BigInt?
+  validado_en                                   DateTime?           @db.Timestamptz(6)
+  ferias                                        ferias[]
+  usuarios_organizadores_usuario_idTousuarios   usuarios            @relation("organizadores_usuario_idTousuarios", fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios_organizadores_validado_porTousuarios usuarios?           @relation("organizadores_validado_porTousuarios", fields: [validado_por], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model parametros_motor {
+  id            BigInt   @id @default(autoincrement())
+  clave         String   @db.VarChar(60)
+  zona_id       BigInt?
+  valor         Decimal  @db.Decimal(10, 2)
+  unidad        String?  @db.VarChar(20)
+  vigente_desde DateTime @default(now()) @db.Timestamptz(6)
+  creado_por    BigInt
+  creado_en     DateTime @default(now()) @db.Timestamptz(6)
+  usuarios      usuarios @relation(fields: [creado_por], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  zonas         zonas?   @relation(fields: [zona_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([clave, vigente_desde(sort: Desc)], map: "idx_parametros_clave")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model permiso_eventos {
+  id         BigInt    @id @default(autoincrement())
+  permiso_id BigInt
+  evento     String    @db.VarChar(30)
+  motivo     String?
+  actor_id   BigInt?
+  creado_en  DateTime  @default(now()) @db.Timestamptz(6)
+  usuarios   usuarios? @relation(fields: [actor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  permisos   permisos  @relation(fields: [permiso_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([permiso_id, creado_en], map: "idx_eventos_permiso")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This table contains exclusion constraints and requires additional setup for migrations. Visit https://pris.ly/d/exclusion-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model permisos {
+  id                   BigInt                   @id @default(autoincrement())
+  numero               String                   @unique @default(dbgenerated("('PER-2026-'::text || lpad((nextval('seq_permiso'::regclass))::text, 5, '0'::text))")) @db.VarChar(30)
+  solicitud_id         BigInt                   @unique
+  titular_id           BigInt
+  espacio_id           BigInt?
+  ubicacion            Unsupported("geometry")?
+  categoria_autorizada String                   @db.VarChar(200)
+  fecha_inicio         DateTime                 @db.Date
+  fecha_fin            DateTime                 @db.Date
+  estado               estado_permiso           @default(vigente)
+  qr_token             String                   @unique @default(dbgenerated("encode(gen_random_bytes(24), 'hex'::text)")) @db.VarChar(64)
+  emitido_por          BigInt
+  emitido_en           DateTime                 @default(now()) @db.Timestamptz(6)
+  renovado_desde       BigInt?
+  cobros               cobros?
+  permiso_eventos      permiso_eventos[]
+  gestores             gestores                 @relation(fields: [emitido_por], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  espacios_temporales  espacios_temporales?     @relation(fields: [espacio_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  permisos             permisos?                @relation("permisosTopermisos", fields: [renovado_desde], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_permisos       permisos[]               @relation("permisosTopermisos")
+  solicitudes          solicitudes              @relation(fields: [solicitud_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  comerciantes         comerciantes             @relation(fields: [titular_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([estado], map: "idx_permisos_estado")
+  @@index([titular_id], map: "idx_permisos_titular")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model productos {
+  id                        BigInt                      @id @default(autoincrement())
+  nombre                    String                      @unique @db.VarChar(100)
+  activo                    Boolean                     @default(true)
+  evaluaciones_factibilidad evaluaciones_factibilidad[]
+  feria_productos           feria_productos[]
+  solicitud_productos       solicitud_productos[]
+  zona_productos            zona_productos[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model solicitud_documentos {
+  id                         BigInt                 @id @default(autoincrement())
+  solicitud_id               BigInt
+  tipo_documento             String                 @db.VarChar(100)
+  archivo_url                String
+  estado                     estado_documento       @default(pendiente)
+  observacion                String?
+  reemplaza_a                BigInt?
+  cargado_en                 DateTime               @default(now()) @db.Timestamptz(6)
+  solicitud_documentos       solicitud_documentos?  @relation("solicitud_documentosTosolicitud_documentos", fields: [reemplaza_a], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_solicitud_documentos solicitud_documentos[] @relation("solicitud_documentosTosolicitud_documentos")
+  solicitudes                solicitudes            @relation(fields: [solicitud_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([solicitud_id], map: "idx_documentos_solicitud")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model solicitud_productos {
+  solicitud_id BigInt
+  producto_id  BigInt
+  productos    productos   @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  solicitudes  solicitudes @relation(fields: [solicitud_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([solicitud_id, producto_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model solicitudes {
+  id                        BigInt                      @id @default(autoincrement())
+  numero_radicado           String                      @unique @default(dbgenerated("('SOL-2026-'::text || lpad((nextval('seq_radicado_solicitud'::regclass))::text, 5, '0'::text))")) @db.VarChar(30)
+  comerciante_id            BigInt
+  espacio_id                BigInt?
+  ubicacion_solicitada      Unsupported("geometry")?
+  actividad                 String                      @db.VarChar(200)
+  fecha_inicio              DateTime                    @db.Date
+  fecha_fin                 DateTime                    @db.Date
+  hora_inicio               DateTime                    @db.Time(6)
+  hora_fin                  DateTime                    @db.Time(6)
+  estado                    estado_solicitud            @default(borrador)
+  revisor_id                BigInt?
+  motivo_rechazo            String?
+  radicada_en               DateTime?                   @db.Timestamptz(6)
+  decidida_en               DateTime?                   @db.Timestamptz(6)
+  creado_en                 DateTime                    @default(now()) @db.Timestamptz(6)
+  actualizado_en            DateTime                    @default(now()) @db.Timestamptz(6)
+  evaluaciones_factibilidad evaluaciones_factibilidad[]
+  permisos                  permisos?
+  solicitud_documentos      solicitud_documentos[]
+  solicitud_productos       solicitud_productos[]
+  comerciantes              comerciantes                @relation(fields: [comerciante_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  espacios_temporales       espacios_temporales?        @relation(fields: [espacio_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  gestores                  gestores?                   @relation(fields: [revisor_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([comerciante_id], map: "idx_solicitudes_comerciante")
+  @@index([estado], map: "idx_solicitudes_estado")
+  @@index([espacio_id, fecha_inicio], map: "idx_solicitudes_fechas")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model tarifas {
+  id             BigInt   @id @default(autoincrement())
+  zona_id        BigInt?
+  tipo_actividad String   @db.VarChar(100)
+  valor          Decimal  @db.Decimal(12, 2)
+  vigente_desde  DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
+  cobros         cobros[]
+  zonas          zonas?   @relation(fields: [zona_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model tokens_seguridad {
+  id         BigInt     @id @default(autoincrement())
+  usuario_id BigInt
+  tipo       tipo_token
+  token_hash String     @unique @db.VarChar(255)
+  expira_en  DateTime   @db.Timestamptz(6)
+  usado      Boolean    @default(false)
+  creado_en  DateTime   @default(now()) @db.Timestamptz(6)
+  usuarios   usuarios   @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([usuario_id, tipo], map: "idx_tokens_usuario")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model usuarios {
+  id                                                 BigInt                @id @default(autoincrement())
+  rol                                                rol_usuario
+  nombre                                             String                @db.VarChar(150)
+  apellido                                           String?               @db.VarChar(150)
+  tipo_documento                                     String?               @db.VarChar(30)
+  documento                                          String?               @unique @db.VarChar(30)
+  telefono                                           String?               @db.VarChar(30)
+  correo                                             String                @unique @db.Citext
+  password_hash                                      String?               @db.VarChar(255)
+  estado                                             estado_usuario        @default(pendiente_activacion)
+  intentos_fallidos                                  Int                   @default(0) @db.SmallInt
+  bloqueado_hasta                                    DateTime?             @db.Timestamptz(6)
+  creado_en                                          DateTime              @default(now()) @db.Timestamptz(6)
+  actualizado_en                                     DateTime              @default(now()) @db.Timestamptz(6)
+  auditoria                                          auditoria[]
+  comerciantes                                       comerciantes?
+  espacio_bloqueos                                   espacio_bloqueos[]
+  espacios_temporales                                espacios_temporales[]
+  gestores_gestores_creado_porTousuarios             gestores[]            @relation("gestores_creado_porTousuarios")
+  gestores_gestores_usuario_idTousuarios             gestores?             @relation("gestores_usuario_idTousuarios")
+  modulos                                            modulos[]
+  notificaciones                                     notificaciones[]
+  organizadores_organizadores_usuario_idTousuarios   organizadores?        @relation("organizadores_usuario_idTousuarios")
+  organizadores_organizadores_validado_porTousuarios organizadores[]       @relation("organizadores_validado_porTousuarios")
+  parametros_motor                                   parametros_motor[]
+  permiso_eventos                                    permiso_eventos[]
+  tokens_seguridad                                   tokens_seguridad[]
+  zonas                                              zonas[]
+
+  @@index([estado], map: "idx_usuarios_estado")
+  @@index([rol], map: "idx_usuarios_rol")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model verificaciones_qr {
+  id        BigInt   @id @default(autoincrement())
+  qr_token  String   @db.VarChar(64)
+  resultado String   @db.VarChar(20)
+  ip        String?  @db.Inet
+  creado_en DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([creado_en], map: "idx_verificaciones_fecha")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model zona_productos {
+  zona_id     BigInt
+  producto_id BigInt
+  productos   productos @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  zonas       zonas     @relation(fields: [zona_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([zona_id, producto_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model zonas {
+  id                  BigInt                  @id @default(autoincrement())
+  nombre              String                  @db.VarChar(150)
+  tipo                tipo_zona
+  geometria           Unsupported("geometry")
+  horario_inicio      DateTime?               @db.Time(6)
+  horario_fin         DateTime?               @db.Time(6)
+  aforo_maximo        Int?
+  activa              Boolean                 @default(true)
+  creado_por          BigInt?
+  creado_en           DateTime                @default(now()) @db.Timestamptz(6)
+  actualizado_en      DateTime                @default(now()) @db.Timestamptz(6)
+  alertas_saturacion  alertas_saturacion[]
+  espacios_temporales espacios_temporales[]
+  ferias              ferias[]
+  parametros_motor    parametros_motor[]
+  tarifas             tarifas[]
+  zona_productos      zona_productos[]
+  usuarios            usuarios?               @relation(fields: [creado_por], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([geometria], map: "idx_zonas_geom", type: Gist)
+}
+
+enum categoria_comercio {
+  formal
+  informal
+}
+
+enum estado_cobro {
+  pendiente
+  pagado
+  anulado
+}
+
+enum estado_documento {
+  pendiente
+  validado
+  observado
+}
+
+enum estado_espacio {
+  disponible
+  bloqueado
+  asignado
+  mantenimiento
+}
+
+enum estado_feria {
+  radicada
+  aprobada
+  rechazada
+  cancelada
+  realizada
+}
+
+enum estado_modulo {
+  activo
+  baja
+}
+
+enum estado_organizacion {
+  pendiente_validacion
+  activa
+  suspendida
+}
+
+enum estado_permiso {
+  vigente
+  suspendido
+  revocado
+  vencido
+}
+
+enum estado_solicitud {
+  borrador
+  radicada
+  en_revision
+  devuelta
+  aprobada
+  rechazada
+  cancelada
+}
+
+enum estado_usuario {
+  pendiente_activacion
+  activa
+  suspendida
+  inactiva
+}
+
+enum perfil_gestor {
+  revisor
+  administrador
+}
+
+enum regla_urbanistica {
+  distancia_minima
+  producto_permitido
+  aforo_cuadrante
+}
+
+enum resultado_factibilidad {
+  factible
+  no_factible
+}
+
+enum rol_usuario {
+  comerciante
+  organizador
+  gestor
+}
+
+enum tipo_token {
+  activacion
+  recuperacion_password
+  invitacion_gestor
+}
+
+enum tipo_zona {
+  permitida
+  restringida
+  alta_congestion
+}
