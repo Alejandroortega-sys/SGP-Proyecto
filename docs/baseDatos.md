@@ -124,7 +124,7 @@ erDiagram
 | documento | VARCHAR(30) | UNIQUE | Único; inmutable para el comerciante (HU-04) |
 | telefono | VARCHAR(30) | | Contacto del comerciante |
 | correo | CITEXT | NOT NULL, UNIQUE | Sirve para activación, recuperación y notificaciones |
-| password_hash | VARCHAR(255) | | bcrypt vía `crypt()`/`gen_salt('bf')` |
+| password_hash | VARCHAR(255) | | argon2id (hash generado por la aplicación; el seed usa literales) |
 | estado | estado_usuario | NOT NULL, DEFAULT pendiente_activacion | Ciclo de vida de la cuenta |
 | intentos_fallidos | SMALLINT | NOT NULL, DEFAULT 0 | HU-02: bloqueo tras 5 intentos |
 | bloqueado_hasta | TIMESTAMPTZ | | Momento hasta el cual la cuenta está bloqueada |
@@ -535,7 +535,7 @@ Las cuatro pruebas negativas se ejecutan dentro de `02_seed_datos_prueba.sql` y 
 | Datos | Contenido |
 |---|---|
 | Usuarios (8) | 2 gestores (admin / revisor), 4 comerciantes (uno pendiente de activación), 2 organizadores (uno pendiente de validación) |
-| Contraseñas (bcrypt) | `admin@tulua.gov.co` y `revisor@tulua.gov.co` → `Admin1234` · comerciantes → `Comerciante123` · organizadores → `Organizador123` |
+| Contraseñas (argon2id) | `admin@tulua.gov.co` y `revisor@tulua.gov.co` → `Admin1234` · comerciantes → `Comerciante123` · organizadores → `Organizador123` |
 | Zonas (4) | Centro–Calle 30 (permitida, aforo 40), Plaza Boyacá (alta congestión, aforo 15), Entorno Hospital (restringida, aforo 5), Parque La Guadua (permitida, aforo 25) — polígonos alrededor del centro de Tuluá |
 | Productos (6) | Frutas frescas, Verduras, Artesanías, Comidas rápidas, Ropa y calzado, Plantas ornamentales |
 | Módulos (6) | 2 con titular registrado, 4 con titular por nombre; mezcla formal/informal |

@@ -6,6 +6,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ActivarCuentaDto } from './dto/activar-cuenta.dto';
 import { CrearComercianteDto } from './dto/crear-comerciante.dto';
 import { ReenviarCodigoDto } from './dto/reenviar-codigo.dto';
+import { RestablecerPasswordDto } from './dto/restablecer-password.dto';
+import { SolicitarRecuperacionDto } from './dto/solicitar-recuperacion.dto';
 import { UsuariosService } from './usuarios.service';
 
 // argon2 se simula: `hash(x)` → `hash-de:x`. Así los tests son rápidos y
@@ -57,6 +59,7 @@ function crearPrismaMock(): PrismaMock {
 function crearConfig(valores: Record<string, string> = {}): ConfigService {
   const todas: Record<string, string> = {
     ACTIVATION_CODE_TTL_MINUTES: '15',
+    PASSWORD_RECOVERY_CODE_TTL_MINUTES: '2',
     ...valores,
   };
   return { get: (clave: string) => todas[clave] } as unknown as ConfigService;
@@ -90,7 +93,10 @@ const USUARIO_CREADO = {
 
 describe('UsuariosService', () => {
   let prisma: PrismaMock;
-  let correo: { enviarCodigoActivacion: jest.Mock };
+  let correo: {
+    enviarCodigoActivacion: jest.Mock;
+    enviarCodigoRecuperacion: jest.Mock;
+  };
   let service: UsuariosService;
 
   beforeAll(() => {
@@ -105,7 +111,10 @@ describe('UsuariosService', () => {
 
   beforeEach(() => {
     prisma = crearPrismaMock();
-    correo = { enviarCodigoActivacion: jest.fn().mockResolvedValue(undefined) };
+    correo = {
+      enviarCodigoActivacion: jest.fn().mockResolvedValue(undefined),
+      enviarCodigoRecuperacion: jest.fn().mockResolvedValue(undefined),
+    };
     service = new UsuariosService(
       prisma as unknown as PrismaService,
       correo as unknown as CorreoService,
@@ -326,6 +335,191 @@ describe('UsuariosService', () => {
       expect(resultado.mensaje).toContain('pendiente de activación');
       expect(prisma.tokens_seguridad.create).not.toHaveBeenCalled();
       expect(correo.enviarCodigoActivacion).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('solicitarRecuperacion', () => {
+    it('crea un token de 2 minutos, invalida los anteriores y envía el correo', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue({
+        id: 5n,
+        nombre: 'María',
+        estado: 'activa',
+      });
+
+      const resultado = await service.solicitarRecuperacion({
+        correo: 'Maria.Gomez@Gmail.com',
+      } as SolicitarRecuperacionDto);
+
+      // Invalida los códigos de recuperación pendientes.
+      expect(prisma.tokens_seguridad.updateMany).toHaveBeenCalledWith({
+        where: {
+          usuario_id: 5n,
+          tipo: 'recuperacion_password',
+          usado: false,
+        },
+        data: { usado: true },
+      });
+
+      // El token guarda el hash del mismo código que se envía por correo.
+      const { data } = prisma.tokens_seguridad.create.mock.calls[0][0];
+      const codigoEnviado = correo.enviarCodigoRecuperacion.mock.calls[0][2];
+      expect(data.usuario_id).toBe(5n);
+      expect(data.tipo).toBe('recuperacion_password');
+      expect(codigoEnviado).toMatch(/^\d{6}$/);
+      expect(data.token_hash).toBe(`hash-de:${codigoEnviado}`);
+      expect(data.expira_en.getTime() - Date.now()).toBeGreaterThan(90_000);
+      expect(data.expira_en.getTime() - Date.now()).toBeLessThanOrEqual(
+        120_000,
+      );
+      expect(correo.enviarCodigoRecuperacion).toHaveBeenCalledWith(
+        'maria.gomez@gmail.com',
+        'María',
+        codigoEnviado,
+        2,
+      );
+
+      // Respuesta genérica, sin filtrar el código ni el estado de la cuenta.
+      expect(resultado.mensaje).toContain('cuenta activa');
+      expect(JSON.stringify(resultado)).not.toContain(codigoEnviado);
+    });
+
+    it('responde el mensaje genérico si el correo no existe', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue(null);
+
+      const resultado = await service.solicitarRecuperacion({
+        correo: 'desconocido@gmail.com',
+      } as SolicitarRecuperacionDto);
+
+      expect(resultado.mensaje).toContain('cuenta activa');
+      expect(prisma.tokens_seguridad.create).not.toHaveBeenCalled();
+      expect(correo.enviarCodigoRecuperacion).not.toHaveBeenCalled();
+    });
+
+    it('no envía código si la cuenta no está activa', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue({
+        id: 5n,
+        estado: 'pendiente_activacion',
+      });
+
+      const resultado = await service.solicitarRecuperacion({
+        correo: 'pedro.sanchez@gmail.com',
+      } as SolicitarRecuperacionDto);
+
+      // Mantiene el mensaje genérico para no revelar el estado de la cuenta.
+      expect(resultado.mensaje).toContain('cuenta activa');
+      expect(prisma.tokens_seguridad.create).not.toHaveBeenCalled();
+      expect(correo.enviarCodigoRecuperacion).not.toHaveBeenCalled();
+    });
+
+    it('responde 503 si el correo no se pudo enviar', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue({
+        id: 5n,
+        nombre: 'María',
+        estado: 'activa',
+      });
+      correo.enviarCodigoRecuperacion.mockRejectedValue(
+        new Error('SMTP caído'),
+      );
+
+      await expect(
+        service.solicitarRecuperacion({
+          correo: 'maria.gomez@gmail.com',
+        } as SolicitarRecuperacionDto),
+      ).rejects.toThrow('No pudimos enviar el código de recuperación');
+      // El token sí quedó creado: el usuario puede pedir un código nuevo.
+      expect(prisma.tokens_seguridad.create).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('restablecerPassword', () => {
+    const DTO_RESTABLECER: RestablecerPasswordDto = {
+      correo: 'maria.gomez@gmail.com',
+      codigo: '483920',
+      password: 'NuevaClave456',
+      confirmarPassword: 'NuevaClave456',
+    };
+
+    it('actualiza la contraseña y limpia el bloqueo con un código válido', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue({
+        id: 5n,
+        nombre: 'María',
+        estado: 'activa',
+      });
+      prisma.tokens_seguridad.findFirst.mockResolvedValue({
+        id: 9n,
+        token_hash: 'hash-de:483920',
+      });
+      (argon2.verify as jest.Mock).mockResolvedValue(true);
+
+      const resultado = await service.restablecerPassword(DTO_RESTABLECER);
+
+      // Consume todos los códigos de recuperación pendientes.
+      expect(prisma.tokens_seguridad.updateMany).toHaveBeenCalledWith({
+        where: {
+          usuario_id: 5n,
+          tipo: 'recuperacion_password',
+          usado: false,
+        },
+        data: { usado: true },
+      });
+      // Contraseña nueva hasheada y contadores de bloqueo limpios.
+      expect(prisma.usuarios.update).toHaveBeenCalledWith({
+        where: { id: 5n },
+        data: {
+          password_hash: 'hash-de:NuevaClave456',
+          intentos_fallidos: 0,
+          bloqueado_hasta: null,
+        },
+      });
+      expect(prisma.notificaciones.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          usuario_id: 5n,
+          tipo: 'recuperacion_password',
+          asunto: 'Contraseña actualizada',
+        }),
+      });
+      expect(resultado.mensaje).toContain('actualizada correctamente');
+    });
+
+    it('responde 400 genérico con un código incorrecto', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue({
+        id: 5n,
+        nombre: 'María',
+        estado: 'activa',
+      });
+      prisma.tokens_seguridad.findFirst.mockResolvedValue({
+        id: 9n,
+        token_hash: 'hash-de:483920',
+      });
+      (argon2.verify as jest.Mock).mockResolvedValue(false);
+
+      await expect(
+        service.restablecerPassword(DTO_RESTABLECER),
+      ).rejects.toThrow('El código de recuperación es inválido o ha expirado');
+      expect(prisma.usuarios.update).not.toHaveBeenCalled();
+    });
+
+    it('responde 400 si el código expiró o no hay token vigente', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue({
+        id: 5n,
+        estado: 'activa',
+      });
+      prisma.tokens_seguridad.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.restablecerPassword(DTO_RESTABLECER),
+      ).rejects.toThrow('El código de recuperación es inválido o ha expirado');
+      expect(prisma.usuarios.update).not.toHaveBeenCalled();
+    });
+
+    it('responde 400 genérico si la cuenta no existe o no está activa', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.restablecerPassword(DTO_RESTABLECER),
+      ).rejects.toThrow('El código de recuperación es inválido o ha expirado');
+      expect(prisma.tokens_seguridad.findFirst).not.toHaveBeenCalled();
+      expect(prisma.usuarios.update).not.toHaveBeenCalled();
     });
   });
 });

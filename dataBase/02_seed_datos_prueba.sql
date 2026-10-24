@@ -4,11 +4,14 @@
 --  Uso  : psql -U postgres -d "SPG-Prueba" -f 02_seed_datos_prueba.sql
 --  (Ejecutar DESPUÉS de 01_creacion_bd.sql)
 --
---  Contraseñas de prueba (hash bcrypt generado con pgcrypto):
+--  Contraseñas de prueba (hashes argon2id generados con la librería `argon2`):
 --    admin@tulua.gov.co        -> Admin1234
 --    revisor@tulua.gov.co      -> Admin1234
 --    *_@gmail/hotmail/...      -> Comerciante123
 --    *@*.org (organizadores)   -> Organizador123
+--  PostgreSQL no genera argon2: los hashes quedan como literales. Para
+--  regenerarlos con la versión instalada en el proyecto:
+--    node -e "require('argon2').hash('Admin1234').then(console.log)"
 -- ============================================================================
 
 \set ON_ERROR_STOP on
@@ -16,14 +19,14 @@ SET client_encoding = 'UTF8';
 
 \echo '=== 1/12 · Usuarios (2 gestores, 4 comerciantes, 2 organizadores) ==='
 INSERT INTO usuarios (rol, nombre, apellido, tipo_documento, documento, telefono, correo, password_hash, estado) VALUES
-  ('gestor',      'Laura',  'Martínez',  NULL,     NULL,         NULL,         'admin@tulua.gov.co',             crypt('Admin1234',       gen_salt('bf')), 'activa'),
-  ('gestor',      'Carlos',  'Ramírez',   NULL,     NULL,         NULL,         'revisor@tulua.gov.co',           crypt('Admin1234',       gen_salt('bf')), 'activa'),
-  ('comerciante', 'María',   'Gómez',     'CC',     '1032456789', '3214567890', 'maria.gomez@gmail.com',          crypt('Comerciante123', gen_salt('bf')), 'activa'),
-  ('comerciante', 'José',    'Pérez',     'CC',     '801234567',  '3147788990', 'jose.perez@hotmail.com',         crypt('Comerciante123', gen_salt('bf')), 'activa'),
-  ('comerciante', 'Ana',     'Ruiz',      'CC',     '71588900',   '3126655443', 'ana.ruiz@gmail.com',             crypt('Comerciante123', gen_salt('bf')), 'activa'),
-  ('comerciante', 'Pedro',   'Sánchez',   'CC',     '1029384756','3001122334', 'pedro.sanchez@gmail.com',        crypt('Comerciante123', gen_salt('bf')), 'pendiente_activacion'),
-  ('organizador', 'Luis',    'Álvarez',   NULL,     NULL,         NULL,         'luis.alvarez@agrovalle.org',     crypt('Organizador123', gen_salt('bf')), 'activa'),
-  ('organizador', 'Marta',   'Cifuentes', NULL,     NULL,         NULL,         'marta.cifuentes@asocampesinos.org', crypt('Organizador123', gen_salt('bf')), 'activa');
+  ('gestor',      'Laura',  'Martínez',  NULL,     NULL,         NULL,         'admin@tulua.gov.co',             '$argon2id$v=19$m=19456,p=1,t=2$AaTvzKel+egX7v1p9qj7aA$rbPRFYUU/QDiyIP5Zo31mRttjl8D0WuEWj/35jCHQTk', 'activa'),
+  ('gestor',      'Carlos',  'Ramírez',   NULL,     NULL,         NULL,         'revisor@tulua.gov.co',           '$argon2id$v=19$m=19456,p=1,t=2$EKvrsQRpmO5Mw1zihKyW/A$BrkhKD68THGfyQzx8lLR8NM+J3VByjmJBiHxaIu89aw', 'activa'),
+  ('comerciante', 'María',   'Gómez',     'CC',     '1032456789', '3214567890', 'maria.gomez@gmail.com',          '$argon2id$v=19$m=19456,p=1,t=2$ZsuI7gv2rYDydxc56UPuQA$v61N33PiEmvTI16ia9koNaF6MjW/k8Ayq6caCyEydaE', 'activa'),
+  ('comerciante', 'José',    'Pérez',     'CC',     '801234567',  '3147788990', 'jose.perez@hotmail.com',         '$argon2id$v=19$m=19456,p=1,t=2$rQ+m1VELGNX7Jus4ztcW/Q$7J2s8ZVf1eQb4REJ3Sl+aQPa+3qLQkmIf757KJJ8djg', 'activa'),
+  ('comerciante', 'Ana',     'Ruiz',      'CC',     '71588900',   '3126655443', 'ana.ruiz@gmail.com',             '$argon2id$v=19$m=19456,p=1,t=2$nlOGH5dgtrE5e3H+zlKbvg$pMKTUzOhDNmH1QmNe+1SZGLHJ7K5Sst1aoZ8EUSbhEI', 'activa'),
+  ('comerciante', 'Pedro',   'Sánchez',   'CC',     '1029384756','3001122334', 'pedro.sanchez@gmail.com',        '$argon2id$v=19$m=19456,p=1,t=2$vpCD+0w3NHOVAVukDXd6Ig$9XN+C+zcSiZolRVqQD9X6T5m4kzNAi8QBErse3+7by8', 'pendiente_activacion'),
+  ('organizador', 'Luis',    'Álvarez',   NULL,     NULL,         NULL,         'luis.alvarez@agrovalle.org',     '$argon2id$v=19$m=19456,p=1,t=2$Wl7cspreWDtWDP7D51+XIg$o0sU5dWAEnhyzC8Kwke97dZmT47USHDZCTcIzoOo9IQ', 'activa'),
+  ('organizador', 'Marta',   'Cifuentes', NULL,     NULL,         NULL,         'marta.cifuentes@asocampesinos.org', '$argon2id$v=19$m=19456,p=1,t=2$77UNIQ5Ep8STYx3Wmmm0yg$Nr0ODc6CfINX4bzRgfdj1w2V3ei14mi5EhEe68ZSk18', 'activa');
 
 \echo '=== 2/12 · Perfiles por rol ==='
 INSERT INTO gestores (usuario_id, perfil, creado_por) VALUES
@@ -314,7 +317,7 @@ BEGIN
   BEGIN
     INSERT INTO usuarios (rol, nombre, apellido, tipo_documento, documento, telefono, correo, password_hash, estado)
     VALUES ('comerciante', 'María', 'Gómez Duplicada', 'CC', '9999999999', '3000000000',
-            'maria.gomez@gmail.com', crypt('Password123', gen_salt('bf')), 'activa');
+            'maria.gomez@gmail.com', '$argon2id$v=19$m=19456,p=1,t=2$kf3b2FkpKsGTxJgYS84tUQ$Ht3hrSXH5cZwc5BJX8gE47ImO9+dn4pjSHv6bKZR/SU', 'activa');
   EXCEPTION WHEN unique_violation THEN
     RAISE NOTICE 'OK (HU-01): la BD rechazó un correo duplicado';
     RETURN;

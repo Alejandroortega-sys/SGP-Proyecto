@@ -1,4 +1,11 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -7,19 +14,25 @@ import {
   ApiOperation,
   ApiServiceUnavailableResponse,
   ApiTags,
+  ApiTooManyRequestsResponse,
 } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { Public } from '../auth/decorators/public.decorator';
 import { ActivarCuentaDto } from './dto/activar-cuenta.dto';
 import { ComercianteResponseDto, MensajeResponseDto } from './dto/comerciante-response.dto';
 import { CrearComercianteDto } from './dto/crear-comerciante.dto';
 import { ReenviarCodigoDto } from './dto/reenviar-codigo.dto';
+import { RestablecerPasswordDto } from './dto/restablecer-password.dto';
+import { SolicitarRecuperacionDto } from './dto/solicitar-recuperacion.dto';
 import { UsuariosService } from './usuarios.service';
 
 /**
- * Registro y activación de comerciantes (HU-01).
+ * Registro, activación y recuperación de contraseña de los usuarios.
  *
- * Endpoints públicos: el registro crea la cuenta en «Pendiente de activación»
- * y la activación compara el código enviado por correo con el hash guardado
- * en la base de datos.
+ * Endpoints públicos: el registro crea la cuenta en «Pendiente de
+ * activación», la activación compara el código enviado por correo con el
+ * hash guardado en la base de datos, y la recuperación permite cambiar la
+ * contraseña confirmando un código de vigencia corta.
  */
 @ApiTags('usuarios')
 @Controller('usuarios')
@@ -51,6 +64,7 @@ export class UsuariosController {
     description:
       'La cuenta fue creada, pero no se pudo enviar el código de activación',
   })
+  @Public()
   @Post('comerciantes')
   crearComerciante(
     @Body() dto: CrearComercianteDto,
@@ -76,6 +90,7 @@ export class UsuariosController {
     description: 'El código es inválido, ya fue usado o ha expirado',
   })
   @ApiConflictResponse({ description: 'La cuenta ya está activa' })
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Post('activacion')
   activarCuenta(
@@ -105,9 +120,89 @@ export class UsuariosController {
   @ApiServiceUnavailableResponse({
     description: 'No se pudo enviar el nuevo código de activación',
   })
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Post('activacion/reenviar')
   reenviarCodigo(@Body() dto: ReenviarCodigoDto): Promise<MensajeResponseDto> {
     return this.usuarios.reenviarCodigo(dto);
+  }
+
+  /**
+   * Solicita un código para restablecer la contraseña. Solo las cuentas
+   * activas reciben código; la respuesta es genérica para no revelar si el
+   * correo está registrado.
+   */
+  @ApiOperation({
+    summary: 'Solicitar recuperación de contraseña',
+    description:
+      'Envía un código de 6 dígitos al correo de la cuenta, si existe y ' +
+      'está activa. El código vence en 2 minutos y cada solicitud invalida ' +
+      'las anteriores. La respuesta es idéntica exista o no la cuenta, para ' +
+      'evitar la enumeración de correos registrados.',
+  })
+  @ApiOkResponse({
+    type: MensajeResponseDto,
+    description: 'Código enviado si el correo corresponde a una cuenta activa',
+  })
+  @ApiBadRequestResponse({
+    description: 'El correo enviado no es válido',
+  })
+  @ApiTooManyRequestsResponse({
+    description:
+      'La IP superó el límite de 10 peticiones por minuto; el encabezado ' +
+      'Retry-After indica los segundos de espera',
+  })
+  @ApiServiceUnavailableResponse({
+    description: 'No se pudo enviar el código de recuperación',
+  })
+  @Public()
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('password/recuperar')
+  solicitarRecuperacion(
+    @Body() dto: SolicitarRecuperacionDto,
+  ): Promise<MensajeResponseDto> {
+    return this.usuarios.solicitarRecuperacion(dto);
+  }
+
+  /**
+   * Restablece la contraseña confirmando el código de recuperación.
+   * La contraseña nueva sigue la misma política del registro y el cambio
+   * limpia el bloqueo por intentos fallidos del login.
+   */
+  @ApiOperation({
+    summary: 'Restablecer la contraseña con el código recibido',
+    description:
+      'Compara el código con el hash guardado en `tokens_seguridad` ' +
+      '(tipo `recuperacion_password`). Si es correcto y no ha expirado, ' +
+      'actualiza la contraseña con hash argon2id y desbloquea la cuenta. ' +
+      'La contraseña nueva debe tener entre 8 y 128 caracteres e incluir ' +
+      'al menos un número.',
+  })
+  @ApiOkResponse({
+    type: MensajeResponseDto,
+    description: 'Contraseña actualizada correctamente',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'El código es inválido, ya fue usado o ha expirado, o la contraseña ' +
+      'no cumple la política',
+  })
+  @ApiTooManyRequestsResponse({
+    description:
+      'La IP superó el límite de 10 peticiones por minuto; el encabezado ' +
+      'Retry-After indica los segundos de espera',
+  })
+  @ApiServiceUnavailableResponse({
+    description: 'Error inesperado al actualizar la contraseña',
+  })
+  @Public()
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('password/restablecer')
+  restablecerPassword(
+    @Body() dto: RestablecerPasswordDto,
+  ): Promise<MensajeResponseDto> {
+    return this.usuarios.restablecerPassword(dto);
   }
 }

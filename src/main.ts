@@ -4,11 +4,20 @@
 import './common/bigint-serialization';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Detrás de un proxy inverso (nginx), la IP real del cliente llega en el
+  // encabezado X-Forwarded-For. Solo se activa con TRUST_PROXY=true: en
+  // desarrollo debe quedar apagado para que nadie pueda falsear su IP y
+  // evadir los límites por IP (rate limit del login).
+  if (process.env.TRUST_PROXY?.toLowerCase() === 'true') {
+    app.set('trust proxy', 1);
+  }
 
   // Validación global de los DTOs (class-validator): los @Body() que no
   // cumplan las reglas reciben 400 con los mensajes en español definidos

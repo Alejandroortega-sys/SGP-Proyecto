@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Public } from './auth/decorators/public.decorator';
 import { AppService } from './app.service';
 
 /**
@@ -15,6 +16,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @ApiOperation({ summary: 'Verifica que la API esté en línea' })
+  @Public()
   @Get()
   getHello(): string {
     return this.appService.getHello();

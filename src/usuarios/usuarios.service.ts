@@ -8,12 +8,15 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
+import { enteroPositivo } from '../common/entero-positivo';
 import { CorreoService } from '../correo/correo.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ComercianteResponseDto, MensajeResponseDto } from './dto/comerciante-response.dto';
 import { ActivarCuentaDto } from './dto/activar-cuenta.dto';
 import { CrearComercianteDto } from './dto/crear-comerciante.dto';
 import { ReenviarCodigoDto } from './dto/reenviar-codigo.dto';
+import { RestablecerPasswordDto } from './dto/restablecer-password.dto';
+import { SolicitarRecuperacionDto } from './dto/solicitar-recuperacion.dto';
 
 /** Mensaje genérico para no revelar si la cuenta existe (anti-enumeración). */
 const CODIGO_INVALIDO = 'El código de activación es inválido o ha expirado';
@@ -22,6 +25,22 @@ const CODIGO_INVALIDO = 'El código de activación es inválido o ha expirado';
 const MENSAJE_REENVIO =
   'Si el correo corresponde a una cuenta pendiente de activación, ' +
   'enviamos un nuevo código.';
+
+/**
+ * Respuesta genérica de la solicitud de recuperación (no revela si el
+ * correo tiene una cuenta activa registrada).
+ */
+const MENSAJE_RECUPERACION =
+  'Si el correo corresponde a una cuenta activa, enviamos un código para ' +
+  'restablecer la contraseña. Revisa tu correo: el código tiene vigencia ' +
+  'corta.';
+
+/**
+ * Mensaje genérico para códigos de recuperación inválidos: cubre cuenta
+ * inexistente o no activa, código erróneo, ya usado o expirado.
+ */
+const CODIGO_RECUPERACION_INVALIDO =
+  'El código de recuperación es inválido o ha expirado. Solicita uno nuevo.';
 
 /** Parámetros argon2id (mínimo recomendado por OWASP para web). */
 const OPCIONES_ARGON2: argon2.HashOptions = {
@@ -46,16 +65,22 @@ export class UsuariosService {
   private readonly logger = new Logger(UsuariosService.name);
   /** Vigencia del código de activación, en minutos. */
   private readonly ttlMinutos: number;
+  /** Vigencia del código de recuperación de contraseña, en minutos. */
+  private readonly ttlRecuperacionMinutos: number;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly correo: CorreoService,
     config: ConfigService,
   ) {
-    const ttl = Number(
+    this.ttlMinutos = enteroPositivo(
       config.get<string | undefined>('ACTIVATION_CODE_TTL_MINUTES'),
+      15,
     );
-    this.ttlMinutos = Number.isFinite(ttl) && ttl > 0 ? ttl : 15;
+    this.ttlRecuperacionMinutos = enteroPositivo(
+      config.get<string | undefined>('PASSWORD_RECOVERY_CODE_TTL_MINUTES'),
+      2,
+    );
   }
 
   /**
@@ -306,6 +331,167 @@ export class UsuariosService {
     }
 
     return { mensaje: MENSAJE_REENVIO };
+  }
+
+  /**
+   * Genera y envía un código de recuperación de contraseña.
+   *
+   * Solo las cuentas activas reciben código; para el resto (incluidos
+   * correos no registrados) la respuesta es la misma, para no permitir la
+   * enumeración de cuentas. Cada solicitud invalida los códigos pendientes
+   * anteriores: solo el último queda vigente, con la vigencia corta
+   * configurada (2 minutos por defecto).
+   */
+  async solicitarRecuperacion(
+    dto: SolicitarRecuperacionDto,
+  ): Promise<MensajeResponseDto> {
+    const correo = dto.correo.trim().toLowerCase();
+
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { correo },
+      select: { id: true, nombre: true, estado: true },
+    });
+
+    // Solo las cuentas activas pueden recuperar la contraseña.
+    if (!usuario || usuario.estado !== 'activa') {
+      // Mantiene el mismo mensaje para no revelar la existencia de la cuenta.
+      return { mensaje: MENSAJE_RECUPERACION };
+    }
+
+    const codigo = this.generarCodigo();
+    const tokenHash = await argon2.hash(codigo, OPCIONES_ARGON2);
+    const expiraEn = new Date(
+      Date.now() + this.ttlRecuperacionMinutos * 60_000,
+    );
+
+    await this.prisma.$transaction([
+      // Invalida los códigos pendientes: solo queda vigente el último.
+      this.prisma.tokens_seguridad.updateMany({
+        where: {
+          usuario_id: usuario.id,
+          tipo: 'recuperacion_password',
+          usado: false,
+        },
+        data: { usado: true },
+      }),
+      // Se guarda el hash del código, nunca el código plano.
+      this.prisma.tokens_seguridad.create({
+        data: {
+          usuario_id: usuario.id,
+          tipo: 'recuperacion_password',
+          token_hash: tokenHash,
+          expira_en: expiraEn,
+        },
+      }),
+    ]);
+
+    try {
+      await this.correo.enviarCodigoRecuperacion(
+        correo,
+        usuario.nombre,
+        codigo,
+        this.ttlRecuperacionMinutos,
+      );
+    } catch (error) {
+      // El código ya quedó guardado: el usuario puede pedir uno nuevo.
+      this.logger.error(
+        `No se pudo enviar el código de recuperación a ${correo}: ${String(error)}`,
+      );
+      throw new ServiceUnavailableException(
+        'No pudimos enviar el código de recuperación. ' +
+          'Inténtalo de nuevo en unos minutos.',
+      );
+    }
+
+    return { mensaje: MENSAJE_RECUPERACION };
+  }
+
+  /**
+   * Restablece la contraseña confirmando el código enviado por correo.
+   *
+   * Si el código es correcto y no ha expirado: consume todos los códigos de
+   * recuperación pendientes, actualiza la contraseña (hash argon2id) y
+   * limpia el bloqueo por intentos fallidos del login, pues el código
+   * válido demostró la identidad del usuario. La comparación de la
+   * expiración la hace la base de datos (`expira_en > now()`).
+   */
+  async restablecerPassword(
+    dto: RestablecerPasswordDto,
+  ): Promise<MensajeResponseDto> {
+    const correo = dto.correo.trim().toLowerCase();
+
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { correo },
+      select: { id: true, nombre: true, estado: true },
+    });
+
+    // Mensaje genérico: cubre cuenta inexistente y cuenta no activa.
+    if (!usuario || usuario.estado !== 'activa') {
+      throw new BadRequestException(CODIGO_RECUPERACION_INVALIDO);
+    }
+
+    const token = await this.prisma.tokens_seguridad.findFirst({
+      where: {
+        usuario_id: usuario.id,
+        tipo: 'recuperacion_password',
+        usado: false,
+        expira_en: { gt: new Date() },
+      },
+      orderBy: { creado_en: 'desc' },
+    });
+
+    if (!token) {
+      throw new BadRequestException(CODIGO_RECUPERACION_INVALIDO);
+    }
+
+    const coincide = await argon2
+      .verify(token.token_hash, dto.codigo)
+      .catch(() => false);
+    if (!coincide) {
+      throw new BadRequestException(CODIGO_RECUPERACION_INVALIDO);
+    }
+
+    // Se calcula antes de abrir la transacción para mantenerla corta.
+    const passwordHash = await argon2.hash(dto.password, OPCIONES_ARGON2);
+
+    await this.prisma.$transaction([
+      // Consume todos los códigos de recuperación pendientes.
+      this.prisma.tokens_seguridad.updateMany({
+        where: {
+          usuario_id: usuario.id,
+          tipo: 'recuperacion_password',
+          usado: false,
+        },
+        data: { usado: true },
+      }),
+      this.prisma.usuarios.update({
+        where: { id: usuario.id },
+        data: {
+          password_hash: passwordHash,
+          // Autodesbloqueo: el código válido demostró la identidad.
+          intentos_fallidos: 0,
+          bloqueado_hasta: null,
+        },
+      }),
+      this.prisma.notificaciones.create({
+        data: {
+          usuario_id: usuario.id,
+          tipo: 'recuperacion_password',
+          asunto: 'Contraseña actualizada',
+          cuerpo:
+            `Hola ${usuario.nombre}, la contraseña de tu cuenta en SGP ` +
+            'Tuluá fue actualizada. Si no fuiste tú, comunícate de inmediato ' +
+            'con la Secretaría de Gobierno.',
+          canal: 'app',
+        },
+      }),
+    ]);
+
+    return {
+      mensaje:
+        'Contraseña actualizada correctamente. Ya puedes iniciar sesión con ' +
+        'tu nueva contraseña.',
+    };
   }
 
   /** Genera un código numérico aleatorio de 6 dígitos (criptoseguro). */
