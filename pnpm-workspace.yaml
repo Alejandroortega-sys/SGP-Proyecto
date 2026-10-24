@@ -1,5 +1,8 @@
 allowBuilds:
   '@parcel/watcher': true
   '@prisma/engines': true
+  argon2: true
   prisma: true
   unrs-resolver: true
+  # Telemetría de swagger-ui-dist: se deniega explícitamente su script.
+  '@scarf/scarf': false

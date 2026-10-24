@@ -1,14 +1,23 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { CorreoModule } from './correo/correo.module';
+import { UsuariosModule } from './usuarios/usuarios.module';
 import {
   PrismaExceptionFilter,
 } from './common/filters/prisma-exception.filter';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [
+    // Carga el .env y expone ConfigService de forma global (SMTP, TTL...).
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    CorreoModule,
+    UsuariosModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,
