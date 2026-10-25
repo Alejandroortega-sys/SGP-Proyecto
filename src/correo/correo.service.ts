@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
+import type { perfil_gestor } from '../generated/prisma/client';
 
 /**
  * Servicio de envío de correos vía SMTP (nodemailer).
@@ -133,6 +134,65 @@ export class CorreoService {
       html,
       `SMTP no configurado: el código de activación de ${destino} es ${codigo} ` +
         `(vigente ${expiraEnMinutos} minutos)`,
+    );
+  }
+
+  /**
+   * Envía las credenciales temporales de un gestor recién creado.
+   *
+   * No hay código de seguridad: el correo incluye una contraseña temporal y
+   * el enlace al login. El gestor debe cambiarla en su primer inicio de
+   * sesión; mientras no lo haga, la cuenta permanece pendiente de activación.
+   *
+   * @param destino Correo institucional del gestor.
+   * @param nombre Nombre del gestor.
+   * @param perfil Perfil asignado (revisor o administrador).
+   * @param passwordTemporal Contraseña temporal generada por GestorService.
+   * @param urlAcceso URL del login del frontend.
+   * @throws Error si no hay SMTP en producción o si el envío falla.
+   */
+  async enviarCredencialesGestor(
+    destino: string,
+    nombre: string,
+    perfil: perfil_gestor,
+    passwordTemporal: string,
+    urlAcceso: string,
+  ): Promise<void> {
+    const etiquetaPerfil =
+      perfil === 'administrador' ? 'administrador' : 'revisor';
+    const asunto = 'Tu cuenta de gestor municipal en SGP Tuluá';
+    const texto =
+      `Hola ${nombre},\n\n` +
+      `Se creó tu cuenta de gestor municipal con perfil ${etiquetaPerfil}.\n\n` +
+      `Contraseña temporal: ${passwordTemporal}\n\n` +
+      `Ingresa en ${urlAcceso} con tu correo y esta contraseña. En el primer ` +
+      `inicio de sesión deberás cambiarla obligatoriamente; mientras no lo ` +
+      `hagas, la cuenta permanecerá en estado pendiente de activación.\n\n` +
+      `Si no esperabas esta cuenta, comunícate con la Secretaría de Gobierno.\n\n` +
+      `Secretaría de Gobierno — Municipio de Tuluá`;
+    const html =
+      `<p>Hola <strong>${nombre}</strong>,</p>` +
+      `<p>Se creó tu cuenta de gestor municipal con perfil ` +
+      `<strong>${etiquetaPerfil}</strong>.</p>` +
+      `<p>Contraseña temporal:</p>` +
+      `<p style="font-size:20px;letter-spacing:3px;font-weight:bold;">` +
+      `${passwordTemporal}</p>` +
+      `<p>Ingresa en <a href="${urlAcceso}">${urlAcceso}</a> con tu correo y ` +
+      `esta contraseña. En el primer inicio de sesión deberás cambiarla ` +
+      `obligatoriamente; mientras no lo hagas, la cuenta permanecerá en ` +
+      `estado pendiente de activación.</p>` +
+      `<p>Si no esperabas esta cuenta, comunícate con la Secretaría de ` +
+      `Gobierno.</p>` +
+      `<p>Secretaría de Gobierno — Municipio de Tuluá</p>`;
+
+    await this.enviar(
+      destino,
+      asunto,
+      texto,
+      html,
+      `SMTP no configurado: credenciales del gestor ${destino} ` +
+        `(perfil ${etiquetaPerfil}, contraseña temporal ${passwordTemporal}, ` +
+        `acceso ${urlAcceso})`,
     );
   }
 

@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   HttpException,
   HttpStatus,
@@ -11,10 +12,19 @@ import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { enteroPositivo } from '../common/entero-positivo';
 import { fijarActorAuditoria } from '../common/auditoria';
-import type { estado_usuario } from '../generated/prisma/client';
+import { OPCIONES_ARGON2 } from '../common/opciones-argon2';
+import type {
+  estado_usuario,
+  perfil_gestor,
+  rol_usuario,
+} from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { LoginResponseDto } from './dto/login-response.dto';
+import {
+  LoginPrimerAccesoResponseDto,
+  LoginResponseDto,
+} from './dto/login-response.dto';
 import type { LoginDto } from './dto/login.dto';
+import type { PrimerAccesoGestorDto } from './dto/primer-acceso-gestor.dto';
 import type { JwtPayload } from './interfaces/jwt-payload.interface';
 
 /** Mensaje único para no revelar si el correo está registrado. */
@@ -53,6 +63,17 @@ interface ResultadoIntento {
 interface EstadoBloqueo {
   bloqueado: boolean;
   minutos: number;
+}
+
+/** Datos mínimos para emitir una sesión JWT. */
+interface UsuarioSesion {
+  id: bigint;
+  nombre: string;
+  apellido: string | null;
+  correo: string;
+  rol: rol_usuario;
+  estado: estado_usuario;
+  perfil: perfil_gestor | null;
 }
 
 /**
@@ -104,14 +125,23 @@ export class AuthService {
   /**
    * Autentica un usuario y devuelve su JWT.
    *
+   * Los gestores recién creados quedan en estado «pendiente_activacion» y
+   * reciben una contraseña temporal por correo. Cuando uno de ellos inicia
+   * sesión con esa contraseña, no se emite el JWT de acceso: se devuelve una
+   * respuesta que obliga a cambiar la contraseña en
+   * `POST /auth/gestor/primer-acceso`.
+   *
    * @param dto Correo y contraseña enviados por el cliente.
    * @throws UnauthorizedException (401) si el usuario no existe o la
    *   contraseña es incorrecta.
-   * @throws ForbiddenException (403) si la cuenta no está activa.
+   * @throws ForbiddenException (403) si la cuenta no está activa y no es un
+   *   gestor pendiente de primer acceso.
    * @throws HttpException (423) si la cuenta está bloqueada por intentos
    *   fallidos.
    */
-  async login(dto: LoginDto): Promise<LoginResponseDto> {
+  async login(
+    dto: LoginDto,
+  ): Promise<LoginResponseDto | LoginPrimerAccesoResponseDto> {
     const correo = dto.correo.trim().toLowerCase();
 
     const usuario = await this.prisma.usuarios.findUnique({
@@ -143,12 +173,17 @@ export class AuthService {
       throw this.errorBloqueado(bloqueo.minutos);
     }
 
-    if (usuario.estado !== 'activa') {
+    const esGestorPendiente =
+      usuario.rol === 'gestor' && usuario.estado === 'pendiente_activacion';
+
+    if (usuario.estado !== 'activa' && !esGestorPendiente) {
       throw new ForbiddenException(MENSAJES_ESTADO[usuario.estado]);
     }
 
     const coincide = usuario.password_hash
-      ? await argon2.verify(usuario.password_hash, dto.password).catch(() => false)
+      ? await argon2
+          .verify(usuario.password_hash, dto.password)
+          .catch(() => false)
       : false;
 
     if (!coincide) {
@@ -177,6 +212,160 @@ export class AuthService {
       usuario.rol === 'gestor'
         ? (usuario.gestores_gestores_usuario_idTousuarios?.perfil ?? null)
         : null;
+
+    if (esGestorPendiente) {
+      this.logger.log(
+        `Primer acceso pendiente: ${correo} (gestor ${perfil ?? 'sin perfil'})`,
+      );
+      return {
+        requiereCambioPassword: true,
+        correo: usuario.correo,
+        nombre: usuario.nombre,
+        perfil: perfil ?? 'revisor',
+        mensaje:
+          'Debes cambiar tu contraseña para activar la cuenta y acceder a ' +
+          'la plataforma.',
+      };
+    }
+
+    this.logger.log(`Inicio de sesión correcto: ${correo} (${usuario.rol})`);
+
+    return this.emitirSesion({
+      id: usuario.id,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      correo: usuario.correo,
+      rol: usuario.rol,
+      estado: usuario.estado,
+      perfil,
+    });
+  }
+
+  /**
+   * Completa el primer acceso de un gestor recién creado.
+   *
+   * Verifica la contraseña temporal asignada por el administrador y define la
+   * contraseña definitiva. Hasta que este cambio se completa, la cuenta
+   * permanece en «pendiente_activacion» y no puede usar el resto de la API.
+   *
+   * @param dto Correo, contraseña temporal y contraseña nueva confirmada.
+   * @throws UnauthorizedException si la cuenta no existe o la temporal es
+   *   incorrecta.
+   * @throws ForbiddenException si la cuenta no pertenece a un gestor o no
+   *   puede iniciar sesión.
+   * @throws ConflictException si la cuenta ya no está pendiente de primer
+   *   acceso.
+   */
+  async primerAccesoGestor(
+    dto: PrimerAccesoGestorDto,
+  ): Promise<LoginResponseDto> {
+    const correo = dto.correo.trim().toLowerCase();
+
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { correo },
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        correo: true,
+        password_hash: true,
+        rol: true,
+        estado: true,
+        gestores_gestores_usuario_idTousuarios: {
+          select: { perfil: true },
+        },
+      },
+    });
+
+    if (!usuario) {
+      await argon2.verify(HASH_DESCARTE, dto.passwordActual).catch(() => false);
+      throw new UnauthorizedException(CREDENCIALES_INVALIDAS);
+    }
+
+    const bloqueo = await this.estadoBloqueo(usuario.id);
+    if (bloqueo.bloqueado) {
+      throw this.errorBloqueado(bloqueo.minutos);
+    }
+
+    if (usuario.rol !== 'gestor') {
+      throw new ForbiddenException(
+        'La cuenta no corresponde a un gestor municipal',
+      );
+    }
+
+    const coincide = usuario.password_hash
+      ? await argon2
+          .verify(usuario.password_hash, dto.passwordActual)
+          .catch(() => false)
+      : false;
+
+    if (!coincide) {
+      const intento = await this.registrarIntentoFallido(usuario.id);
+      if (intento.bloqueado) {
+        this.logger.warn(
+          `Cuenta ${correo} bloqueada ${this.minutosBloqueo} min por ${this.maxIntentos} intentos fallidos`,
+        );
+        throw this.errorBloqueado(intento.minutos ?? this.minutosBloqueo);
+      }
+      throw new UnauthorizedException(CREDENCIALES_INVALIDAS);
+    }
+
+    if (usuario.estado !== 'pendiente_activacion') {
+      if (usuario.estado === 'activa') {
+        throw new ConflictException(
+          'La cuenta ya está activa. Inicia sesión con tu contraseña actual.',
+        );
+      }
+      throw new ForbiddenException(MENSAJES_ESTADO[usuario.estado]);
+    }
+
+    // Se calcula antes de abrir la transacción para mantenerla corta.
+    const passwordHash = await argon2.hash(dto.password, OPCIONES_ARGON2);
+    const perfil =
+      usuario.gestores_gestores_usuario_idTousuarios?.perfil ?? null;
+
+    await this.prisma.$transaction(async (tx) => {
+      // Auditoría: el gestor que cambia su propia contraseña es el actor.
+      await fijarActorAuditoria(tx, usuario.id);
+      await tx.usuarios.update({
+        where: { id: usuario.id },
+        data: {
+          password_hash: passwordHash,
+          estado: 'activa',
+          intentos_fallidos: 0,
+          bloqueado_hasta: null,
+        },
+      });
+      await tx.notificaciones.create({
+        data: {
+          usuario_id: usuario.id,
+          tipo: 'activacion',
+          asunto: 'Cuenta de gestor activada',
+          cuerpo:
+            'Tu cuenta de gestor municipal fue activada. Ya puedes usar la ' +
+            'plataforma con tu nueva contraseña.',
+          canal: 'app',
+        },
+      });
+    });
+
+    this.logger.log(`Primer acceso completado: ${correo} (gestor)`);
+
+    return this.emitirSesion({
+      id: usuario.id,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      correo: usuario.correo,
+      rol: usuario.rol,
+      estado: 'activa',
+      perfil,
+    });
+  }
+
+  /** Construye la respuesta de login con el JWT de acceso. */
+  private async emitirSesion(
+    usuario: UsuarioSesion,
+  ): Promise<LoginResponseDto> {
     const expiresIn =
       usuario.rol === 'gestor' ? this.expiracionGestor : this.expiracionNormal;
 
@@ -184,16 +373,13 @@ export class AuthService {
       sub: usuario.id.toString(),
       correo: usuario.correo,
       rol: usuario.rol,
-      ...(perfil ? { perfil } : {}),
+      ...(usuario.perfil ? { perfil: usuario.perfil } : {}),
     };
 
-    const accessToken = await this.jwt.signAsync(payload, {
-      expiresIn,
-    });
-
-    this.logger.log(`Inicio de sesión correcto: ${correo} (${usuario.rol})`);
+    const accessToken = await this.jwt.signAsync(payload, { expiresIn });
 
     return {
+      requiereCambioPassword: false,
       accessToken,
       tokenType: 'Bearer',
       expiresIn,
@@ -203,7 +389,7 @@ export class AuthService {
         apellido: usuario.apellido ?? undefined,
         correo: usuario.correo,
         rol: usuario.rol,
-        perfil,
+        perfil: usuario.perfil,
         estado: usuario.estado,
       },
     };
@@ -250,9 +436,7 @@ export class AuthService {
    * @param id Identificador del usuario (BIGINT).
    * @returns Si quedó bloqueada y los minutos restantes.
    */
-  private async registrarIntentoFallido(
-    id: bigint,
-  ): Promise<ResultadoIntento> {
+  private async registrarIntentoFallido(id: bigint): Promise<ResultadoIntento> {
     const filas = await this.prisma.$queryRaw<ResultadoIntento[]>`
       UPDATE usuarios
          SET intentos_fallidos = CASE

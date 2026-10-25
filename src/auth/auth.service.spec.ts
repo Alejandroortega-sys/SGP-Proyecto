@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   HttpException,
   UnauthorizedException,
@@ -10,6 +11,10 @@ import { Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';
 import type { LoginDto } from './dto/login.dto';
+import {
+  LoginPrimerAccesoResponseDto,
+  LoginResponseDto,
+} from './dto/login-response.dto';
 
 jest.mock('argon2', () => ({
   argon2id: 'argon2id',
@@ -19,6 +24,7 @@ jest.mock('argon2', () => ({
 
 interface PrismaMock {
   usuarios: { findUnique: jest.Mock; update: jest.Mock };
+  notificaciones: { create: jest.Mock };
   $queryRaw: jest.Mock;
   $executeRaw: jest.Mock;
   $transaction: jest.Mock;
@@ -27,6 +33,7 @@ interface PrismaMock {
 function crearPrismaMock(): PrismaMock {
   const prisma: PrismaMock = {
     usuarios: { findUnique: jest.fn(), update: jest.fn() },
+    notificaciones: { create: jest.fn().mockResolvedValue(undefined) },
     // $queryRaw se usa como template tag: (strings, ...valores).
     $queryRaw: jest.fn(),
     // fijarActorAuditoria usa $executeRaw dentro de la transacción del login.
@@ -94,6 +101,16 @@ async function statusDe(promesa: Promise<unknown>): Promise<number> {
   throw new Error('La promesa no lanzó ninguna excepción');
 }
 
+/** Extrae la respuesta con JWT de un login que no es de primer acceso. */
+function sesionDe(
+  resultado: LoginResponseDto | LoginPrimerAccesoResponseDto,
+): LoginResponseDto {
+  if (resultado.requiereCambioPassword) {
+    throw new Error('Se esperaba una sesión con accessToken');
+  }
+  return resultado;
+}
+
 describe('AuthService', () => {
   let prisma: PrismaMock;
   let jwt: { signAsync: jest.Mock };
@@ -117,6 +134,8 @@ describe('AuthService', () => {
       crearConfig(),
     );
     (argon2.verify as jest.Mock).mockReset();
+    (argon2.hash as jest.Mock).mockReset();
+    (argon2.hash as jest.Mock).mockResolvedValue('hash-nuevo');
     // Por defecto la cuenta no está bloqueada.
     prisma.$queryRaw.mockResolvedValue([{ bloqueado: false, minutos: 0 }]);
   });
@@ -126,7 +145,7 @@ describe('AuthService', () => {
       prisma.usuarios.findUnique.mockResolvedValue(USUARIO_COMERCIANTE);
       (argon2.verify as jest.Mock).mockResolvedValue(true);
 
-      const resultado = await service.login(DTO);
+      const resultado = sesionDe(await service.login(DTO));
 
       // El correo se normaliza antes de buscar.
       expect(prisma.usuarios.findUnique).toHaveBeenCalledWith(
@@ -134,6 +153,7 @@ describe('AuthService', () => {
           where: { correo: 'maria.gomez@gmail.com' },
         }),
       );
+      expect(resultado.requiereCambioPassword).toBe(false);
       expect(resultado.accessToken).toBe('jwt.firmado');
       expect(resultado.tokenType).toBe('Bearer');
       expect(resultado.expiresIn).toBe(28_800);
@@ -160,10 +180,12 @@ describe('AuthService', () => {
       prisma.usuarios.findUnique.mockResolvedValue(USUARIO_GESTOR);
       (argon2.verify as jest.Mock).mockResolvedValue(true);
 
-      const resultado = await service.login({
-        correo: 'admin@tulua.gov.co',
-        password: 'Admin1234',
-      });
+      const resultado = sesionDe(
+        await service.login({
+          correo: 'admin@tulua.gov.co',
+          password: 'Admin1234',
+        }),
+      );
 
       expect(resultado.expiresIn).toBe(1_800);
       expect(resultado.usuario.perfil).toBe('administrador');
@@ -279,7 +301,7 @@ describe('AuthService', () => {
         { bloqueado: false, minutos: 0 },
       ]);
 
-      const resultado = await service.login(DTO);
+      const resultado = sesionDe(await service.login(DTO));
 
       expect(resultado.accessToken).toBe('jwt.firmado');
       expect(prisma.usuarios.update).toHaveBeenCalled();
@@ -322,6 +344,122 @@ describe('AuthService', () => {
     });
   });
 
+  describe('primer acceso de gestor', () => {
+    it('devuelve el reto de cambio de contraseña sin emitir JWT', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue({
+        ...USUARIO_GESTOR,
+        estado: 'pendiente_activacion',
+      });
+      (argon2.verify as jest.Mock).mockResolvedValue(true);
+
+      const resultado = await service.login({
+        correo: 'admin@tulua.gov.co',
+        password: 'Temporal123',
+      });
+
+      expect(resultado).toEqual({
+        requiereCambioPassword: true,
+        correo: 'admin@tulua.gov.co',
+        nombre: 'Laura',
+        perfil: 'administrador',
+        mensaje:
+          'Debes cambiar tu contraseña para activar la cuenta y acceder a ' +
+          'la plataforma.',
+      });
+      expect(jwt.signAsync).not.toHaveBeenCalled();
+      expect(prisma.usuarios.update).toHaveBeenCalled();
+    });
+
+    it('completa el primer acceso, activa la cuenta y devuelve JWT', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue({
+        ...USUARIO_GESTOR,
+        estado: 'pendiente_activacion',
+      });
+      (argon2.verify as jest.Mock).mockResolvedValue(true);
+
+      const resultado = await service.primerAccesoGestor({
+        correo: 'admin@tulua.gov.co',
+        passwordActual: 'Temporal123',
+        password: 'NuevaClave456',
+        confirmarPassword: 'NuevaClave456',
+      });
+
+      expect(prisma.usuarios.update).toHaveBeenCalledWith({
+        where: { id: 1n },
+        data: {
+          password_hash: 'hash-nuevo',
+          estado: 'activa',
+          intentos_fallidos: 0,
+          bloqueado_hasta: null,
+        },
+      });
+      expect(prisma.notificaciones.create).toHaveBeenCalledTimes(1);
+      expect(resultado.accessToken).toBe('jwt.firmado');
+      expect(resultado.requiereCambioPassword).toBe(false);
+      expect(resultado.usuario.estado).toBe('activa');
+      expect(jwt.signAsync).toHaveBeenCalledWith(
+        {
+          sub: '1',
+          correo: 'admin@tulua.gov.co',
+          rol: 'gestor',
+          perfil: 'administrador',
+        },
+        { expiresIn: 1_800 },
+      );
+    });
+
+    it('responde 401 si la contraseña temporal es incorrecta', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue({
+        ...USUARIO_GESTOR,
+        estado: 'pendiente_activacion',
+      });
+      (argon2.verify as jest.Mock).mockResolvedValue(false);
+      prisma.$queryRaw
+        .mockResolvedValueOnce([{ bloqueado: false, minutos: 0 }])
+        .mockResolvedValueOnce([{ bloqueado: false, minutos: null }]);
+
+      const status = await statusDe(
+        service.primerAccesoGestor({
+          correo: 'admin@tulua.gov.co',
+          passwordActual: 'Incorrecta123',
+          password: 'NuevaClave456',
+          confirmarPassword: 'NuevaClave456',
+        }),
+      );
+
+      expect(status).toBe(401);
+      expect(prisma.usuarios.update).not.toHaveBeenCalled();
+    });
+
+    it('responde 409 si la cuenta ya está activa', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue(USUARIO_GESTOR);
+      (argon2.verify as jest.Mock).mockResolvedValue(true);
+
+      await expect(
+        service.primerAccesoGestor({
+          correo: 'admin@tulua.gov.co',
+          passwordActual: 'Temporal123',
+          password: 'NuevaClave456',
+          confirmarPassword: 'NuevaClave456',
+        }),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('responde 403 si la cuenta no es de gestor', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue(USUARIO_COMERCIANTE);
+      (argon2.verify as jest.Mock).mockResolvedValue(true);
+
+      await expect(
+        service.primerAccesoGestor({
+          correo: 'maria.gomez@gmail.com',
+          passwordActual: 'Comerciante123',
+          password: 'NuevaClave456',
+          confirmarPassword: 'NuevaClave456',
+        }),
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
   describe('configuración', () => {
     it('usa los valores por defecto si faltan las variables', async () => {
       const svc = new AuthService(
@@ -335,10 +473,12 @@ describe('AuthService', () => {
       prisma.usuarios.findUnique.mockResolvedValue(USUARIO_GESTOR);
       (argon2.verify as jest.Mock).mockResolvedValue(true);
 
-      const resultado = await svc.login({
-        correo: 'admin@tulua.gov.co',
-        password: 'Admin1234',
-      });
+      const resultado = sesionDe(
+        await svc.login({
+          correo: 'admin@tulua.gov.co',
+          password: 'Admin1234',
+        }),
+      );
 
       // Valores por defecto documentados: 8 h y 30 min.
       expect(resultado.expiresIn).toBe(1_800);

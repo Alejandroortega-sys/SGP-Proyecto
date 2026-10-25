@@ -1,7 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Controller, Get, INestApplication, NotFoundException, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  INestApplication,
+  NotFoundException,
+  Post,
+} from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { Public } from '../src/auth/decorators/public.decorator';
 import { PrismaService } from '../src/prisma/prisma.service';
 // Aplica el parche de serialización de BigInt (main.ts no se ejecuta en tests)
 import '../src/common/bigint-serialization';
@@ -11,6 +18,7 @@ import '../src/common/bigint-serialization';
  * PostgreSQL contra la base de datos sembrada, para validar de punta a punta
  * la traducción del filtro global PrismaExceptionFilter.
  */
+@Public()
 @Controller('db-errors')
 class DbErrorsTestController {
   constructor(private readonly prisma: PrismaService) {}
@@ -19,7 +27,11 @@ class DbErrorsTestController {
   async usuarioDuplicado() {
     // admin@tulua.gov.co existe en el seed → unique_violation (usuarios_correo_key)
     return this.prisma.usuarios.create({
-      data: { rol: 'gestor', nombre: 'Duplicado', correo: 'admin@tulua.gov.co' },
+      data: {
+        rol: 'gestor',
+        nombre: 'Duplicado',
+        correo: 'admin@tulua.gov.co',
+      },
     });
   }
 
@@ -27,7 +39,12 @@ class DbErrorsTestController {
   async fkInexistente() {
     // actor_id 999999 no existe en usuarios → foreign_key_violation
     return this.prisma.auditoria.create({
-      data: { tabla: 'test', registro_id: 1n, accion: 'INSERT', actor_id: 999999n },
+      data: {
+        tabla: 'test',
+        registro_id: 1n,
+        accion: 'INSERT',
+        actor_id: 999999n,
+      },
     });
   }
 
