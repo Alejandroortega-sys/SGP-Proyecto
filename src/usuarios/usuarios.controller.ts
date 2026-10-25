@@ -3,22 +3,36 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiServiceUnavailableResponse,
   ApiTags,
   ApiTooManyRequestsResponse,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UsuarioActual } from '../auth/decorators/usuario-actual.decorator';
+import type { UsuarioAutenticado } from '../auth/interfaces/usuario-autenticado.interface';
+import { parseIdBigint } from '../common/parse-id';
 import { Public } from '../auth/decorators/public.decorator';
 import { ActivarCuentaDto } from './dto/activar-cuenta.dto';
+import {
+  ActualizarComercianteGestorDto,
+  ComercianteActualizadoDto,
+} from './dto/actualizar-comerciante-gestor.dto';
 import { ComercianteResponseDto, MensajeResponseDto } from './dto/comerciante-response.dto';
 import { CrearComercianteDto } from './dto/crear-comerciante.dto';
 import { ReenviarCodigoDto } from './dto/reenviar-codigo.dto';
@@ -204,5 +218,59 @@ export class UsuariosController {
     @Body() dto: RestablecerPasswordDto,
   ): Promise<MensajeResponseDto> {
     return this.usuarios.restablecerPassword(dto);
+  }
+
+  /**
+   * Corrige los campos sensibles del perfil de un comerciante (documento,
+   * tipo de documento, actividad comercial y categoría). Los demás datos los
+   * actualiza el propio comerciante desde `PATCH /perfil`. El cambio queda
+   * registrado en la tabla `auditoria` con el gestor como actor.
+   */
+  @ApiOperation({
+    summary: 'Corregir datos sensibles de un comerciante (gestor)',
+    description:
+      'Acceso exclusivo del rol «gestor» (perfiles revisor y ' +
+      'administrador). Corrige los campos que el comerciante no puede tocar ' +
+      'desde su perfil (HU-04): documento (único en el sistema), tipo de ' +
+      'documento, actividad comercial y categoría. Debe enviarse al menos un ' +
+      'campo. El cambio se audita en la base de datos con el gestor como ' +
+      'actor: el trigger de `usuarios` cubre documento y tipo, y la ' +
+      'aplicación registra en `auditoria` los cambios de `comerciantes`.',
+  })
+  @ApiOkResponse({
+    type: ComercianteActualizadoDto,
+    description: 'Datos del comerciante corregidos y auditados',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'El identificador no es numérico, el cuerpo no trae campos válidos o ' +
+      'una propiedad no está permitida',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Falta el token de acceso o es inválido/expirado',
+  })
+  @ApiForbiddenResponse({
+    description: 'El rol del usuario no es gestor',
+  })
+  @ApiNotFoundResponse({
+    description: 'El usuario no existe o no es comerciante',
+  })
+  @ApiConflictResponse({
+    description: 'El documento ya está registrado en otra cuenta',
+  })
+  @ApiBearerAuth()
+  @Roles('gestor')
+  @HttpCode(HttpStatus.OK)
+  @Patch(':id/comerciante')
+  actualizarComerciante(
+    @Param('id') id: string,
+    @Body() dto: ActualizarComercianteGestorDto,
+    @UsuarioActual() gestor: UsuarioAutenticado,
+  ): Promise<ComercianteActualizadoDto> {
+    return this.usuarios.actualizarComerciantePorGestor(
+      parseIdBigint(id),
+      dto,
+      parseIdBigint(gestor.id),
+    );
   }
 }

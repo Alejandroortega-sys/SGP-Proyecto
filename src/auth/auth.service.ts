@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { enteroPositivo } from '../common/entero-positivo';
+import { fijarActorAuditoria } from '../common/auditoria';
 import type { estado_usuario } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginResponseDto } from './dto/login-response.dto';
@@ -161,10 +162,15 @@ export class AuthService {
       throw new UnauthorizedException(CREDENCIALES_INVALIDAS);
     }
 
-    // Login correcto: se limpian los contadores de seguridad.
-    await this.prisma.usuarios.update({
-      where: { id: usuario.id },
-      data: { intentos_fallidos: 0, bloqueado_hasta: null },
+    // Login correcto: se limpian los contadores de seguridad. El cambio
+    // queda auditado con el propio usuario como actor (fijando
+    // app.actor_id dentro de la transacción para el trigger de usuarios).
+    await this.prisma.$transaction(async (tx) => {
+      await fijarActorAuditoria(tx, usuario.id);
+      await tx.usuarios.update({
+        where: { id: usuario.id },
+        data: { intentos_fallidos: 0, bloqueado_hasta: null },
+      });
     });
 
     const perfil =

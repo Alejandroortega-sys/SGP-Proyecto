@@ -1,9 +1,14 @@
-import { Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
 import { CorreoService } from '../correo/correo.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActivarCuentaDto } from './dto/activar-cuenta.dto';
+import { ActualizarComercianteGestorDto } from './dto/actualizar-comerciante-gestor.dto';
 import { CrearComercianteDto } from './dto/crear-comerciante.dto';
 import { ReenviarCodigoDto } from './dto/reenviar-codigo.dto';
 import { RestablecerPasswordDto } from './dto/restablecer-password.dto';
@@ -22,7 +27,12 @@ jest.mock('argon2', () => ({
 /** Prisma simulado: los métodos por tabla son jest.fn y $transaction pasa
  *  el propio mock como cliente de la transacción. */
 interface PrismaMock {
-  usuarios: { create: jest.Mock; findUnique: jest.Mock; update: jest.Mock };
+  usuarios: {
+    create: jest.Mock;
+    findUnique: jest.Mock;
+    update: jest.Mock;
+  };
+  comerciantes: { update: jest.Mock };
   tokens_seguridad: {
     create: jest.Mock;
     findFirst: jest.Mock;
@@ -30,12 +40,14 @@ interface PrismaMock {
     updateMany: jest.Mock;
   };
   notificaciones: { create: jest.Mock };
+  $executeRaw: jest.Mock;
   $transaction: jest.Mock;
 }
 
 function crearPrismaMock(): PrismaMock {
   const prisma: PrismaMock = {
     usuarios: { create: jest.fn(), findUnique: jest.fn(), update: jest.fn() },
+    comerciantes: { update: jest.fn() },
     tokens_seguridad: {
       create: jest.fn(),
       findFirst: jest.fn(),
@@ -43,6 +55,7 @@ function crearPrismaMock(): PrismaMock {
       updateMany: jest.fn(),
     },
     notificaciones: { create: jest.fn() },
+    $executeRaw: jest.fn(),
     $transaction: jest.fn(),
   };
   // Soporta las dos formas usadas por el servicio: callback y arreglo.
@@ -520,6 +533,130 @@ describe('UsuariosService', () => {
       ).rejects.toThrow('El código de recuperación es inválido o ha expirado');
       expect(prisma.tokens_seguridad.findFirst).not.toHaveBeenCalled();
       expect(prisma.usuarios.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('actualizarComerciantePorGestor', () => {
+    const ID_GESTOR = 1n;
+
+    function comercianteCon(overrides: Record<string, unknown> = {}) {
+      return {
+        id: 5n,
+        nombre: 'José',
+        apellido: 'Pérez',
+        tipo_documento: 'CC',
+        documento: '1029384756',
+        telefono: '3001122334',
+        correo: 'jose.perez@hotmail.com',
+        estado: 'activa',
+        rol: 'comerciante',
+        comerciantes: {
+          actividad_comercial: 'Venta de frutas y verduras',
+          categoria: 'formal',
+        },
+        ...overrides,
+      };
+    }
+
+    it('corrige documento y tipo dentro de la transacción auditada', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue(comercianteCon());
+      const dto: ActualizarComercianteGestorDto = {
+        documento: '7654321987',
+        tipoDocumento: 'CE',
+      };
+
+      const resultado = await service.actualizarComerciantePorGestor(
+        5n,
+        dto,
+        ID_GESTOR,
+      );
+
+      // El actor de auditoría se fija antes del UPDATE auditado por trigger.
+      expect(prisma.$executeRaw).toHaveBeenCalledTimes(1);
+      expect(prisma.usuarios.update).toHaveBeenCalledWith({
+        where: { id: 5n },
+        data: { documento: '7654321987', tipo_documento: 'CE' },
+      });
+      // Solo cambió usuarios: sin registro manual de comerciantes.
+      expect(prisma.comerciantes.update).not.toHaveBeenCalled();
+      expect(resultado.documento).toBe('7654321987');
+      expect(resultado.tipoDocumento).toBe('CE');
+      expect(resultado.mensaje).toContain('auditoría');
+    });
+
+    it('corrige actividad y categoría, y las audita manualmente', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue(comercianteCon());
+      prisma.comerciantes.update.mockResolvedValue({
+        usuario_id: 5n,
+        actividad_comercial: 'Venta de artesanías',
+        categoria: 'informal',
+      });
+      const dto: ActualizarComercianteGestorDto = {
+        actividadComercial: 'Venta de artesanías',
+        categoria: 'informal',
+      };
+
+      const resultado = await service.actualizarComerciantePorGestor(
+        5n,
+        dto,
+        ID_GESTOR,
+      );
+
+      expect(prisma.usuarios.update).not.toHaveBeenCalled();
+      expect(prisma.comerciantes.update).toHaveBeenCalledWith({
+        where: { usuario_id: 5n },
+        data: {
+          actividad_comercial: 'Venta de artesanías',
+          categoria: 'informal',
+        },
+      });
+      // `comerciantes` no tiene trigger: la app inserta la auditoría con el
+      // valor anterior, el nuevo y el gestor como actor. El primer
+      // $executeRaw fija app.actor_id y el segundo es el INSERT manual.
+      expect(prisma.$executeRaw).toHaveBeenCalledTimes(2);
+      const [, ...valores] = prisma.$executeRaw.mock.calls[1];
+      expect(valores[0]).toBe(5n);
+      expect(valores[3]).toBe(ID_GESTOR);
+      expect(JSON.parse(valores[1])).toEqual({
+        usuario_id: '5',
+        actividad_comercial: 'Venta de frutas y verduras',
+        categoria: 'formal',
+      });
+      expect(JSON.parse(valores[2])).toEqual({
+        usuario_id: '5',
+        actividad_comercial: 'Venta de artesanías',
+        categoria: 'informal',
+      });
+      expect(resultado.actividadComercial).toBe('Venta de artesanías');
+      expect(resultado.categoria).toBe('informal');
+    });
+
+    it('responde 404 si el usuario no existe', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.actualizarComerciantePorGestor(99n, { documento: '7654321987' }, ID_GESTOR),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('responde 404 si el usuario no es comerciante', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue(
+        comercianteCon({ rol: 'gestor', comerciantes: null }),
+      );
+
+      await expect(
+        service.actualizarComerciantePorGestor(5n, { documento: '7654321987' }, ID_GESTOR),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('responde 400 si el cuerpo no trae ningún campo', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue(comercianteCon());
+
+      await expect(
+        service.actualizarComerciantePorGestor(5n, {}, ID_GESTOR),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.usuarios.update).not.toHaveBeenCalled();
+      expect(prisma.comerciantes.update).not.toHaveBeenCalled();
     });
   });
 });

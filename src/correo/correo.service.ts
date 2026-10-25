@@ -179,4 +179,46 @@ export class CorreoService {
         `(vigente ${expiraEnMinutos} minutos)`,
     );
   }
+
+  /**
+   * Envía el aviso de que la contraseña fue cambiada desde el perfil (HU-04).
+   *
+   * No incluye la nueva contraseña ni datos sensibles: solo informa del
+   * cambio para que el titular pueda actuar si no lo solicitó.
+   *
+   * @param destino Correo de la cuenta cuyo password cambió.
+   * @param nombre Nombre del usuario (para personalizar el mensaje).
+   * @throws Error si no hay SMTP en producción o si el envío falla.
+   */
+  async enviarAvisoCambioPassword(
+    destino: string,
+    nombre: string,
+  ): Promise<void> {
+    const asunto = 'Tu contraseña de SGP Tuluá fue cambiada';
+    const texto =
+      `Hola ${nombre},\n\n` +
+      `Te confirmamos que la contraseña de tu cuenta fue actualizada desde ` +
+      `tu perfil en la plataforma SGP Tuluá.\n\n` +
+      `Si no fuiste tú quien hizo el cambio, comunícate de inmediato con la ` +
+      `Secretaría de Gobierno y usa el enlace de recuperación de contraseña ` +
+      `para restablecerla.\n\n` +
+      `Secretaría de Gobierno — Municipio de Tuluá`;
+    const html =
+      `<p>Hola <strong>${nombre}</strong>,</p>` +
+      `<p>Te confirmamos que la contraseña de tu cuenta fue actualizada ` +
+      `desde tu perfil en la plataforma SGP Tuluá.</p>` +
+      `<p>Si no fuiste tú quien hizo el cambio, comunícate de inmediato con ` +
+      `la Secretaría de Gobierno y usa el enlace de recuperación de ` +
+      `contraseña para restablecerla.</p>` +
+      `<p>Secretaría de Gobierno — Municipio de Tuluá</p>`;
+
+    await this.enviar(
+      destino,
+      asunto,
+      texto,
+      html,
+      `SMTP no configurado: aviso de cambio de contraseña de ${destino} ` +
+        '(el cambio ya quedó aplicado; esto es solo el aviso por correo)',
+    );
+  }
 }

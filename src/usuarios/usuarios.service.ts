@@ -4,15 +4,23 @@ import {
   ConflictException,
   Injectable,
   Logger,
+  NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
 import { enteroPositivo } from '../common/entero-positivo';
+import { fijarActorAuditoria } from '../common/auditoria';
+import { OPCIONES_ARGON2 } from '../common/opciones-argon2';
 import { CorreoService } from '../correo/correo.service';
+import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ComercianteResponseDto, MensajeResponseDto } from './dto/comerciante-response.dto';
 import { ActivarCuentaDto } from './dto/activar-cuenta.dto';
+import {
+  ActualizarComercianteGestorDto,
+  ComercianteActualizadoDto,
+} from './dto/actualizar-comerciante-gestor.dto';
 import { CrearComercianteDto } from './dto/crear-comerciante.dto';
 import { ReenviarCodigoDto } from './dto/reenviar-codigo.dto';
 import { RestablecerPasswordDto } from './dto/restablecer-password.dto';
@@ -42,16 +50,9 @@ const MENSAJE_RECUPERACION =
 const CODIGO_RECUPERACION_INVALIDO =
   'El código de recuperación es inválido o ha expirado. Solicita uno nuevo.';
 
-/** Parámetros argon2id (mínimo recomendado por OWASP para web). */
-const OPCIONES_ARGON2: argon2.HashOptions = {
-  type: argon2.argon2id,
-  memoryCost: 19456, // 19 MiB
-  timeCost: 2,
-  parallelism: 1,
-};
-
 /**
- * Lógica del registro y activación de comerciantes (HU-01).
+ * Lógica del registro y activación de comerciantes (HU-01) y de la corrección
+ * de sus datos sensibles por un gestor municipal (HU-04).
  *
  * - La contraseña se guarda hasheada con argon2 (argon2id).
  * - La cuenta nace en estado «Pendiente de activación».
@@ -491,6 +492,158 @@ export class UsuariosService {
       mensaje:
         'Contraseña actualizada correctamente. Ya puedes iniciar sesión con ' +
         'tu nueva contraseña.',
+    };
+  }
+
+  /**
+   * Corrige los campos sensibles del perfil de un comerciante (HU-04).
+   *
+   * Endpoint usado por el gestor municipal (revisor o administrador) para los
+   * datos que el propio comerciante no puede tocar: documento, tipo de
+   * documento, actividad comercial y categoría. Recibe el identificador del
+   * **gestor** autenticado para dejarlo como actor de la auditoría.
+   *
+   * **Auditoría** (todo dentro de una transacción):
+   * - `usuarios` (documento, tipo): el trigger `fn_auditoria` registra la
+   *   fila antes/después con el gestor como actor (`app.actor_id`).
+   * - `comerciantes` (actividad, categoría): esa tabla no tiene trigger, así
+   *   que el registro en `auditoria` lo escribe aquí la aplicación con el
+   *   valor anterior y el nuevo.
+   *
+   * @param idComerciante Identificador del comerciante a corregir.
+   * @param dto Campos a corregir (al menos uno).
+   * @param idGestor Identificador del gestor autenticado (actor de auditoría).
+   * @throws NotFoundException si el usuario no existe o no es comerciante.
+   * @throws BadRequestException si el cuerpo no trae ningún campo.
+   */
+  async actualizarComerciantePorGestor(
+    idComerciante: bigint,
+    dto: ActualizarComercianteGestorDto,
+    idGestor: bigint,
+  ): Promise<ComercianteActualizadoDto> {
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { id: idComerciante },
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        tipo_documento: true,
+        documento: true,
+        telefono: true,
+        correo: true,
+        estado: true,
+        rol: true,
+        comerciantes: {
+          select: { actividad_comercial: true, categoria: true },
+        },
+      },
+    });
+
+    if (!usuario || usuario.rol !== 'comerciante') {
+      throw new NotFoundException(
+        'El comerciante solicitado no existe',
+      );
+    }
+
+    const datosUsuario: Prisma.usuariosUncheckedUpdateInput = {};
+    if (dto.documento !== undefined) {
+      datosUsuario.documento = dto.documento.trim();
+    }
+    if (dto.tipoDocumento !== undefined) {
+      datosUsuario.tipo_documento = dto.tipoDocumento;
+    }
+
+    const datosComerciante: Prisma.comerciantesUncheckedUpdateInput = {};
+    if (dto.actividadComercial !== undefined) {
+      datosComerciante.actividad_comercial = dto.actividadComercial.trim();
+    }
+    if (dto.categoria !== undefined) {
+      datosComerciante.categoria = dto.categoria;
+    }
+
+    const cambioUsuario = Object.keys(datosUsuario).length > 0;
+    const cambioComerciante = Object.keys(datosComerciante).length > 0;
+    if (!cambioUsuario && !cambioComerciante) {
+      throw new BadRequestException(
+        'Debe enviar al menos un campo para corregir (documento, ' +
+          'tipoDocumento, actividadComercial o categoria).',
+      );
+    }
+
+    const actualizado = await this.prisma.$transaction(async (tx) => {
+      // Auditoría: el actor de este cambio es el gestor, no el comerciante.
+      await fijarActorAuditoria(tx, idGestor);
+
+      if (cambioUsuario) {
+        // El trigger fn_auditoria de usuarios deja el registro en auditoria.
+        await tx.usuarios.update({
+          where: { id: idComerciante },
+          data: datosUsuario,
+        });
+      }
+
+      let perfilComercial = usuario.comerciantes!;
+      if (cambioComerciante) {
+        const anterior = perfilComercial;
+        perfilComercial = await tx.comerciantes.update({
+          where: { usuario_id: idComerciante },
+          data: datosComerciante,
+        });
+        // `comerciantes` no tiene trigger de auditoría: se registra a mano
+        // con el valor anterior y el nuevo, igual que haría fn_auditoria.
+        // Se usa SQL crudo para que `creado_en` lo genere `now()` de
+        // PostgreSQL: el `@default(now())` de Prisma lo calcula el cliente y
+        // con el driver adapter aplica el desfase de la zona local.
+        const valorAnterior = {
+          usuario_id: idComerciante.toString(),
+          actividad_comercial: anterior.actividad_comercial,
+          categoria: anterior.categoria,
+        };
+        const valorNuevo = {
+          usuario_id: idComerciante.toString(),
+          actividad_comercial: perfilComercial.actividad_comercial,
+          categoria: perfilComercial.categoria,
+        };
+        await tx.$executeRaw`
+          INSERT INTO auditoria
+            (tabla, registro_id, accion, valor_anterior, valor_nuevo, actor_id)
+          VALUES (
+            'comerciantes',
+            ${idComerciante},
+            'update',
+            ${JSON.stringify(valorAnterior)}::jsonb,
+            ${JSON.stringify(valorNuevo)}::jsonb,
+            ${idGestor}
+          )
+        `;
+      }
+
+      return {
+        tipo_documento: cambioUsuario
+          ? ((datosUsuario.tipo_documento as string | undefined) ??
+            usuario.tipo_documento)
+          : usuario.tipo_documento,
+        documento: cambioUsuario
+          ? ((datosUsuario.documento as string | undefined) ?? usuario.documento)
+          : usuario.documento,
+        perfilComercial,
+      };
+    });
+
+    return {
+      id: usuario.id.toString(),
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      tipoDocumento: actualizado.tipo_documento,
+      documento: actualizado.documento,
+      telefono: usuario.telefono,
+      correo: usuario.correo,
+      estado: usuario.estado,
+      actividadComercial: actualizado.perfilComercial.actividad_comercial,
+      categoria: actualizado.perfilComercial.categoria,
+      mensaje:
+        'Datos del comerciante actualizados. El cambio quedó registrado en ' +
+        'la auditoría.',
     };
   }
 

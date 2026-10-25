@@ -20,14 +20,23 @@ jest.mock('argon2', () => ({
 interface PrismaMock {
   usuarios: { findUnique: jest.Mock; update: jest.Mock };
   $queryRaw: jest.Mock;
+  $executeRaw: jest.Mock;
+  $transaction: jest.Mock;
 }
 
 function crearPrismaMock(): PrismaMock {
-  return {
+  const prisma: PrismaMock = {
     usuarios: { findUnique: jest.fn(), update: jest.fn() },
     // $queryRaw se usa como template tag: (strings, ...valores).
     $queryRaw: jest.fn(),
+    // fijarActorAuditoria usa $executeRaw dentro de la transacción del login.
+    $executeRaw: jest.fn(),
+    $transaction: jest.fn(),
   };
+  prisma.$transaction.mockImplementation(async (operacion: unknown) =>
+    (operacion as (tx: PrismaMock) => unknown)(prisma),
+  );
+  return prisma;
 }
 
 function crearConfig(valores: Record<string, string> = {}): ConfigService {
@@ -179,6 +188,9 @@ describe('AuthService', () => {
 
       await service.login(DTO);
 
+      // La limpieza ocurre en una transacción con el actor de auditoría
+      // fijado: el trigger de usuarios deja el registro en `auditoria`.
+      expect(prisma.$executeRaw).toHaveBeenCalled();
       expect(prisma.usuarios.update).toHaveBeenCalledWith({
         where: { id: 3n },
         data: { intentos_fallidos: 0, bloqueado_hasta: null },

@@ -6,6 +6,8 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { PanelModule } from './panel/panel.module';
+import { PerfilModule } from './perfil/perfil.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { CorreoModule } from './correo/correo.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
@@ -21,6 +23,8 @@ import {
     CorreoModule,
     AuthModule,
     UsuariosModule,
+    PanelModule,
+    PerfilModule,
   ],
   controllers: [AppController],
   providers: [
