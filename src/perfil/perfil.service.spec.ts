@@ -55,12 +55,14 @@ function filaPerfil(overrides: Record<string, unknown> = {}) {
     documento: '1029384756',
     telefono: '3001122334',
     correo: 'jose.perez@hotmail.com',
+    rol: 'comerciante',
     estado: 'activa',
     creado_en: new Date('2026-09-15T14:30:00.000Z'),
     comerciantes: {
       actividad_comercial: 'Venta de frutas y verduras',
       categoria: 'formal',
     },
+    organizadores_organizadores_usuario_idTousuarios: null,
     ...overrides,
   };
 }
@@ -107,6 +109,58 @@ describe('PerfilService', () => {
       );
 
       await expect(service.ver('5')).rejects.toThrow(NotFoundException);
+    });
+
+    it('devuelve el perfil del organizador con su organización', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue(
+        filaPerfil({
+          id: 7n,
+          nombre: 'Luis',
+          apellido: 'Álvarez',
+          tipo_documento: 'CC',
+          documento: '801234567',
+          telefono: '3105551234',
+          correo: 'luis.alvarez@agrovalle.org',
+          rol: 'organizador',
+          comerciantes: null,
+          organizadores_organizadores_usuario_idTousuarios: {
+            nombre_organizacion: 'Fundación Agroecológica del Valle',
+            nit: '900123456-1',
+            representante: 'Luis Álvarez',
+            tipo_feria: 'Feria agroecológica',
+            contacto: '3105551234',
+            estado: 'pendiente_validacion',
+            validado_en: null,
+          },
+        }),
+      );
+
+      const perfil = await service.ver('7');
+
+      expect(perfil.actividadComercial).toBeUndefined();
+      expect(perfil.organizacion).toEqual({
+        nombreOrganizacion: 'Fundación Agroecológica del Valle',
+        nit: '900123456-1',
+        representante: 'Luis Álvarez',
+        tipoFeria: 'Feria agroecológica',
+        contacto: '3105551234',
+        estado: 'pendiente_validacion',
+        validadoEn: null,
+      });
+    });
+
+    it('devuelve organización null si el organizador aún no la registra', async () => {
+      prisma.usuarios.findUnique.mockResolvedValue(
+        filaPerfil({
+          rol: 'organizador',
+          comerciantes: null,
+          organizadores_organizadores_usuario_idTousuarios: null,
+        }),
+      );
+
+      const perfil = await service.ver('7');
+
+      expect(perfil.organizacion).toBeNull();
     });
 
     it('responde 400 si el identificador no es numérico', async () => {
@@ -184,7 +238,10 @@ describe('PerfilService', () => {
         'hash-viejo',
         'Comerciante123',
       );
-      expect(argon2.hash).toHaveBeenCalledWith('NuevaClave456', expect.anything());
+      expect(argon2.hash).toHaveBeenCalledWith(
+        'NuevaClave456',
+        expect.anything(),
+      );
       // Auditoría + update + notificación dentro de la transacción.
       expect(prisma.$executeRaw).toHaveBeenCalled();
       expect(prisma.usuarios.update).toHaveBeenCalledWith({

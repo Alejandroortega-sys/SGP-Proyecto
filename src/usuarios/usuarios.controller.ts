@@ -33,8 +33,13 @@ import {
   ActualizarComercianteGestorDto,
   ComercianteActualizadoDto,
 } from './dto/actualizar-comerciante-gestor.dto';
-import { ComercianteResponseDto, MensajeResponseDto } from './dto/comerciante-response.dto';
+import {
+  ComercianteResponseDto,
+  MensajeResponseDto,
+} from './dto/comerciante-response.dto';
 import { CrearComercianteDto } from './dto/crear-comerciante.dto';
+import { CrearOrganizadorDto } from './dto/crear-organizador.dto';
+import { CuentaResponseDto } from './dto/cuenta-response.dto';
 import { ReenviarCodigoDto } from './dto/reenviar-codigo.dto';
 import { RestablecerPasswordDto } from './dto/restablecer-password.dto';
 import { SolicitarRecuperacionDto } from './dto/solicitar-recuperacion.dto';
@@ -87,8 +92,44 @@ export class UsuariosController {
   }
 
   /**
-   * Activa la cuenta del comerciante con el código numérico de 6 dígitos
-   * que recibió por correo.
+   * Registra la cuenta personal de un organizador de feria. La organización
+   * se crea después de activar la cuenta.
+   */
+  @ApiOperation({
+    summary: 'Registrar organizador',
+    description:
+      'Crea la cuenta personal de un organizador en estado ' +
+      '«pendiente_activacion» y envía un código de activación al correo. ' +
+      'La organización se registra después de activar la cuenta, con ' +
+      '`POST /organizadores/mi-organizacion`. La contraseña se almacena ' +
+      'hasheada con argon2 (argon2id).',
+  })
+  @ApiCreatedResponse({
+    type: CuentaResponseDto,
+    description:
+      'Cuenta de organizador creada en estado «pendiente_activacion»',
+  })
+  @ApiBadRequestResponse({
+    description: 'Los datos enviados no cumplen las validaciones del DTO',
+  })
+  @ApiConflictResponse({
+    description: 'El correo o el documento ya están registrados',
+  })
+  @ApiServiceUnavailableResponse({
+    description:
+      'La cuenta fue creada, pero no se pudo enviar el código de activación',
+  })
+  @Public()
+  @Post('organizadores')
+  crearOrganizador(
+    @Body() dto: CrearOrganizadorDto,
+  ): Promise<CuentaResponseDto> {
+    return this.usuarios.crearOrganizador(dto);
+  }
+
+  /**
+   * Activa la cuenta del comerciante u organizador con el código numérico de
+   * 6 dígitos que recibió por correo.
    */
   @ApiOperation({
     summary: 'Activar cuenta con el código recibido por correo',
@@ -97,7 +138,7 @@ export class UsuariosController {
       'Si es correcto y no ha expirado, la cuenta pasa a estado «activa».',
   })
   @ApiOkResponse({
-    type: ComercianteResponseDto,
+    type: CuentaResponseDto,
     description: 'Cuenta activada correctamente',
   })
   @ApiBadRequestResponse({
@@ -107,9 +148,7 @@ export class UsuariosController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('activacion')
-  activarCuenta(
-    @Body() dto: ActivarCuentaDto,
-  ): Promise<ComercianteResponseDto> {
+  activarCuenta(@Body() dto: ActivarCuentaDto): Promise<CuentaResponseDto> {
     return this.usuarios.activarCuenta(dto);
   }
 

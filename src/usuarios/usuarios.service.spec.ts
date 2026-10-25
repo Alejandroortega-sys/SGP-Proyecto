@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
 import { CorreoService } from '../correo/correo.service';
@@ -10,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ActivarCuentaDto } from './dto/activar-cuenta.dto';
 import { ActualizarComercianteGestorDto } from './dto/actualizar-comerciante-gestor.dto';
 import { CrearComercianteDto } from './dto/crear-comerciante.dto';
+import { CrearOrganizadorDto } from './dto/crear-organizador.dto';
 import { ReenviarCodigoDto } from './dto/reenviar-codigo.dto';
 import { RestablecerPasswordDto } from './dto/restablecer-password.dto';
 import { SolicitarRecuperacionDto } from './dto/solicitar-recuperacion.dto';
@@ -193,7 +190,8 @@ describe('UsuariosService', () => {
 
       await svc.crearComerciante(DTO_CREACION);
 
-      const { expira_en } = prisma.tokens_seguridad.create.mock.calls[0][0].data;
+      const { expira_en } =
+        prisma.tokens_seguridad.create.mock.calls[0][0].data;
       const minutos = (expira_en.getTime() - antes) / 60_000;
       expect(minutos).toBeGreaterThan(29);
       expect(minutos).toBeLessThanOrEqual(30);
@@ -207,6 +205,78 @@ describe('UsuariosService', () => {
         'La cuenta fue creada, pero no pudimos enviar el código',
       );
       // La cuenta y el token sí quedaron creados (el commit ya ocurrió).
+      expect(prisma.usuarios.create).toHaveBeenCalledTimes(1);
+      expect(prisma.tokens_seguridad.create).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('crearOrganizador', () => {
+    const DTO_ORGANIZADOR: CrearOrganizadorDto = {
+      nombre: 'Luis',
+      apellido: 'Álvarez',
+      tipoDocumento: 'CC',
+      documento: '801234567',
+      telefono: '3105551234',
+      correo: 'Luis.Alvarez@Agrovalle.org',
+      password: 'Organizador123',
+      confirmarPassword: 'Organizador123',
+    };
+
+    const ORGANIZADOR_CREADO = {
+      id: 7n,
+      nombre: 'Luis',
+      apellido: 'Álvarez',
+      correo: 'luis.alvarez@agrovalle.org',
+      rol: 'organizador',
+      estado: 'pendiente_activacion',
+    };
+
+    it('crea la cuenta con rol organizador y sin fila de organización', async () => {
+      prisma.usuarios.create.mockResolvedValue(ORGANIZADOR_CREADO);
+
+      const resultado = await service.crearOrganizador(DTO_ORGANIZADOR);
+
+      const { data } = prisma.usuarios.create.mock.calls[0][0];
+      expect(data.rol).toBe('organizador');
+      expect(data.correo).toBe('luis.alvarez@agrovalle.org');
+      expect(data.password_hash).toBe('hash-de:Organizador123');
+      expect(data.organizadores).toBeUndefined();
+
+      const codigoEnviado = correo.enviarCodigoActivacion.mock.calls[0][2];
+      expect(codigoEnviado).toMatch(/^\d{6}$/);
+      expect(prisma.tokens_seguridad.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          usuario_id: 7n,
+          tipo: 'activacion',
+          token_hash: `hash-de:${codigoEnviado}`,
+          expira_en: expect.any(Date),
+        }),
+      });
+      expect(prisma.notificaciones.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          usuario_id: 7n,
+          tipo: 'activacion',
+          canal: 'correo',
+        }),
+      });
+
+      expect(resultado).toMatchObject({
+        id: '7',
+        rol: 'organizador',
+        estado: 'pendiente_activacion',
+      });
+      expect(resultado.mensaje).toContain('organizador');
+      expect(JSON.stringify(resultado)).not.toContain('password');
+      expect(JSON.stringify(resultado)).not.toContain(codigoEnviado);
+    });
+
+    it('responde 503 si el correo de activación falla', async () => {
+      prisma.usuarios.create.mockResolvedValue(ORGANIZADOR_CREADO);
+      correo.enviarCodigoActivacion.mockRejectedValue(new Error('SMTP caído'));
+
+      await expect(service.crearOrganizador(DTO_ORGANIZADOR)).rejects.toThrow(
+        'La cuenta fue creada, pero no pudimos enviar el código',
+      );
       expect(prisma.usuarios.create).toHaveBeenCalledTimes(1);
       expect(prisma.tokens_seguridad.create).toHaveBeenCalledTimes(1);
     });
@@ -259,9 +329,9 @@ describe('UsuariosService', () => {
       });
       (argon2.verify as jest.Mock).mockResolvedValue(false);
 
-      await expect(
-        service.activarCuenta(DTO_ACTIVACION),
-      ).rejects.toThrow('El código de activación es inválido o ha expirado');
+      await expect(service.activarCuenta(DTO_ACTIVACION)).rejects.toThrow(
+        'El código de activación es inválido o ha expirado',
+      );
       expect(prisma.usuarios.update).not.toHaveBeenCalled();
     });
 
@@ -272,9 +342,9 @@ describe('UsuariosService', () => {
       });
       prisma.tokens_seguridad.findFirst.mockResolvedValue(null);
 
-      await expect(
-        service.activarCuenta(DTO_ACTIVACION),
-      ).rejects.toThrow('El código de activación es inválido o ha expirado');
+      await expect(service.activarCuenta(DTO_ACTIVACION)).rejects.toThrow(
+        'El código de activación es inválido o ha expirado',
+      );
     });
 
     it('responde 409 si la cuenta ya está activa', async () => {
@@ -283,18 +353,18 @@ describe('UsuariosService', () => {
         estado: 'activa',
       });
 
-      await expect(
-        service.activarCuenta(DTO_ACTIVACION),
-      ).rejects.toThrow('La cuenta ya está activa');
+      await expect(service.activarCuenta(DTO_ACTIVACION)).rejects.toThrow(
+        'La cuenta ya está activa',
+      );
       expect(prisma.tokens_seguridad.findFirst).not.toHaveBeenCalled();
     });
 
     it('responde con mensaje genérico si la cuenta no existe', async () => {
       prisma.usuarios.findUnique.mockResolvedValue(null);
 
-      await expect(
-        service.activarCuenta(DTO_ACTIVACION),
-      ).rejects.toThrow('El código de activación es inválido o ha expirado');
+      await expect(service.activarCuenta(DTO_ACTIVACION)).rejects.toThrow(
+        'El código de activación es inválido o ha expirado',
+      );
       expect(prisma.tokens_seguridad.findFirst).not.toHaveBeenCalled();
     });
   });
@@ -635,7 +705,11 @@ describe('UsuariosService', () => {
       prisma.usuarios.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.actualizarComerciantePorGestor(99n, { documento: '7654321987' }, ID_GESTOR),
+        service.actualizarComerciantePorGestor(
+          99n,
+          { documento: '7654321987' },
+          ID_GESTOR,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -645,7 +719,11 @@ describe('UsuariosService', () => {
       );
 
       await expect(
-        service.actualizarComerciantePorGestor(5n, { documento: '7654321987' }, ID_GESTOR),
+        service.actualizarComerciantePorGestor(
+          5n,
+          { documento: '7654321987' },
+          ID_GESTOR,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 

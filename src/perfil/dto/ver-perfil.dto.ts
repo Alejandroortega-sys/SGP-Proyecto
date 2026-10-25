@@ -1,10 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   categoria_comercio,
+  estado_organizacion,
   estado_usuario,
 } from '../../generated/prisma/client';
 
-/** Sección de datos personales del perfil del comerciante (HU-04). */
+/** Sección de datos personales del perfil (HU-04). */
 export class DatosPersonalesPerfilDto {
   /** Identificador de la cuenta (BIGINT como string). */
   @ApiProperty({ example: '5' })
@@ -57,19 +58,74 @@ export class SeguridadPerfilDto {
   creadoEn!: Date;
 }
 
+/** Organización de feria registrada por el organizador. */
+export class OrganizacionPerfilDto {
+  /** Nombre de la organización. */
+  @ApiProperty({ example: 'Fundación Agroecológica del Valle' })
+  nombreOrganizacion!: string;
+
+  /** NIT de la organización. */
+  @ApiProperty({ example: '900123456-1' })
+  nit!: string;
+
+  /** Representante legal. */
+  @ApiProperty({ example: 'Luis Álvarez' })
+  representante!: string;
+
+  /** Tipo de feria que organiza. */
+  @ApiProperty({ example: 'Feria agroecológica' })
+  tipoFeria!: string;
+
+  /** Datos de contacto. */
+  @ApiProperty({
+    example: '3105551234',
+    required: false,
+    nullable: true,
+  })
+  contacto?: string | null;
+
+  /** Estado de validación de la organización. */
+  @ApiProperty({
+    enum: ['pendiente_validacion', 'activa', 'suspendida'],
+    example: 'pendiente_validacion',
+  })
+  estado!: estado_organizacion;
+
+  /** Fecha en que el gestor validó la organización, si aplica. */
+  @ApiProperty({
+    example: '2026-09-20T10:00:00.000Z',
+    required: false,
+    nullable: true,
+  })
+  validadoEn?: Date | null;
+}
+
 /**
- * Respuesta de `GET /perfil` y `PATCH /perfil`: el perfil completo del
- * comerciante organizado en las tres secciones de HU-04 (datos personales,
- * actividad comercial y seguridad). Nunca incluye el hash de la contraseña.
+ * Respuesta de `GET /perfil` y `PATCH /perfil`.
+ *
+ * Para comerciantes incluye la sección `actividadComercial`; para
+ * organizadores incluye `organizacion` (o `null` si aún no la ha creado).
+ * Nunca incluye el hash de la contraseña.
  */
 export class PerfilResponseDto {
   /** Datos personales y de contacto. */
   @ApiProperty({ type: DatosPersonalesPerfilDto })
   datosPersonales!: DatosPersonalesPerfilDto;
 
-  /** Actividad comercial (solo lectura). */
-  @ApiProperty({ type: ActividadComercialPerfilDto })
-  actividadComercial!: ActividadComercialPerfilDto;
+  /** Actividad comercial (solo para comerciantes, solo lectura). */
+  @ApiProperty({
+    type: ActividadComercialPerfilDto,
+    required: false,
+  })
+  actividadComercial?: ActividadComercialPerfilDto;
+
+  /** Organización registrada (solo para organizadores). */
+  @ApiProperty({
+    type: OrganizacionPerfilDto,
+    required: false,
+    nullable: true,
+  })
+  organizacion?: OrganizacionPerfilDto | null;
 
   /** Datos de seguridad de la cuenta. */
   @ApiProperty({ type: SeguridadPerfilDto })

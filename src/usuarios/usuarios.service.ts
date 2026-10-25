@@ -15,13 +15,18 @@ import { OPCIONES_ARGON2 } from '../common/opciones-argon2';
 import { CorreoService } from '../correo/correo.service';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { ComercianteResponseDto, MensajeResponseDto } from './dto/comerciante-response.dto';
+import {
+  ComercianteResponseDto,
+  MensajeResponseDto,
+} from './dto/comerciante-response.dto';
+import { CuentaResponseDto } from './dto/cuenta-response.dto';
 import { ActivarCuentaDto } from './dto/activar-cuenta.dto';
 import {
   ActualizarComercianteGestorDto,
   ComercianteActualizadoDto,
 } from './dto/actualizar-comerciante-gestor.dto';
 import { CrearComercianteDto } from './dto/crear-comerciante.dto';
+import { CrearOrganizadorDto } from './dto/crear-organizador.dto';
 import { ReenviarCodigoDto } from './dto/reenviar-codigo.dto';
 import { RestablecerPasswordDto } from './dto/restablecer-password.dto';
 import { SolicitarRecuperacionDto } from './dto/solicitar-recuperacion.dto';
@@ -198,12 +203,112 @@ export class UsuariosService {
   }
 
   /**
+   * Registra la cuenta de un organizador de feria.
+   *
+   * Solo crea la cuenta personal (`usuarios`) y el token de activación. La
+   * organización se registra después de activar la cuenta, mediante
+   * `POST /organizadores/mi-organizacion`; por eso aquí no se crea ninguna
+   * fila en `organizadores`.
+   *
+   * La cuenta nace en estado «pendiente_activacion» (valor por defecto de la
+   * BD) y recibe el mismo código de 6 dígitos que un comerciante.
+   */
+  async crearOrganizador(dto: CrearOrganizadorDto): Promise<CuentaResponseDto> {
+    const correo = dto.correo.trim().toLowerCase();
+    const nombre = dto.nombre.trim();
+    const apellido = dto.apellido?.trim() || undefined;
+    const codigo = this.generarCodigo();
+
+    const [passwordHash, tokenHash] = await Promise.all([
+      argon2.hash(dto.password, OPCIONES_ARGON2),
+      argon2.hash(codigo, OPCIONES_ARGON2),
+    ]);
+    const expiraEn = new Date(Date.now() + this.ttlMinutos * 60_000);
+
+    const usuario = await this.prisma.$transaction(async (tx) => {
+      const creado = await tx.usuarios.create({
+        data: {
+          rol: 'organizador',
+          nombre,
+          apellido,
+          tipo_documento: dto.tipoDocumento,
+          documento: dto.documento.trim(),
+          telefono: dto.telefono.trim(),
+          correo,
+          password_hash: passwordHash,
+          // estado: la BD lo deja en «pendiente_activación» por defecto.
+        },
+        select: {
+          id: true,
+          nombre: true,
+          apellido: true,
+          correo: true,
+          rol: true,
+          estado: true,
+        },
+      });
+
+      await tx.tokens_seguridad.create({
+        data: {
+          usuario_id: creado.id,
+          tipo: 'activacion',
+          token_hash: tokenHash,
+          expira_en: expiraEn,
+        },
+      });
+
+      await tx.notificaciones.create({
+        data: {
+          usuario_id: creado.id,
+          tipo: 'activacion',
+          asunto: 'Active su cuenta',
+          cuerpo:
+            `Hola ${nombre}, ingresa el código de 6 dígitos que te enviamos ` +
+            'por correo para activar tu cuenta de organizador en SGP Tuluá.',
+          canal: 'correo',
+        },
+      });
+
+      return creado;
+    });
+
+    try {
+      await this.correo.enviarCodigoActivacion(
+        correo,
+        usuario.nombre,
+        codigo,
+        this.ttlMinutos,
+      );
+    } catch (error) {
+      this.logger.error(
+        `No se pudo enviar el código de activación a ${correo}: ${String(error)}`,
+      );
+      throw new ServiceUnavailableException(
+        'La cuenta fue creada, pero no pudimos enviar el código de ' +
+          'activación. Solicita uno nuevo con el endpoint de reenvío.',
+      );
+    }
+
+    return {
+      id: usuario.id.toString(),
+      nombre: usuario.nombre,
+      apellido: usuario.apellido ?? undefined,
+      correo: usuario.correo,
+      rol: usuario.rol,
+      estado: usuario.estado,
+      mensaje:
+        'Cuenta de organizador creada en estado «Pendiente de activación». ' +
+        'Revisa tu correo e ingresa el código de activación.',
+    };
+  }
+
+  /**
    * Activa la cuenta comparando el código recibido con el hash guardado.
    *
    * Si el código es correcto y no ha expirado: marca el token como usado,
    * pasa la cuenta a «activa» y registra la notificación.
    */
-  async activarCuenta(dto: ActivarCuentaDto): Promise<ComercianteResponseDto> {
+  async activarCuenta(dto: ActivarCuentaDto): Promise<CuentaResponseDto> {
     const correo = dto.correo.trim().toLowerCase();
 
     const usuario = await this.prisma.usuarios.findUnique({
@@ -540,9 +645,7 @@ export class UsuariosService {
     });
 
     if (!usuario || usuario.rol !== 'comerciante') {
-      throw new NotFoundException(
-        'El comerciante solicitado no existe',
-      );
+      throw new NotFoundException('El comerciante solicitado no existe');
     }
 
     const datosUsuario: Prisma.usuariosUncheckedUpdateInput = {};
@@ -624,7 +727,8 @@ export class UsuariosService {
             usuario.tipo_documento)
           : usuario.tipo_documento,
         documento: cambioUsuario
-          ? ((datosUsuario.documento as string | undefined) ?? usuario.documento)
+          ? ((datosUsuario.documento as string | undefined) ??
+            usuario.documento)
           : usuario.documento,
         perfilComercial,
       };
@@ -649,8 +753,6 @@ export class UsuariosService {
 
   /** Genera un código numérico aleatorio de 6 dígitos (criptoseguro). */
   private generarCodigo(): string {
-    return randomInt(0, 1_000_000)
-      .toString()
-      .padStart(6, '0');
+    return randomInt(0, 1_000_000).toString().padStart(6, '0');
   }
 }

@@ -18,33 +18,33 @@ import { PerfilResponseDto } from './dto/ver-perfil.dto';
 import { PerfilService } from './perfil.service';
 
 /**
- * Perfil del comerciante autenticado (HU-04).
+ * Perfil del usuario autenticado (HU-04).
  *
- * Exclusivo del rol «comerciante»: muestra sus datos en tres secciones
- * (datos personales, actividad comercial y seguridad) y permite actualizar
- * los datos de contacto. El documento, la actividad comercial y la categoría
- * solo los corrige un gestor municipal (HU-04), y el correo queda fijo hasta
- * que exista un flujo de verificación. Los guards globales aplican el JWT y
- * el rol; cada cambio queda auditado en la tabla `auditoria`.
+ * Disponible para comerciantes y organizadores. Muestra los datos personales,
+ * el perfil de negocio (actividad comercial u organización) y la seguridad de
+ * la cuenta, y permite actualizar los datos de contacto. Los campos sensibles
+ * del comerciante solo los corrige un gestor municipal (HU-04) y el correo
+ * queda fijo hasta que exista un flujo de verificación. Los guards globales
+ * aplican el JWT y el rol; cada cambio queda auditado en `auditoria`.
  */
 @ApiTags('perfil')
 @ApiBearerAuth()
-@Roles('comerciante')
+@Roles('comerciante', 'organizador')
 @Controller('perfil')
 export class PerfilController {
   constructor(private readonly perfil: PerfilService) {}
 
   /**
-   * Devuelve el perfil del comerciante autenticado en las tres secciones de
-   * la HU-04. El documento y la actividad comercial se muestran pero no se
-   * pueden cambiar aquí.
+   * Devuelve el perfil del usuario autenticado. En comerciantes incluye la
+   * actividad comercial; en organizadores, la organización registrada.
    */
   @ApiOperation({
     summary: 'Ver mi perfil',
     description:
-      'Devuelve los datos del comerciante autenticado organizados en tres ' +
-      'secciones (HU-04): datos personales, actividad comercial y seguridad. ' +
-      'Nunca expone la contraseña (solo su hash interno).',
+      'Devuelve los datos personales y de seguridad del usuario autenticado. ' +
+      'Para comerciantes incluye la sección `actividadComercial` (HU-04); ' +
+      'para organizadores incluye `organizacion` (o `null` si aún no la ha ' +
+      'creado). Nunca expone la contraseña.',
   })
   @ApiOkResponse({
     type: PerfilResponseDto,
@@ -54,27 +54,29 @@ export class PerfilController {
     description: 'Falta el token de acceso o es inválido/expirado',
   })
   @ApiForbiddenResponse({
-    description: 'El rol del usuario no es comerciante',
+    description: 'El rol del usuario no es comerciante ni organizador',
   })
   @Get()
-  ver(@UsuarioActual() usuario: UsuarioAutenticado): Promise<PerfilResponseDto> {
+  ver(
+    @UsuarioActual() usuario: UsuarioAutenticado,
+  ): Promise<PerfilResponseDto> {
     return this.perfil.ver(usuario.id);
   }
 
   /**
-   * Actualiza los datos personales del comerciante: `nombre`, `apellido` y
-   * `telefono` (al menos uno). El resto de campos del perfil no se aceptan:
-   * si se envían, la validación global responde 400.
+   * Actualiza los datos personales del usuario: `nombre`, `apellido` y
+   * `telefono` (al menos uno). El resto de campos no se aceptan: si se envían,
+   * la validación global responde 400.
    */
   @ApiOperation({
     summary: 'Actualizar mis datos personales',
     description:
-      'Actualiza parcialmente los datos personales y de contacto del ' +
-      'comerciante autenticado (nombre, apellido y/o teléfono; al menos uno). ' +
+      'Actualiza parcialmente los datos personales y de contacto del usuario ' +
+      'autenticado (nombre, apellido y/o teléfono; al menos uno). Los datos ' +
+      'de la organización se actualizan en `PATCH /organizadores/mi-organizacion`. ' +
       '**Campos bloqueados** (documento, tipoDocumento, actividadComercial, ' +
-      'categoria, correo y estado): si se envían, la respuesta es 400 porque ' +
-      'su corrección corresponde a un gestor municipal (HU-04). El cambio ' +
-      'queda registrado en la tabla de auditoría.',
+      'categoria, nombreOrganizacion, nit, correo y estado): si se envían, la ' +
+      'respuesta es 400. El cambio queda registrado en la auditoría.',
   })
   @ApiOkResponse({
     type: PerfilResponseDto,
@@ -89,7 +91,7 @@ export class PerfilController {
     description: 'Falta el token de acceso o es inválido/expirado',
   })
   @ApiForbiddenResponse({
-    description: 'El rol del usuario no es comerciante',
+    description: 'El rol del usuario no es comerciante ni organizador',
   })
   @Patch()
   actualizar(
@@ -124,7 +126,7 @@ export class PerfilController {
     description: 'Falta el token de acceso o es inválido/expirado',
   })
   @ApiForbiddenResponse({
-    description: 'El rol del usuario no es comerciante',
+    description: 'El rol del usuario no es comerciante ni organizador',
   })
   @Patch('password')
   cambiarPassword(

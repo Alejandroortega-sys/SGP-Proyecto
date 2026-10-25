@@ -12,6 +12,7 @@ import { CorreoService } from '../correo/correo.service';
 import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import type {
+  OrganizacionPerfilDto,
   PerfilResponseDto,
   SeguridadPerfilDto,
 } from './dto/ver-perfil.dto';
@@ -19,7 +20,7 @@ import type { ActualizarPerfilDto } from './dto/actualizar-perfil.dto';
 import type { CambiarPasswordDto } from './dto/cambiar-password.dto';
 import type { MensajeResponseDto } from '../usuarios/dto/comerciante-response.dto';
 
-/** Columnas del perfil del comerciante (con su perfil comercial 1:1). */
+/** Columnas del perfil (con el perfil comercial o la organización 1:1). */
 const SELECT_PERFIL = {
   id: true,
   nombre: true,
@@ -28,10 +29,22 @@ const SELECT_PERFIL = {
   documento: true,
   telefono: true,
   correo: true,
+  rol: true,
   estado: true,
   creado_en: true,
   comerciantes: {
     select: { actividad_comercial: true, categoria: true },
+  },
+  organizadores_organizadores_usuario_idTousuarios: {
+    select: {
+      nombre_organizacion: true,
+      nit: true,
+      representante: true,
+      tipo_feria: true,
+      contacto: true,
+      estado: true,
+      validado_en: true,
+    },
   },
 } satisfies Prisma.usuariosSelect;
 
@@ -39,11 +52,13 @@ const SELECT_PERFIL = {
 type FilaPerfil = Prisma.usuariosGetPayload<{ select: typeof SELECT_PERFIL }>;
 
 /**
- * Perfil del comerciante autenticado (HU-04).
+ * Perfil del usuario autenticado (HU-04).
  *
- * Tres secciones: datos personales (editables), actividad comercial (solo
- * lectura: la corrige un gestor) y seguridad (estado de la cuenta y cambio de
- * contraseña con confirmación por correo).
+ * Para comerciantes incluye los datos personales, la actividad comercial (solo
+ * lectura: la corrige un gestor) y la seguridad de la cuenta. Para
+ * organizadores incluye los datos personales, la organización registrada (o
+ * `null`) y la seguridad. El cambio de contraseña se hace con confirmación por
+ * correo.
  *
  * **Auditoría:** cada cambio (`PATCH /perfil` y `PATCH /perfil/password`)
  * ocurre dentro de una transacción en la que se fija `app.actor_id`; el
@@ -59,28 +74,42 @@ export class PerfilService {
     private readonly correo: CorreoService,
   ) {}
 
-  /** Devuelve el perfil del comerciante en las tres secciones de HU-04. */
+  /**
+   * Devuelve el perfil del usuario autenticado.
+   *
+   * Para comerciantes incluye la actividad comercial (HU-04); para
+   * organizadores incluye la organización registrada, que puede ser `null`
+   * mientras no la haya creado.
+   */
   async ver(idUsuario: string): Promise<PerfilResponseDto> {
     const usuario = await this.prisma.usuarios.findUnique({
       where: { id: parseIdBigint(idUsuario) },
       select: SELECT_PERFIL,
     });
 
-    if (!usuario || !usuario.comerciantes) {
+    if (!usuario) {
       // El guard garantiza un usuario activo; esto cubre datos corruptos.
+      throw new NotFoundException('La cuenta no existe');
+    }
+
+    if (usuario.rol === 'comerciante' && !usuario.comerciantes) {
       throw new NotFoundException('El perfil del comerciante no existe');
+    }
+
+    if (usuario.rol !== 'comerciante' && usuario.rol !== 'organizador') {
+      throw new NotFoundException('El perfil de la cuenta no existe');
     }
 
     return this.mapearPerfil(usuario);
   }
 
   /**
-   * Actualiza los datos personales y de contacto del comerciante.
+   * Actualiza los datos personales y de contacto del usuario autenticado.
    *
    * Solo acepta `nombre`, `apellido` y `telefono` (el DTO no declara los
-   * campos sensibles; el pipe global los rechaza con 400). El cambio queda
-   * auditado en `auditoria` por el trigger de `usuarios` con el propio
-   * comerciante como actor.
+   * campos sensibles ni los de la organización; el pipe global los rechaza con
+   * 400). El cambio queda auditado en `auditoria` por el trigger de `usuarios`
+   * con el propio usuario como actor.
    *
    * @throws BadRequestException si el cuerpo no trae ningún campo.
    */
@@ -104,7 +133,8 @@ export class PerfilService {
     if (Object.keys(datos).length === 0) {
       throw new BadRequestException(
         'Debe enviar al menos un campo para actualizar (nombre, apellido o ' +
-          'telefono). Los demás datos los corrige un gestor municipal.',
+          'telefono). Los datos de la organización se actualizan en ' +
+          '`PATCH /organizadores/mi-organizacion`.',
       );
     }
 
@@ -143,7 +173,7 @@ export class PerfilService {
       select: { id: true, nombre: true, correo: true, password_hash: true },
     });
     if (!usuario) {
-      throw new NotFoundException('El perfil del comerciante no existe');
+      throw new NotFoundException('La cuenta no existe');
     }
 
     const coincide = usuario.password_hash
@@ -199,7 +229,7 @@ export class PerfilService {
     };
   }
 
-  /** Convierte la fila de la BD en la respuesta de tres secciones (HU-04). */
+  /** Convierte la fila de la BD en la respuesta del perfil. */
   private mapearPerfil(usuario: FilaPerfil): PerfilResponseDto {
     const seguridad: SeguridadPerfilDto = {
       correo: usuario.correo,
@@ -207,19 +237,43 @@ export class PerfilService {
       creadoEn: usuario.creado_en,
     };
 
+    const datosPersonales = {
+      id: usuario.id.toString(),
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      tipoDocumento: usuario.tipo_documento,
+      documento: usuario.documento,
+      telefono: usuario.telefono,
+    };
+
+    if (usuario.rol === 'comerciante') {
+      return {
+        datosPersonales,
+        actividadComercial: {
+          actividadComercial: usuario.comerciantes!.actividad_comercial,
+          categoria: usuario.comerciantes!.categoria,
+        },
+        seguridad,
+      };
+    }
+
+    const organizacion =
+      usuario.organizadores_organizadores_usuario_idTousuarios;
+    const organizacionDto: OrganizacionPerfilDto | null = organizacion
+      ? {
+          nombreOrganizacion: organizacion.nombre_organizacion,
+          nit: organizacion.nit,
+          representante: organizacion.representante,
+          tipoFeria: organizacion.tipo_feria,
+          contacto: organizacion.contacto,
+          estado: organizacion.estado,
+          validadoEn: organizacion.validado_en,
+        }
+      : null;
+
     return {
-      datosPersonales: {
-        id: usuario.id.toString(),
-        nombre: usuario.nombre,
-        apellido: usuario.apellido,
-        tipoDocumento: usuario.tipo_documento,
-        documento: usuario.documento,
-        telefono: usuario.telefono,
-      },
-      actividadComercial: {
-        actividadComercial: usuario.comerciantes!.actividad_comercial,
-        categoria: usuario.comerciantes!.categoria,
-      },
+      datosPersonales,
+      organizacion: organizacionDto,
       seguridad,
     };
   }

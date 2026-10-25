@@ -21,8 +21,11 @@ Authorization: Bearer <token>
   ├─ GET  /gestor/comerciantes          → revisor y administrador
   ├─ GET  /gestor/usuarios/:id          → admin: cualquier cuenta
   │                                       revisor: comerciantes y organizadores
+  ├─ GET  /gestor/organizaciones        → revisor y administrador
+  ├─ GET  /gestor/organizaciones/:id    → revisor y administrador
   ├─ POST /gestor/gestores              → solo administrador
-  └─ PATCH /gestor/usuarios/:id/estado  → solo administrador
+  ├─ PATCH /gestor/usuarios/:id/estado  → solo administrador
+  └─ PATCH /gestor/organizaciones/:id/estado → solo administrador
 ```
 
 El login es el ya existente: no hay un endpoint duplicado para gestores. El JWT
@@ -35,14 +38,15 @@ inmediato. `RolesGuard` exige `rol = gestor` y `PerfilGestorGuard` exige
 
 | Perfil | Alcance |
 |---|---|
-| `revisor` | Consulta comerciantes y organizadores. No crea gestores ni cambia estados. |
-| `administrador` | Consulta cualquier cuenta, crea gestores y activa/suspende/inactiva cuentas. |
+| `revisor` | Consulta comerciantes, organizadores y sus organizaciones. No crea gestores ni cambia estados. |
+| `administrador` | Consulta cualquier cuenta, crea gestores, activa/suspende/inactiva cuentas y valida organizaciones. |
 
 Un revisor que intente:
 
 - filtrar el listado general por `rol=gestor` o por `perfil` de gestor → `403`.
 - consultar el detalle de una cuenta con rol gestor → `403`.
-- crear un gestor o cambiar un estado → `403` (lo aplica `PerfilGestorGuard`).
+- crear un gestor, cambiar el estado de una cuenta o validar una organización →
+  `403` (lo aplica `PerfilGestorGuard`).
 
 ---
 
@@ -250,13 +254,58 @@ La transacción fija `app.actor_id` con el administrador; el trigger
 
 ---
 
-## 7. Seguridad
+## 7. Organizaciones de feria — `/gestor/organizaciones`
+
+Los endpoints de revisión de organizaciones viven en
+`src/organizadores/gestor-organizaciones.controller.ts` y usan la misma
+etiqueta Swagger `gestor`.
+
+### `GET /gestor/organizaciones`
+
+Disponible para **revisor** y **administrador**.
+
+| Parámetro | Tipo | Descripción |
+|---|---|---|
+| `estado` | enum | `pendiente_validacion`, `activa` o `suspendida`. |
+| `busqueda` | texto (máx. 150) | Nombre del organizador, correo, nombre de la organización, NIT o representante. |
+| `pagina` | entero ≥ 1 | Por defecto `1`. |
+| `limite` | entero 1–100 | Por defecto `20`. |
+
+Solo aparecen organizadores que ya registraron su organización.
+
+### `GET /gestor/organizaciones/:id`
+
+`:id` es el `usuario_id` del organizador. Devuelve los datos del organizador y
+de su organización, incluido `validadoPor` y `validadoEn`.
+
+### `PATCH /gestor/organizaciones/:id/estado`
+
+**Solo administrador.** El revisor puede consultar, pero no validar ni
+suspender.
+
+```json
+{
+  "estado": "activa",
+  "motivo": "Documentación verificada"
+}
+```
+
+- Estados permitidos: `activa` o `suspendida`.
+- Actualiza `estado`, `validado_por` y `validado_en`.
+- Si la organización ya está en ese estado → `409`.
+- Registra el cambio en `auditoria` con el gestor como actor.
+- Notifica al organizador; el `motivo` opcional se incluye en el cuerpo.
+- No existe estado `rechazada`: un rechazo se representa como `suspendida`.
+
+---
+
+## 8. Seguridad
 
 | Guard | Alcance | Qué valida |
 |---|---|---|
 | `JwtAuthGuard` | Global | Token válido y cuenta en estado `activa`; recarga `request.usuario` |
 | `RolesGuard` | Global | `@Roles('gestor')` del controlador |
-| `PerfilGestorGuard` | Global | `@PerfilGestor('administrador')` en creación y cambio de estado |
+| `PerfilGestorGuard` | Global | `@PerfilGestor('administrador')` en creación, cambio de estado de cuentas y validación de organizaciones |
 
 Errores habituales:
 
@@ -264,14 +313,14 @@ Errores habituales:
 |---|---|
 | 400 | Parámetros o cuerpo inválidos |
 | 401 | Falta el token, es inválido o expiró |
-| 403 | Rol/perfil sin permiso, revisor consultando un gestor o cambio de la propia cuenta |
-| 404 | La cuenta solicitada no existe |
-| 409 | Estado repetido, gestor pendiente de primer acceso o último administrador |
+| 403 | Rol/perfil sin permiso, revisor consultando un gestor, cambio de la propia cuenta o revisor validando una organización |
+| 404 | La cuenta o la organización solicitada no existe |
+| 409 | Estado repetido, gestor pendiente de primer acceso, último administrador u organización en el mismo estado |
 | 503 | Fallo al enviar el correo de invitación o base de datos no disponible |
 
 ---
 
-## 8. Archivos del módulo
+## 9. Archivos del módulo
 
 | Archivo | Contenido |
 |---|---|
@@ -289,11 +338,14 @@ Errores habituales:
 | `src/auth/dto/primer-acceso-gestor.dto.ts` | Primer acceso |
 | `src/auth/dto/login-response.dto.ts` | Respuestas de login |
 | `src/correo/correo.service.ts` | Correo con la contraseña temporal |
-| `src/gestor/*.spec.ts` · `src/auth/auth.service.spec.ts` · `test/gestor.e2e-spec.ts` | Pruebas |
+| `src/organizadores/gestor-organizaciones.controller.ts` | Listado, detalle y validación de organizaciones |
+| `src/organizadores/dto/listar-organizaciones-*.dto.ts` | Filtros y respuesta del listado |
+| `src/organizadores/dto/cambiar-estado-organizacion.dto.ts` | Cambio de estado de la organización |
+| `src/gestor/*.spec.ts` · `src/auth/auth.service.spec.ts` · `test/gestor.e2e-spec.ts` · `test/organizadores.e2e-spec.ts` | Pruebas |
 
 ---
 
-## 9. Probar el flujo (datos del seed)
+## 10. Probar el flujo (datos del seed)
 
 ```powershell
 # 1) Login como administrador
@@ -321,7 +373,7 @@ La documentación Swagger se genera en <http://localhost:3000/api/docs>
 
 ---
 
-## 10. Verificación
+## 11. Verificación
 
 ```powershell
 pnpm lint

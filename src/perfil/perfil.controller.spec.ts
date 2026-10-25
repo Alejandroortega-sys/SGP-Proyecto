@@ -18,6 +18,41 @@ const COMERCIANTE: UsuarioAutenticado = {
   estado: 'activa',
 };
 
+const ORGANIZADOR: UsuarioAutenticado = {
+  id: '7',
+  nombre: 'Luis',
+  apellido: 'Álvarez',
+  correo: 'luis.alvarez@agrovalle.org',
+  rol: 'organizador',
+  perfil: null,
+  estado: 'activa',
+};
+
+const PERFIL_ORGANIZADOR: PerfilResponseDto = {
+  datosPersonales: {
+    id: '7',
+    nombre: 'Luis',
+    apellido: 'Álvarez',
+    tipoDocumento: 'CC',
+    documento: '801234567',
+    telefono: '3105551234',
+  },
+  organizacion: {
+    nombreOrganizacion: 'Fundación Agroecológica del Valle',
+    nit: '900123456-1',
+    representante: 'Luis Álvarez',
+    tipoFeria: 'Feria agroecológica',
+    contacto: '3105551234',
+    estado: 'pendiente_validacion',
+    validadoEn: null,
+  },
+  seguridad: {
+    correo: 'luis.alvarez@agrovalle.org',
+    estado: 'activa',
+    creadoEn: new Date('2026-09-15T14:30:00.000Z'),
+  },
+};
+
 const PERFIL: PerfilResponseDto = {
   datosPersonales: {
     id: '5',
@@ -56,10 +91,10 @@ function crearServiceMock(): PerfilServiceMock {
 }
 
 describe('PerfilController', () => {
-  it('está restringido al rol comerciante a nivel de clase', () => {
-    // RolesGuard (global) lee estos metadatos: gestor/organizador → 403.
+  it('permite comerciantes y organizadores a nivel de clase', () => {
+    // RolesGuard (global) lee estos metadatos: gestor → 403.
     const roles = Reflect.getMetadata(ROLES_KEY, PerfilController);
-    expect(roles).toEqual(['comerciante']);
+    expect(roles).toEqual(['comerciante', 'organizador']);
   });
 
   it('GET /perfil devuelve el perfil del comerciante autenticado', async () => {
@@ -72,6 +107,21 @@ describe('PerfilController', () => {
 
     expect(service.ver).toHaveBeenCalledWith('5');
     expect(respuesta).toBe(PERFIL);
+  });
+
+  it('GET /perfil devuelve la organización del organizador autenticado', async () => {
+    const service = crearServiceMock();
+    service.ver.mockResolvedValue(PERFIL_ORGANIZADOR);
+    const controller = new PerfilController(
+      service as unknown as PerfilService,
+    );
+
+    const respuesta = await controller.ver(ORGANIZADOR);
+
+    expect(service.ver).toHaveBeenCalledWith('7');
+    expect(respuesta.organizacion?.nombreOrganizacion).toBe(
+      'Fundación Agroecológica del Valle',
+    );
   });
 
   it('PATCH /perfil delega la actualización con el id del comerciante', async () => {

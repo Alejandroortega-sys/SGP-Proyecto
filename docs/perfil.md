@@ -1,20 +1,23 @@
-# Módulo de perfil del comerciante y corrección de datos por el gestor
+# Módulo de perfil y corrección de datos por el gestor
 
 **Proyecto:** Plataforma Web de Gestión del Espacio Público de Tuluá (Equipo 6)
 **Historia:** HU-04 (perfil en tres secciones; documento y actividad comercial solo vía gestor)
-**Código:** `src/perfil/` (perfil del comerciante) · `src/usuarios/` (endpoint del gestor)
+**Código:** `src/perfil/` (perfil de comerciantes y organizadores) · `src/usuarios/` (endpoint del gestor)
 
 ---
 
 ## 1. Flujo general
 
 ```
-POST /auth/login (comerciante) ──► JWT + rol 'comerciante'
+POST /auth/login (comerciante u organizador) ──► JWT + rol correspondiente
   │
-  ├─ GET  /perfil               → ve sus datos (3 secciones, HU-04)
+  ├─ GET  /perfil               → datos personales + sección de negocio + seguridad
+  │                                (comerciante: actividadComercial;
+  │                                 organizador: organizacion)
   ├─ PATCH /perfil              → actualiza nombre / apellido / teléfono
   ├─ PATCH /perfil/password     → cambia contraseña (exige la actual + aviso por correo)
-  │   └─ si envía documento, actividadComercial, categoria, correo o estado → 400
+  │   └─ si envía documento, actividadComercial, categoria, nombreOrganizacion,
+  │      nit, correo o estado → 400
   │
 POST /auth/login (gestor) ────► JWT + rol 'gestor' (revisor o administrador)
   └─ PATCH /usuarios/:id/comerciante → corrige documento, tipoDocumento,
@@ -30,11 +33,11 @@ La decisión de qué campos puede tocar cada rol la hace el backend:
 - `PATCH /usuarios/:id/comerciante` está protegido con `@Roles('gestor')`;
   cualquier otro rol recibe **403**.
 
-## 2. Endpoints del comerciante — `src/perfil/` (`@Roles('comerciante')`)
+## 2. Endpoints del perfil — `src/perfil/` (`@Roles('comerciante', 'organizador')`)
 
 ### `GET /perfil` — ver mis datos
 
-Respuesta en las tres secciones de HU-04 (nunca expone `password_hash`):
+Respuesta para un comerciante (nunca expone `password_hash`):
 
 ```json
 {
@@ -47,11 +50,36 @@ Respuesta en las tres secciones de HU-04 (nunca expone `password_hash`):
 }
 ```
 
+Para un organizador, en lugar de `actividadComercial` se devuelve `organizacion`
+(o `null` si aún no la ha registrado):
+
+```json
+{
+  "datosPersonales": {
+    "id": "7", "nombre": "Luis", "apellido": "Álvarez",
+    "tipoDocumento": "CC", "documento": "801234567", "telefono": "3105551234"
+  },
+  "organizacion": {
+    "nombreOrganizacion": "Fundación Agroecológica del Valle",
+    "nit": "900123456-1", "representante": "Luis Álvarez",
+    "tipoFeria": "Feria agroecológica", "contacto": "3105551234",
+    "estado": "pendiente_validacion", "validadoEn": null
+  },
+  "seguridad": { "correo": "luis.alvarez@agrovalle.org", "estado": "activa", "creadoEn": "2026-09-15T14:30:00.000Z" }
+}
+```
+
+La organización se crea y actualiza en
+`POST/PATCH /organizadores/mi-organizacion` (ver `docs/organizadores.md`).
+
 ### `PATCH /perfil` — actualizar datos personales
 
-- Editables: `nombre`, `apellido` (acepta `null` para limpiarlo) y `telefono`
-  (misma validación del registro). **Al menos uno**; cuerpo vacío → 400.
+- Editables para ambos roles: `nombre`, `apellido` (acepta `null` para
+  limpiarlo) y `telefono` (misma validación del registro). **Al menos uno**;
+  cuerpo vacío → 400.
 - Respuesta: el perfil completo actualizado.
+- Los datos de la organización **no** se cambian aquí: se usa
+  `PATCH /organizadores/mi-organizacion`.
 - El **correo queda fijo**: es la identidad de la cuenta y su cambio exigiría
   verificación (código al correo nuevo), todavía fuera de alcance.
 
@@ -66,7 +94,7 @@ Respuesta en las tres secciones de HU-04 (nunca expone `password_hash`):
   correo (`CorreoService.enviarAvisoCambioPassword`, sin datos sensibles); si
   el envío falla el cambio **no se revierte**, el fallo queda en el log.
 
-## 3. Endpoint del gestor — `PATCH /usuarios/:id/comerciante`
+## 3. Endpoint del gestor para corregir comerciantes — `PATCH /usuarios/:id/comerciante`
 
 `@Roles('gestor')`, válido para **ambos perfiles** (revisor y administrador).
 
@@ -179,8 +207,8 @@ Invoke-RestMethod -Method Patch -Uri http://localhost:3000/usuarios/5/comerciant
 ```
 
 Errores esperados: 401 sin token o expirado · 403 rol sin permiso (comerciante
-en el endpoint del gestor, o gestor/organizador en `/perfil`) · 400 campos
-inválidos o bloqueados · 404 comerciante inexistente · 409 documento duplicado.
+en el endpoint del gestor, o gestor en `/perfil`) · 400 campos inválidos o
+bloqueados · 404 cuenta inexistente · 409 documento duplicado.
 
 La documentación Swagger de los endpoints se genera desde el código en
 <http://localhost:3000/api/docs> (ver docs/swagger.md).
