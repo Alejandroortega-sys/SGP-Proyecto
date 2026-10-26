@@ -16,4 +16,12 @@ export interface JwtPayload {
   rol: rol_usuario;
   /** Perfil del gestor (solo cuando el rol es `gestor`). */
   perfil?: perfil_gestor;
+  /** Identificador de la sesión (`sesiones.id`) para el logout persistente. */
+  sid: string;
+  /** Fecha de emisión (epoch en segundos), añadida por `@nestjs/jwt`. */
+  iat?: number;
+  /** Fecha de expiración (epoch en segundos), añadida por `@nestjs/jwt`. */
+  exp?: number;
+  /** Identificador único del token (`jti`), útil para revocaciones. */
+  jti?: string;
 }

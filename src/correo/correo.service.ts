@@ -241,6 +241,58 @@ export class CorreoService {
   }
 
   /**
+   * Envía el aviso de suspensión o inactivación de una cuenta.
+   *
+   * El motivo es opcional y lo proporciona el gestor administrador. No se
+   * guarda en una columna nueva de la base de datos: solo viaja en el correo.
+   *
+   * @param destino Correo del titular de la cuenta.
+   * @param nombre Nombre del titular (para personalizar el mensaje).
+   * @param estado Estado nuevo: `suspendida` o `inactiva`.
+   * @param motivo Motivo opcional informado por el administrador.
+   * @throws Error si no hay SMTP en producción o si el envío falla.
+   */
+  async enviarAvisoEstadoCuenta(
+    destino: string,
+    nombre: string,
+    estado: 'suspendida' | 'inactiva',
+    motivo?: string,
+  ): Promise<void> {
+    const accion = estado === 'suspendida' ? 'suspendida' : 'desactivada';
+    const asunto =
+      estado === 'suspendida'
+        ? 'Tu cuenta de SGP Tuluá fue suspendida'
+        : 'Tu cuenta de SGP Tuluá fue desactivada';
+    const detalleMotivo = motivo
+      ? `Motivo informado por la Alcaldía: ${motivo}`
+      : 'Comunícate con la Secretaría de Gobierno para conocer el motivo y solicitar la reactivación.';
+    const texto =
+      `Hola ${nombre},\n\n` +
+      `Te informamos que tu cuenta en SGP Tuluá fue ${accion}.\n\n` +
+      `${detalleMotivo}\n\n` +
+      `Si tienes dudas, comunícate con la Secretaría de Gobierno del ` +
+      `Municipio de Tuluá.\n\n` +
+      `Secretaría de Gobierno — Municipio de Tuluá`;
+    const html =
+      `<p>Hola <strong>${nombre}</strong>,</p>` +
+      `<p>Te informamos que tu cuenta en SGP Tuluá fue ` +
+      `<strong>${accion}</strong>.</p>` +
+      `<p>${detalleMotivo}</p>` +
+      `<p>Si tienes dudas, comunícate con la Secretaría de Gobierno del ` +
+      `Municipio de Tuluá.</p>` +
+      `<p>Secretaría de Gobierno — Municipio de Tuluá</p>`;
+
+    await this.enviar(
+      destino,
+      asunto,
+      texto,
+      html,
+      `SMTP no configurado: aviso de cuenta ${accion} para ${destino}` +
+        (motivo ? ` (motivo: ${motivo})` : ''),
+    );
+  }
+
+  /**
    * Envía el aviso de que la contraseña fue cambiada desde el perfil (HU-04).
    *
    * No incluye la nueva contraseña ni datos sensibles: solo informa del

@@ -1,4 +1,8 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActualizarPerfilDto } from './dto/actualizar-perfil.dto';
@@ -19,6 +23,7 @@ interface PrismaMock {
     update: jest.Mock;
   };
   notificaciones: { create: jest.Mock };
+  sesiones: { updateMany: jest.Mock };
   $executeRaw: jest.Mock;
   $transaction: jest.Mock;
 }
@@ -27,6 +32,7 @@ function crearPrismaMock(): PrismaMock {
   const prisma: PrismaMock = {
     usuarios: { findUnique: jest.fn(), update: jest.fn() },
     notificaciones: { create: jest.fn() },
+    sesiones: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
     $executeRaw: jest.fn(),
     $transaction: jest.fn(),
   };
@@ -68,6 +74,14 @@ function filaPerfil(overrides: Record<string, unknown> = {}) {
 }
 
 describe('PerfilService', () => {
+  beforeAll(() => {
+    jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
   let service: PerfilService;
   let prisma: PrismaMock;
   let correo: CorreoMock;

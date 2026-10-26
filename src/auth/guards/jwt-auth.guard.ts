@@ -12,6 +12,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import type { JwtPayload } from '../interfaces/jwt-payload.interface';
 import type { UsuarioAutenticado } from '../interfaces/usuario-autenticado.interface';
+import { SesionesService } from '../sesiones.service';
 
 /** Petición Express con el usuario autenticado adjunto. */
 interface PeticionAutenticada extends Request {
@@ -34,6 +35,7 @@ export class JwtAuthGuard implements CanActivate {
     private readonly jwt: JwtService,
     private readonly prisma: PrismaService,
     private readonly reflector: Reflector,
+    private readonly sesiones: SesionesService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -56,10 +58,21 @@ export class JwtAuthGuard implements CanActivate {
     const payload = await this.verificarToken(token);
 
     let id: bigint;
+    let idSesion: bigint;
     try {
       id = BigInt(payload.sub);
+      if (!payload.sid) {
+        throw new Error('Token sin sesión');
+      }
+      idSesion = BigInt(payload.sid);
     } catch {
-      throw new UnauthorizedException('Token de acceso inválido');
+      throw new UnauthorizedException(
+        'Token de acceso inválido o sin sesión activa',
+      );
+    }
+
+    if (!(await this.sesiones.estaActiva(idSesion, id))) {
+      throw new UnauthorizedException('La sesión fue revocada o expiró');
     }
 
     const usuario = await this.prisma.usuarios.findUnique({

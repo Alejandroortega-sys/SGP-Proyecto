@@ -29,6 +29,7 @@ interface UsuarioPrueba {
   id: bigint;
   nombre: string;
   apellido: string | null;
+  telefono?: string | null;
   correo: string;
   password_hash: string | null;
   rol: rol_usuario;
@@ -136,7 +137,7 @@ function detalleUsuario(usuario: UsuarioPrueba) {
     apellido: usuario.apellido,
     tipo_documento: usuario.rol === 'comerciante' ? 'CC' : null,
     documento: usuario.rol === 'comerciante' ? '801234567' : null,
-    telefono: usuario.rol === 'comerciante' ? '3147788990' : null,
+    telefono: usuario.telefono ?? (usuario.rol === 'comerciante' ? '3147788990' : null),
     correo: usuario.correo,
     rol: usuario.rol,
     estado: usuario.estado,
@@ -179,7 +180,25 @@ const prisma = {
     create: jest.fn(),
     update: jest.fn(),
   },
-  notificaciones: { create: jest.fn() },
+  notificaciones: {
+    create: jest.fn(),
+    findMany: jest.fn(),
+    count: jest.fn(),
+    findFirst: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+  },
+  auditoria: {
+    findMany: jest.fn(),
+    count: jest.fn(),
+  },
+  sesiones: {
+    deleteMany: jest.fn(),
+    create: jest.fn(),
+    findFirst: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+  },
   $queryRaw: jest.fn(),
   $executeRaw: jest.fn(),
   $transaction: jest.fn(),
@@ -190,6 +209,7 @@ const correo = {
   enviarCodigoActivacion: jest.fn(),
   enviarCodigoRecuperacion: jest.fn(),
   enviarAvisoCambioPassword: jest.fn(),
+  enviarAvisoEstadoCuenta: jest.fn(),
 };
 
 describe('Gestor (e2e)', () => {
@@ -230,6 +250,7 @@ describe('Gestor (e2e)', () => {
         correo: ADMIN.correo,
         rol: 'gestor',
         perfil: 'administrador',
+        sid: '1',
       },
       { expiresIn: 1_800 },
     );
@@ -239,6 +260,7 @@ describe('Gestor (e2e)', () => {
         correo: REVISOR.correo,
         rol: 'gestor',
         perfil: 'revisor',
+        sid: '2',
       },
       { expiresIn: 1_800 },
     );
@@ -359,7 +381,7 @@ describe('Gestor (e2e)', () => {
         data,
       }: {
         where: { id: bigint };
-        data: Partial<UsuarioPrueba>;
+        data: Partial<UsuarioPrueba> & { actualizado_en?: Date };
       }) => {
         const usuario = usuarios.find((candidato) => candidato.id === where.id);
         if (!usuario) {
@@ -371,6 +393,15 @@ describe('Gestor (e2e)', () => {
         if (data.password_hash) {
           usuario.password_hash = data.password_hash;
         }
+        if (data.nombre !== undefined) {
+          usuario.nombre = data.nombre;
+        }
+        if (data.apellido !== undefined) {
+          usuario.apellido = data.apellido;
+        }
+        if (data.telefono !== undefined) {
+          usuario.telefono = data.telefono;
+        }
         return Promise.resolve({
           id: usuario.id,
           nombre: usuario.nombre,
@@ -380,6 +411,17 @@ describe('Gestor (e2e)', () => {
       },
     );
     prisma.notificaciones.create.mockResolvedValue(undefined);
+    prisma.notificaciones.findMany.mockResolvedValue([]);
+    prisma.notificaciones.count.mockResolvedValue(0);
+    prisma.notificaciones.findFirst.mockResolvedValue(null);
+    prisma.notificaciones.updateMany.mockResolvedValue({ count: 0 });
+    prisma.auditoria.findMany.mockResolvedValue([]);
+    prisma.auditoria.count.mockResolvedValue(0);
+    prisma.sesiones.deleteMany.mockResolvedValue({ count: 0 });
+    prisma.sesiones.create.mockResolvedValue({ id: 1n });
+    prisma.sesiones.findFirst.mockResolvedValue({ id: 1n });
+    prisma.sesiones.update.mockResolvedValue({});
+    prisma.sesiones.updateMany.mockResolvedValue({ count: 1 });
     prisma.$queryRaw.mockResolvedValue([{ bloqueado: false, minutos: 0 }]);
     prisma.$executeRaw.mockResolvedValue(1);
     prisma.$transaction.mockImplementation(
@@ -391,6 +433,7 @@ describe('Gestor (e2e)', () => {
     correo.enviarCodigoActivacion.mockResolvedValue(undefined);
     correo.enviarCodigoRecuperacion.mockResolvedValue(undefined);
     correo.enviarAvisoCambioPassword.mockResolvedValue(undefined);
+    correo.enviarAvisoEstadoCuenta.mockResolvedValue(undefined);
   });
 
   it('exige token para el listado general', async () => {
@@ -563,6 +606,192 @@ describe('Gestor (e2e)', () => {
       .expect(200);
 
     expect(cambio.body.estado).toBe('suspendida');
+    expect(correo.enviarAvisoEstadoCuenta).toHaveBeenCalledWith(
+      OTRO_ADMIN.correo,
+      OTRO_ADMIN.nombre,
+      'suspendida',
+      undefined,
+    );
+  });
+
+  it('devuelve la sesión actual en /auth/me', async () => {
+    const respuesta = await request(app.getHttpServer())
+      .get('/auth/me')
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .expect(200);
+
+    expect(respuesta.body).toMatchObject({
+      id: '1',
+      nombre: ADMIN.nombre,
+      correo: ADMIN.correo,
+      rol: 'gestor',
+      perfil: 'administrador',
+      estado: 'activa',
+    });
+  });
+
+  it('cierra sesión y revoca la sesión en la base de datos', async () => {
+    const jwt = app.get(JwtService);
+    const token = await jwt.signAsync(
+      {
+        sub: ADMIN.id.toString(),
+        correo: ADMIN.correo,
+        rol: 'gestor',
+        perfil: 'administrador',
+        sid: '999',
+      },
+      { expiresIn: 600 },
+    );
+
+    await request(app.getHttpServer())
+      .post('/auth/logout')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204);
+
+    expect(prisma.sesiones.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 999n,
+        usuario_id: ADMIN.id,
+        revocada_en: null,
+      },
+      data: { revocada_en: expect.any(Date) },
+    });
+
+    prisma.sesiones.findFirst.mockResolvedValueOnce(null);
+    await request(app.getHttpServer())
+      .get('/auth/me')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(401);
+  });
+
+  it('permite consultar y actualizar el perfil del gestor', async () => {
+    const perfil = await request(app.getHttpServer())
+      .get('/gestor/perfil')
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .expect(200);
+
+    expect(perfil.body).toMatchObject({
+      id: '1',
+      nombre: ADMIN.nombre,
+      correo: ADMIN.correo,
+      perfil: 'administrador',
+    });
+
+    const actualizado = await request(app.getHttpServer())
+      .patch('/gestor/perfil')
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .send({ nombre: 'Laura Actualizada', telefono: '3115550000' })
+      .expect(200);
+
+    expect(actualizado.body).toMatchObject({
+      nombre: 'Laura Actualizada',
+      telefono: '3115550000',
+    });
+  });
+
+  it('reenvía la invitación a un gestor pendiente', async () => {
+    const respuesta = await request(app.getHttpServer())
+      .post('/gestor/gestores/9/reenviar-invitacion')
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .expect(200);
+
+    expect(respuesta.body).toMatchObject({
+      id: '9',
+      correo: GESTOR_PENDIENTE.correo,
+      perfil: 'revisor',
+    });
+    expect(correo.enviarCredencialesGestor).toHaveBeenCalledTimes(1);
+  });
+
+  it('solo el administrador puede consultar la auditoría y sin datos sensibles', async () => {
+    prisma.auditoria.findMany.mockResolvedValue([
+      {
+        id: 101n,
+        tabla: 'usuarios',
+        registro_id: 5n,
+        accion: 'update',
+        valor_anterior: { nombre: 'José', password_hash: 'hash-viejo' },
+        valor_nuevo: { nombre: 'José Antonio', password_hash: 'hash-nuevo' },
+        creado_en: new Date('2026-09-20T10:00:00.000Z'),
+        usuarios: {
+          id: 1n,
+          nombre: 'Laura',
+          apellido: 'Martínez',
+          correo: 'admin@tulua.gov.co',
+        },
+      },
+    ]);
+    prisma.auditoria.count.mockResolvedValue(1);
+
+    await request(app.getHttpServer())
+      .get('/gestor/auditoria')
+      .set('Authorization', `Bearer ${tokenRevisor}`)
+      .expect(403);
+
+    const respuesta = await request(app.getHttpServer())
+      .get('/gestor/auditoria?tabla=usuarios&registroId=5')
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .expect(200);
+
+    expect(respuesta.body.datos[0].valorAnterior).toEqual({ nombre: 'José' });
+    expect(respuesta.body.datos[0].valorNuevo).toEqual({
+      nombre: 'José Antonio',
+    });
+    expect(respuesta.body.datos[0].actor).toMatchObject({
+      id: '1',
+      correo: 'admin@tulua.gov.co',
+    });
+  });
+
+  it('lista y marca notificaciones propias', async () => {
+    prisma.notificaciones.findMany.mockResolvedValue([
+      {
+        id: 12n,
+        tipo: 'cambio_password',
+        asunto: 'Contraseña actualizada',
+        cuerpo: 'Tu contraseña cambió',
+        canal: 'app',
+        leida: false,
+        creada_en: new Date('2026-09-20T10:00:00.000Z'),
+      },
+    ]);
+    prisma.notificaciones.count
+      .mockResolvedValueOnce(1)
+      .mockResolvedValueOnce(1);
+
+    const listado = await request(app.getHttpServer())
+      .get('/notificaciones')
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .expect(200);
+
+    expect(listado.body).toMatchObject({
+      noLeidas: 1,
+      paginacion: { pagina: 1, limite: 20, total: 1, totalPaginas: 1 },
+    });
+    expect(listado.body.datos[0]).toMatchObject({
+      id: '12',
+      asunto: 'Contraseña actualizada',
+      leida: false,
+    });
+
+    prisma.notificaciones.findFirst.mockResolvedValue({ id: 12n });
+    prisma.notificaciones.update.mockResolvedValue({
+      id: 12n,
+      tipo: 'cambio_password',
+      asunto: 'Contraseña actualizada',
+      cuerpo: 'Tu contraseña cambió',
+      canal: 'app',
+      leida: true,
+      creada_en: new Date('2026-09-20T10:00:00.000Z'),
+    });
+
+    const actualizada = await request(app.getHttpServer())
+      .patch('/notificaciones/12/leida')
+      .set('Authorization', `Bearer ${tokenAdmin}`)
+      .send({ leida: true })
+      .expect(200);
+
+    expect(actualizada.body.leida).toBe(true);
   });
 
   it('el revisor no puede cambiar estados', async () => {

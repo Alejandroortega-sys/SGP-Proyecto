@@ -591,6 +591,11 @@ export class UsuariosService {
           canal: 'app',
         },
       }),
+      // Por seguridad, cualquier sesión anterior deja de servir.
+      this.prisma.sesiones.updateMany({
+        where: { usuario_id: usuario.id, revocada_en: null },
+        data: { revocada_en: new Date() },
+      }),
     ]);
 
     return {

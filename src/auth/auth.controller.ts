@@ -1,16 +1,21 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
+  Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiExtraModels,
   ApiForbiddenResponse,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiResponse,
@@ -20,14 +25,21 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import type { Request } from 'express';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
+import { UsuarioActual } from './decorators/usuario-actual.decorator';
 import {
   LoginPrimerAccesoResponseDto,
   LoginResponseDto,
+  RefreshResponseDto,
+  UsuarioLoginDto,
 } from './dto/login-response.dto';
 import { LoginDto } from './dto/login.dto';
+import { LogoutDto } from './dto/logout.dto';
 import { PrimerAccesoGestorDto } from './dto/primer-acceso-gestor.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import type { UsuarioAutenticado } from './interfaces/usuario-autenticado.interface';
 
 /**
  * Autenticación de usuarios.
@@ -47,6 +59,108 @@ import { PrimerAccesoGestorDto } from './dto/primer-acceso-gestor.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
+
+  /**
+   * Devuelve el usuario autenticado a partir del JWT. Sirve para comprobar
+   * al cargar el frontend si la sesión sigue vigente y recuperar el rol.
+   */
+  @ApiOperation({
+    summary: 'Consultar la sesión actual',
+    description:
+      'Devuelve los datos públicos del usuario autenticado. Es el endpoint ' +
+      'que usa el frontend para saber si el token sigue vigente y a qué ' +
+      'vista redirigir. Responde 401 si el token falta, es inválido, expiró ' +
+      'o fue revocado por un logout.',
+  })
+  @ApiOkResponse({
+    type: UsuarioLoginDto,
+    description: 'Datos del usuario autenticado',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Falta el token, es inválido, expiró o fue revocado',
+  })
+  @ApiBearerAuth()
+  @Get('me')
+  me(@UsuarioActual() usuario: UsuarioAutenticado): UsuarioLoginDto {
+    return {
+      id: usuario.id,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      correo: usuario.correo,
+      rol: usuario.rol,
+      perfil: usuario.perfil,
+      estado: usuario.estado,
+    };
+  }
+
+  /**
+   * Cierra la sesión: revoca la sesión en la base de datos. El frontend debe
+   * eliminar el access token y el refresh token de su almacenamiento.
+   */
+  @ApiOperation({
+    summary: 'Cerrar sesión',
+    description:
+      'Marca como revocada la sesión actual en la tabla `sesiones`. Si el ' +
+      'cuerpo envía `todas: true`, revoca todas las sesiones del usuario. ' +
+      'El access token deja de servir inmediatamente y el refresh token ya ' +
+      'no puede rotarse. El frontend debe eliminar ambos tokens tras ' +
+      'recibir 204.',
+  })
+  @ApiNoContentResponse({ description: 'Sesión cerrada' })
+  @ApiUnauthorizedResponse({
+    description: 'Falta el token o es inválido/expirado',
+  })
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Post('logout')
+  async logout(
+    @UsuarioActual() usuario: UsuarioAutenticado,
+    @Req() request: Request,
+    @Body() dto: LogoutDto,
+  ): Promise<void> {
+    const token = request.headers.authorization?.split(' ')[1];
+    if (!token) {
+      throw new UnauthorizedException(
+        'Falta el token de acceso (Authorization: Bearer <token>)',
+      );
+    }
+    await this.auth.logout(usuario.id, token, dto);
+  }
+
+  /**
+   * Renueva el access token a partir de un refresh token válido.
+   */
+  @ApiOperation({
+    summary: 'Renovar la sesión con refresh token',
+    description:
+      'Valida el refresh token, lo rota y devuelve un nuevo access token y un ' +
+      'nuevo refresh token. El refresh anterior queda invalidado. Si se ' +
+      'reutiliza el refresh anterior, la sesión se revoca y responde 401. ' +
+      'El access token resultante mantiene la misma sesión (`sid`).',
+  })
+  @ApiOkResponse({
+    type: RefreshResponseDto,
+    description: 'Nuevos tokens de acceso y refresh',
+  })
+  @ApiBadRequestResponse({ description: 'Refresh token ausente o inválido' })
+  @ApiUnauthorizedResponse({
+    description: 'Refresh token inválido, expirado, revocado o reutilizado',
+  })
+  @ApiForbiddenResponse({
+    description: 'La cuenta asociada a la sesión no está activa',
+  })
+  @ApiTooManyRequestsResponse({
+    description:
+      'La IP superó el límite de 10 peticiones por minuto; el encabezado ' +
+      'Retry-After indica los segundos de espera',
+  })
+  @Public()
+  @UseGuards(ThrottlerGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh')
+  refresh(@Body() dto: RefreshTokenDto): Promise<RefreshResponseDto> {
+    return this.auth.refresh(dto);
+  }
 
   /**
    * Inicia sesión y devuelve el token JWT junto con los datos públicos del

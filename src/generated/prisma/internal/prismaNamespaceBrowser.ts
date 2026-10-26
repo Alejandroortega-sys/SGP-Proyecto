@@ -80,7 +80,8 @@ export const ModelName = {
   usuarios: 'usuarios',
   verificaciones_qr: 'verificaciones_qr',
   zona_productos: 'zona_productos',
-  zonas: 'zonas'
+  zonas: 'zonas',
+  sesiones: 'sesiones'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -486,6 +487,20 @@ export const ZonasScalarFieldEnum = {
 } as const
 
 export type ZonasScalarFieldEnum = (typeof ZonasScalarFieldEnum)[keyof typeof ZonasScalarFieldEnum]
+
+
+export const SesionesScalarFieldEnum = {
+  id: 'id',
+  usuario_id: 'usuario_id',
+  refresh_token_hash: 'refresh_token_hash',
+  refresh_token_anterior_hash: 'refresh_token_anterior_hash',
+  refresh_expira_en: 'refresh_expira_en',
+  revocada_en: 'revocada_en',
+  creada_en: 'creada_en',
+  actualizado_en: 'actualizado_en'
+} as const
+
+export type SesionesScalarFieldEnum = (typeof SesionesScalarFieldEnum)[keyof typeof SesionesScalarFieldEnum]
 
 
 export const SortOrder = {

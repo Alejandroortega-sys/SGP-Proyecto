@@ -1,5 +1,6 @@
 import { randomInt } from 'node:crypto';
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -11,16 +12,32 @@ import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
 import { fijarActorAuditoria } from '../common/auditoria';
 import { OPCIONES_ARGON2 } from '../common/opciones-argon2';
+import { parseIdBigint } from '../common/parse-id';
 import { CorreoService } from '../correo/correo.service';
 import { Prisma } from '../generated/prisma/client';
 import type { perfil_gestor, rol_usuario } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import type { CambiarPasswordDto } from '../perfil/dto/cambiar-password.dto';
+import type { MensajeResponseDto } from '../usuarios/dto/comerciante-response.dto';
+import {
+  AuditoriaItemDto,
+  ListarAuditoriaQueryDto,
+  ListarAuditoriaResponseDto,
+} from './dto/auditoria.dto';
 import {
   CambiarEstadoUsuarioDto,
   type EstadoCuentaGestionable,
   UsuarioEstadoActualizadoDto,
 } from './dto/cambiar-estado-usuario.dto';
-import { CrearGestorDto, GestorCreadoDto } from './dto/crear-gestor.dto';
+import {
+  CrearGestorDto,
+  GestorCreadoDto,
+  InvitacionGestorReenviadaDto,
+} from './dto/crear-gestor.dto';
+import {
+  ActualizarPerfilGestorDto,
+  PerfilGestorResponseDto,
+} from './dto/perfil-gestor.dto';
 import type { ListarComerciantesQueryDto } from './dto/listar-comerciantes-query.dto';
 import {
   ComercianteListadoDto,
@@ -39,6 +56,35 @@ import {
 
 /** Roles que puede consultar el perfil revisor. */
 const ROLES_REVISOR: readonly rol_usuario[] = ['comerciante', 'organizador'];
+
+/**
+ * Claves que nunca deben salir en la auditoría. El trigger `fn_auditoria`
+ * guarda la fila completa de `usuarios`, incluido `password_hash`.
+ */
+const CLAVES_SENSIBLES_AUDITORIA = new Set([
+  'password_hash',
+  'token_hash',
+  'qr_token',
+]);
+
+/** Elimina recursivamente las claves sensibles de un valor JSON. */
+function sanitizarAuditoria(valor: unknown): unknown {
+  if (Array.isArray(valor)) {
+    return valor.map((elemento) => sanitizarAuditoria(elemento));
+  }
+  if (valor && typeof valor === 'object') {
+    const resultado: Record<string, unknown> = {};
+    for (const [clave, contenido] of Object.entries(
+      valor as Record<string, unknown>,
+    )) {
+      if (!CLAVES_SENSIBLES_AUDITORIA.has(clave)) {
+        resultado[clave] = sanitizarAuditoria(contenido);
+      }
+    }
+    return resultado;
+  }
+  return valor;
+}
 
 /** Columnas del listado de comerciantes, con los conteos de su perfil. */
 const SELECT_LISTADO = {
@@ -325,6 +371,287 @@ export class GestorService {
   }
 
   /**
+   * Devuelve el perfil del gestor autenticado.
+   *
+   * @param idGestor Identificador del gestor autenticado.
+   */
+  async verPerfil(idGestor: bigint): Promise<PerfilGestorResponseDto> {
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { id: idGestor },
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        telefono: true,
+        correo: true,
+        rol: true,
+        estado: true,
+        creado_en: true,
+        actualizado_en: true,
+        gestores_gestores_usuario_idTousuarios: {
+          select: { perfil: true },
+        },
+      },
+    });
+
+    if (
+      !usuario ||
+      usuario.rol !== 'gestor' ||
+      !usuario.gestores_gestores_usuario_idTousuarios
+    ) {
+      throw new NotFoundException('El perfil del gestor no existe');
+    }
+
+    return {
+      id: usuario.id.toString(),
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      correo: usuario.correo,
+      telefono: usuario.telefono,
+      perfil: usuario.gestores_gestores_usuario_idTousuarios.perfil,
+      estado: usuario.estado,
+      creadoEn: usuario.creado_en,
+      actualizadoEn: usuario.actualizado_en,
+    };
+  }
+
+  /**
+   * Actualiza los datos personales y de contacto del gestor autenticado.
+   *
+   * Solo acepta `nombre`, `apellido` y `telefono` (al menos uno). El cambio
+   * queda auditado por el trigger `fn_auditoria` de `usuarios`, con el propio
+   * gestor como actor.
+   *
+   * @param idGestor Identificador del gestor autenticado.
+   * @param dto Campos a actualizar.
+   */
+  async actualizarPerfil(
+    idGestor: bigint,
+    dto: ActualizarPerfilGestorDto,
+  ): Promise<PerfilGestorResponseDto> {
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { id: idGestor },
+      select: { id: true, rol: true },
+    });
+    if (!usuario || usuario.rol !== 'gestor') {
+      throw new NotFoundException('El perfil del gestor no existe');
+    }
+
+    const datos: Prisma.usuariosUncheckedUpdateInput = {};
+    if (dto.nombre !== undefined) {
+      datos.nombre = dto.nombre.trim();
+    }
+    if (dto.apellido !== undefined) {
+      datos.apellido = dto.apellido?.trim() || null;
+    }
+    if (dto.telefono !== undefined) {
+      datos.telefono = dto.telefono.trim();
+    }
+
+    if (Object.keys(datos).length === 0) {
+      throw new BadRequestException(
+        'Debe enviar al menos un campo para actualizar (nombre, apellido o teléfono).',
+      );
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await fijarActorAuditoria(tx, idGestor);
+      await tx.usuarios.update({ where: { id: idGestor }, data: datos });
+    });
+
+    return this.verPerfil(idGestor);
+  }
+
+  /**
+   * Cambia la contraseña del gestor autenticado.
+   *
+   * Exige la contraseña actual y envía un aviso al correo institucional. El
+   * cambio queda registrado en `auditoria` con el propio gestor como actor.
+   *
+   * @param idGestor Identificador del gestor autenticado.
+   * @param dto Contraseña actual, nueva y confirmación.
+   */
+  async cambiarPassword(
+    idGestor: bigint,
+    dto: CambiarPasswordDto,
+  ): Promise<MensajeResponseDto> {
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { id: idGestor },
+      select: {
+        id: true,
+        rol: true,
+        nombre: true,
+        correo: true,
+        password_hash: true,
+      },
+    });
+    if (!usuario || usuario.rol !== 'gestor') {
+      throw new NotFoundException('El perfil del gestor no existe');
+    }
+
+    const coincide = usuario.password_hash
+      ? await argon2
+          .verify(usuario.password_hash, dto.passwordActual)
+          .catch(() => false)
+      : false;
+    if (!coincide) {
+      throw new BadRequestException('La contraseña actual es incorrecta');
+    }
+
+    const passwordHash = await argon2.hash(dto.passwordNueva, OPCIONES_ARGON2);
+
+    await this.prisma.$transaction(async (tx) => {
+      await fijarActorAuditoria(tx, idGestor);
+      await tx.usuarios.update({
+        where: { id: idGestor },
+        data: { password_hash: passwordHash },
+      });
+      await tx.notificaciones.create({
+        data: {
+          usuario_id: idGestor,
+          tipo: 'cambio_password',
+          asunto: 'Contraseña actualizada',
+          cuerpo:
+            `Hola ${usuario.nombre}, la contraseña de tu cuenta de gestor ` +
+            'en SGP Tuluá fue actualizada. Si no fuiste tú, comunícate de ' +
+            'inmediato con la Secretaría de Gobierno.',
+          canal: 'app',
+        },
+      });
+      // Por seguridad, se cierran todas las sesiones del gestor.
+      await tx.sesiones.updateMany({
+        where: { usuario_id: idGestor, revocada_en: null },
+        data: { revocada_en: new Date() },
+      });
+    });
+
+    try {
+      await this.correo.enviarAvisoCambioPassword(
+        usuario.correo,
+        usuario.nombre,
+      );
+    } catch (error) {
+      this.logger.error(
+        `No se pudo enviar el aviso de cambio de contraseña a ${usuario.correo}: ${String(error)}`,
+      );
+    }
+
+    return {
+      mensaje:
+        'Contraseña actualizada correctamente. Cerramos todas tus sesiones; ' +
+        'inicia sesión de nuevo. Enviamos un aviso a tu correo.',
+    };
+  }
+
+  /**
+   * Reenvía la invitación a un gestor que aún no completó su primer acceso.
+   *
+   * Genera una nueva contraseña temporal, actualiza el hash y envía el correo.
+   * La cuenta permanece en `pendiente_activacion` hasta que el gestor cambie
+   * la contraseña en `POST /auth/gestor/primer-acceso`.
+   *
+   * @param idGestor Identificador del gestor pendiente.
+   * @param idAdmin Administrador que ejecuta la acción.
+   */
+  async reenviarInvitacion(
+    idGestor: bigint,
+    idAdmin: bigint,
+  ): Promise<InvitacionGestorReenviadaDto> {
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { id: idGestor },
+      select: {
+        id: true,
+        nombre: true,
+        correo: true,
+        rol: true,
+        estado: true,
+        gestores_gestores_usuario_idTousuarios: {
+          select: { perfil: true },
+        },
+      },
+    });
+
+    if (
+      !usuario ||
+      usuario.rol !== 'gestor' ||
+      !usuario.gestores_gestores_usuario_idTousuarios
+    ) {
+      throw new NotFoundException('El gestor solicitado no existe');
+    }
+
+    if (usuario.estado === 'activa') {
+      throw new ConflictException(
+        'La cuenta ya está activa. El gestor puede usar la recuperación de contraseña.',
+      );
+    }
+
+    if (usuario.estado !== 'pendiente_activacion') {
+      throw new ConflictException(
+        'Solo se puede reenviar la invitación a un gestor pendiente de activación.',
+      );
+    }
+
+    const perfil = usuario.gestores_gestores_usuario_idTousuarios.perfil;
+    const passwordTemporal = this.generarPasswordTemporal();
+    const passwordHash = await argon2.hash(passwordTemporal, OPCIONES_ARGON2);
+
+    await this.prisma.$transaction(async (tx) => {
+      await fijarActorAuditoria(tx, idAdmin);
+      await tx.usuarios.update({
+        where: { id: idGestor },
+        data: {
+          password_hash: passwordHash,
+          intentos_fallidos: 0,
+          bloqueado_hasta: null,
+        },
+      });
+      await tx.notificaciones.create({
+        data: {
+          usuario_id: idGestor,
+          tipo: 'invitacion_gestor',
+          asunto: 'Nueva contraseña temporal',
+          cuerpo:
+            'Se generó una nueva contraseña temporal para tu cuenta de ' +
+            'gestor. Revisa tu correo y cámbiala en el primer inicio de sesión.',
+          canal: 'correo',
+        },
+      });
+      // La contraseña temporal invalida cualquier sesión anterior.
+      await tx.sesiones.updateMany({
+        where: { usuario_id: idGestor, revocada_en: null },
+        data: { revocada_en: new Date() },
+      });
+    });
+
+    try {
+      await this.correo.enviarCredencialesGestor(
+        usuario.correo,
+        usuario.nombre,
+        perfil,
+        passwordTemporal,
+        this.urlAcceso,
+      );
+    } catch (error) {
+      this.logger.error(
+        `No se pudo reenviar la invitación de gestor a ${usuario.correo}: ${String(error)}`,
+      );
+      throw new ServiceUnavailableException(
+        'La contraseña temporal fue actualizada, pero no pudimos enviar el ' +
+          'correo. Inténtalo de nuevo en unos minutos.',
+      );
+    }
+
+    return {
+      id: usuario.id.toString(),
+      correo: usuario.correo,
+      perfil,
+      mensaje:
+        'Invitación reenviada. El gestor recibirá una nueva contraseña ' +
+        'temporal por correo.',
+    };
+  }
+
+  /**
    * Lista comerciantes con búsqueda, filtros y paginación.
    *
    * La búsqueda se aplica por palabras: cada término debe aparecer en el
@@ -555,8 +882,34 @@ export class GestorService {
         },
       });
 
+      if (dto.estado !== 'activa') {
+        // Suspender o inactivar invalida todas las sesiones del usuario.
+        await tx.sesiones.updateMany({
+          where: { usuario_id: id, revocada_en: null },
+          data: { revocada_en: new Date() },
+        });
+      }
+
       return { usuario, actualizado };
     });
+
+    if (dto.estado !== 'activa') {
+      try {
+        await this.correo.enviarAvisoEstadoCuenta(
+          resultado.actualizado.correo,
+          resultado.actualizado.nombre,
+          dto.estado,
+          dto.motivo,
+        );
+      } catch (error) {
+        // El estado ya quedó actualizado; el fallo del correo se registra
+        // para revisión, pero no revierte la decisión del administrador.
+        this.logger.error(
+          `No se pudo enviar el aviso de cuenta ${dto.estado} a ` +
+            `${resultado.actualizado.correo}: ${String(error)}`,
+        );
+      }
+    }
 
     return {
       id: resultado.actualizado.id.toString(),
@@ -564,7 +917,85 @@ export class GestorService {
       correo: resultado.actualizado.correo,
       estadoAnterior: resultado.usuario.estado,
       estado: resultado.actualizado.estado,
+      motivo: dto.motivo ?? null,
       mensaje: this.mensajeEstado(dto.estado),
+    };
+  }
+
+  /**
+   * Lista los registros de auditoría para el administrador.
+   *
+   * Solo se expone al perfil administrador (lo exige el controlador). Los
+   * valores JSON se limpian recursivamente para no devolver `password_hash`,
+   * `token_hash` ni `qr_token`.
+   */
+  async listarAuditoria(
+    dto: ListarAuditoriaQueryDto,
+  ): Promise<ListarAuditoriaResponseDto> {
+    const pagina = dto.pagina ?? 1;
+    const limite = dto.limite ?? 20;
+
+    const where: Prisma.auditoriaWhereInput = {
+      ...(dto.tabla ? { tabla: dto.tabla } : {}),
+      ...(dto.registroId
+        ? { registro_id: parseIdBigint(dto.registroId) }
+        : {}),
+      ...(dto.accion ? { accion: dto.accion } : {}),
+    };
+
+    const [filas, total] = await Promise.all([
+      this.prisma.auditoria.findMany({
+        where,
+        skip: (pagina - 1) * limite,
+        take: limite,
+        orderBy: [{ creado_en: 'desc' }, { id: 'desc' }],
+        select: {
+          id: true,
+          tabla: true,
+          registro_id: true,
+          accion: true,
+          valor_anterior: true,
+          valor_nuevo: true,
+          creado_en: true,
+          usuarios: {
+            select: {
+              id: true,
+              nombre: true,
+              apellido: true,
+              correo: true,
+            },
+          },
+        },
+      }),
+      this.prisma.auditoria.count({ where }),
+    ]);
+
+    const datos: AuditoriaItemDto[] = filas.map((fila) => ({
+      id: fila.id.toString(),
+      tabla: fila.tabla,
+      registroId: fila.registro_id.toString(),
+      accion: fila.accion,
+      valorAnterior: sanitizarAuditoria(fila.valor_anterior),
+      valorNuevo: sanitizarAuditoria(fila.valor_nuevo),
+      actor: fila.usuarios
+        ? {
+            id: fila.usuarios.id.toString(),
+            nombre: fila.usuarios.nombre,
+            apellido: fila.usuarios.apellido,
+            correo: fila.usuarios.correo,
+          }
+        : null,
+      creadoEn: fila.creado_en,
+    }));
+
+    return {
+      datos,
+      paginacion: {
+        pagina,
+        limite,
+        total,
+        totalPaginas: total === 0 ? 0 : Math.ceil(total / limite),
+      },
     };
   }
 

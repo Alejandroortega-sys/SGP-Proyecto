@@ -2,8 +2,8 @@
 
 **Proyecto:** Plataforma Web de Gestión del Espacio Público, Ferias Agroecológicas y Comercio Formal/Informal de Tuluá (Equipo 6)
 **Motor:** PostgreSQL 18 + PostGIS 3.6 · **Codificación:** UTF8 · **Convención:** `snake_case`, español
-**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba)
-**Base de prueba verificada:** `SPG-Prueba`
+**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba) · `03_sesiones.sql` (tabla de sesiones)
+**Base de desarrollo verificada:** `sgp_tulua`
 
 ---
 
@@ -11,20 +11,23 @@
 
 ```powershell
 # 1) Crear la base de datos
-psql -U postgres -d postgres -c 'CREATE DATABASE "SPG-Prueba";'
+psql -U postgres -d postgres -c 'CREATE DATABASE "sgp_tulua";'
 
-# 2) Crear la estructura (29 tablas, 17 ENUM, 3 secuencias, 25 índices,
-#    6 funciones, 9 triggers y 4 vistas materializadas)
-psql -U postgres -d "SPG-Prueba" -f 01_creacion_bd.sql
+# 2) Crear la estructura (30 tablas, 17 ENUM, 3 secuencias, 28 índices,
+#    6 funciones, 10 triggers y 4 vistas materializadas)
+psql -U postgres -d "sgp_tulua" -f 01_creacion_bd.sql
 
 # 3) Cargar datos de prueba (incluye 4 pruebas automáticas de reglas de negocio)
-psql -U postgres -d "SPG-Prueba" -f 02_seed_datos_prueba.sql
+psql -U postgres -d "sgp_tulua" -f 02_seed_datos_prueba.sql
+
+# 4) Si la base ya existía antes de esta versión, crear solo la tabla de sesiones:
+psql -U postgres -d "sgp_tulua" -f 03_sesiones.sql
 
 # Para repetir desde cero:
-psql -U postgres -d postgres -c 'DROP DATABASE "SPG-Prueba" WITH (FORCE);'
+psql -U postgres -d postgres -c 'DROP DATABASE "sgp_tulua" WITH (FORCE);'
 ```
 
-Ambos scripts fueron **ejecutados y verificados** sobre PostgreSQL 18.6 con PostGIS 3.6.2 (ver §11).
+Los scripts fueron **ejecutados y verificados** sobre PostgreSQL 18.6 con PostGIS 3.6.2 (ver §11).
 
 ---
 
@@ -59,6 +62,7 @@ erDiagram
     usuarios ||--o| organizadores : "perfil"
     usuarios ||--o| gestores : "perfil"
     usuarios ||--o{ tokens_seguridad : "usa"
+    usuarios ||--o{ sesiones : "inicia"
     comerciantes ||--o{ solicitudes : "radica"
     comerciantes ||--o{ permisos : "es titular"
     comerciantes ||--o{ modulos : "titular de censo"
@@ -169,6 +173,22 @@ CHECKS: el rol comerciante exige documento + teléfono + contraseña; ninguna cu
 | expira_en | TIMESTAMPTZ | NOT NULL |
 | usado | BOOLEAN | NOT NULL, DEFAULT FALSE |
 | creado_en | TIMESTAMPTZ | DEFAULT now() |
+
+### `sesiones` — Sesiones autenticadas y refresh tokens (HU-02/06)
+| Campo | Tipo | Restricciones |
+|---|---|---|
+| id | BIGINT | PK, IDENTITY |
+| usuario_id | BIGINT | NOT NULL, FK→usuarios(id) ON DELETE CASCADE |
+| refresh_token_hash | VARCHAR(255) | NOT NULL, UNIQUE — SHA-256 del refresh token |
+| refresh_token_anterior_hash | VARCHAR(255) | Hash anterior para detectar reutilización |
+| refresh_expira_en | TIMESTAMPTZ | NOT NULL — vigencia del refresh token |
+| revocada_en | TIMESTAMPTZ | NULL = sesión activa; con fecha = logout/revocación |
+| creada_en | TIMESTAMPTZ | DEFAULT now() |
+| actualizado_en | TIMESTAMPTZ | DEFAULT now() |
+
+El access token lleva el `id` de la sesión en el claim `sid`. El guard comprueba que
+la sesión exista, no esté revocada y no haya expirado. El logout solo actualiza
+`revocada_en`, por lo que la invalidación es persistente sin guardar el JWT completo.
 
 ---
 
@@ -472,7 +492,7 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 
 | Función | Tipo | Descripción |
 |---|---|---|
-| `fn_marca_actualizacion()` | trigger | Actualiza `actualizado_en` en cada UPDATE (usuarios, comerciantes, zonas, solicitudes). |
+| `fn_marca_actualizacion()` | trigger | Actualiza `actualizado_en` en cada UPDATE (usuarios, comerciantes, zonas, solicitudes, sesiones). |
 | `fn_auditoria()` | trigger | Vuelca cada cambio (INSERT/UPDATE/DELETE) de `usuarios`, `zonas` y `parametros_motor` a `auditoria` con valores antes/después en JSONB. |
 | `fn_validar_zona()` | trigger (BEFORE) | HU-11/12: rechaza geometrías inválidas (`ST_IsValid`) y solapes con zonas activas (`ST_Relate '2********'`); permite bordes compartidos. |
 | `fn_permiso_trazabilidad()` | trigger (AFTER) | HU-35/37: registra `emitido` al insertar y un evento por cada cambio de estado; **exige motivo** (`app.motivo`) para `suspendido`/`revocado`, si no lanza excepción. |
@@ -483,7 +503,7 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 
 | Trigger | Tabla | Función |
 |---|---|---|
-| trg_usuarios_marca, trg_comerciantes_marca, trg_zonas_marca, trg_solicitudes_marca | 4 tablas | fn_marca_actualizacion (BEFORE UPDATE) |
+| trg_usuarios_marca, trg_comerciantes_marca, trg_zonas_marca, trg_solicitudes_marca, trg_sesiones_marca | 5 tablas | fn_marca_actualizacion (BEFORE UPDATE) |
 | trg_usuarios_auditoria, trg_zonas_auditoria, trg_parametros_auditoria | 3 tablas | fn_auditoria (AFTER INSERT/UPDATE/DELETE) |
 | trg_zonas_validar | zonas | fn_validar_zona (BEFORE INSERT/UPDATE) |
 | trg_permisos_traza | permisos | fn_permiso_trazabilidad (AFTER INSERT/UPDATE) |
@@ -524,7 +544,7 @@ Las cuatro pruebas negativas se ejecutan dentro de `02_seed_datos_prueba.sql` y 
 
 ## 16. Índices
 
-- **B-tree:** usuarios(rol, estado), tokens(usuario, tipo), modulos(estado, titular), espacios(zona), parametros(clave, vigente_desc), solicitudes(comerciante, estado, espacio+fecha), documentos(solicitud), ferias(zona), evaluaciones(solicitud), permisos(titular, estado), eventos(permiso, creado_en), verificaciones(creado_en), cobros(estado), notificaciones(usuario, leida), auditoria(tabla+registro, fecha).
+- **B-tree:** usuarios(rol, estado), tokens(usuario, tipo), sesiones(usuario, revocada_en), sesiones(refresh_token_anterior_hash), modulos(estado, titular), espacios(zona), parametros(clave, vigente_desc), solicitudes(comerciante, estado, espacio+fecha), documentos(solicitud), ferias(zona), evaluaciones(solicitud), permisos(titular, estado), eventos(permiso, creado_en), verificaciones(creado_en), cobros(estado), notificaciones(usuario, leida), auditoria(tabla+registro, fecha).
 - **GIST espaciales:** `zonas(geometria)`, `modulos(ubicacion)`, `espacios_temporales(ubicacion)`, `evaluaciones_factibilidad(ubicacion)`.
 - **Únicos (para REFRESH CONCURRENTLY):** uno por vista materializada.
 
@@ -590,7 +610,7 @@ Las cuatro pruebas negativas se ejecutan dentro de `02_seed_datos_prueba.sql` y 
 
 | Historias | Tablas / objetos |
 |---|---|
-| HU-01 a HU-07 | usuarios, comerciantes, organizadores, gestores, tokens_seguridad |
+| HU-01 a HU-07 | usuarios, comerciantes, organizadores, gestores, tokens_seguridad, sesiones |
 | HU-08 a HU-15 | zonas, zona_productos, productos, modulos, espacios_temporales, espacio_bloqueos |
 | HU-16 a HU-23 | solicitudes, solicitud_productos, solicitud_documentos, ferias, feria_productos, feria_vendedores |
 | HU-24 a HU-30 | parametros_motor, evaluaciones_factibilidad, evaluacion_reglas, excepciones_factibilidad, alertas_saturacion + fn_evaluar_factibilidad + fn_buscar_alternativas |

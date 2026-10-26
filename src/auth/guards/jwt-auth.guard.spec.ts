@@ -7,6 +7,7 @@ import {
 import type { Reflector } from '@nestjs/core';
 import type { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
+import type { SesionesService } from '../sesiones.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 interface PeticionFalsa {
@@ -37,6 +38,7 @@ describe('JwtAuthGuard', () => {
   let reflector: { getAllAndOverride: jest.Mock };
   let jwt: { verifyAsync: jest.Mock };
   let prisma: { usuarios: { findUnique: jest.Mock } };
+  let sesiones: { estaActiva: jest.Mock };
 
   beforeAll(() => {
     jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
@@ -50,10 +52,12 @@ describe('JwtAuthGuard', () => {
     reflector = { getAllAndOverride: jest.fn().mockReturnValue(false) };
     jwt = { verifyAsync: jest.fn() };
     prisma = { usuarios: { findUnique: jest.fn() } };
+    sesiones = { estaActiva: jest.fn().mockResolvedValue(true) };
     guard = new JwtAuthGuard(
       jwt as unknown as JwtService,
       prisma as unknown as PrismaService,
       reflector as unknown as Reflector,
+      sesiones as unknown as SesionesService,
     );
   });
 
@@ -100,6 +104,35 @@ describe('JwtAuthGuard', () => {
     );
   });
 
+  it('responde 401 si el token no tiene sesión (sid)', async () => {
+    jwt.verifyAsync.mockResolvedValue({ sub: '3', rol: 'comerciante' });
+    const peticion: PeticionFalsa = {
+      headers: { authorization: 'Bearer token.sin.sid' },
+    };
+
+    await expect(guard.canActivate(crearContexto(peticion))).rejects.toThrow(
+      'Token de acceso inválido o sin sesión activa',
+    );
+    expect(prisma.usuarios.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('responde 401 si la sesión fue revocada por un logout', async () => {
+    jwt.verifyAsync.mockResolvedValue({
+      sub: '3',
+      rol: 'comerciante',
+      sid: '10',
+    });
+    sesiones.estaActiva.mockResolvedValue(false);
+    const peticion: PeticionFalsa = {
+      headers: { authorization: 'Bearer token.revocado' },
+    };
+
+    await expect(guard.canActivate(crearContexto(peticion))).rejects.toThrow(
+      'La sesión fue revocada o expiró',
+    );
+    expect(prisma.usuarios.findUnique).not.toHaveBeenCalled();
+  });
+
   it('responde 401 si el sub del token no es un identificador válido', async () => {
     jwt.verifyAsync.mockResolvedValue({ sub: 'abc', rol: 'comerciante' });
     const peticion: PeticionFalsa = {
@@ -113,7 +146,11 @@ describe('JwtAuthGuard', () => {
   });
 
   it('responde 401 si la cuenta del token ya no existe', async () => {
-    jwt.verifyAsync.mockResolvedValue({ sub: '3', rol: 'comerciante' });
+    jwt.verifyAsync.mockResolvedValue({
+      sub: '3',
+      rol: 'comerciante',
+      sid: '10',
+    });
     prisma.usuarios.findUnique.mockResolvedValue(null);
     const peticion: PeticionFalsa = {
       headers: { authorization: 'Bearer token.valido' },
@@ -125,7 +162,11 @@ describe('JwtAuthGuard', () => {
   });
 
   it('responde 403 si la cuenta fue suspendida después de emitir el token', async () => {
-    jwt.verifyAsync.mockResolvedValue({ sub: '3', rol: 'comerciante' });
+    jwt.verifyAsync.mockResolvedValue({
+      sub: '3',
+      rol: 'comerciante',
+      sid: '10',
+    });
     prisma.usuarios.findUnique.mockResolvedValue({
       ...USUARIO_ACTIVO,
       estado: 'suspendida',
@@ -144,6 +185,7 @@ describe('JwtAuthGuard', () => {
       sub: '3',
       correo: 'maria.gomez@gmail.com',
       rol: 'comerciante',
+      sid: '10',
     });
     prisma.usuarios.findUnique.mockResolvedValue(USUARIO_ACTIVO);
     const peticion: PeticionFalsa = {
@@ -166,7 +208,11 @@ describe('JwtAuthGuard', () => {
   });
 
   it('incluye el perfil del gestor en request.usuario', async () => {
-    jwt.verifyAsync.mockResolvedValue({ sub: '1', rol: 'gestor' });
+    jwt.verifyAsync.mockResolvedValue({
+      sub: '1',
+      rol: 'gestor',
+      sid: '10',
+    });
     prisma.usuarios.findUnique.mockResolvedValue({
       id: 1n,
       nombre: 'Laura',

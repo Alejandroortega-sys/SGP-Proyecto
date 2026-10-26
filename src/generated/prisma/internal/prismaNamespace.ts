@@ -426,7 +426,8 @@ export const ModelName = {
   usuarios: 'usuarios',
   verificaciones_qr: 'verificaciones_qr',
   zona_productos: 'zona_productos',
-  zonas: 'zonas'
+  zonas: 'zonas',
+  sesiones: 'sesiones'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -442,7 +443,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "alertas_saturacion" | "auditoria" | "cobros" | "comerciantes" | "espacio_bloqueos" | "espacios_temporales" | "evaluacion_reglas" | "evaluaciones_factibilidad" | "excepciones_factibilidad" | "feria_productos" | "feria_vendedores" | "ferias" | "gestores" | "modulos" | "notificaciones" | "organizadores" | "parametros_motor" | "permiso_eventos" | "permisos" | "productos" | "solicitud_documentos" | "solicitud_productos" | "solicitudes" | "spatial_ref_sys" | "tarifas" | "tokens_seguridad" | "usuarios" | "verificaciones_qr" | "zona_productos" | "zonas"
+    modelProps: "alertas_saturacion" | "auditoria" | "cobros" | "comerciantes" | "espacio_bloqueos" | "espacios_temporales" | "evaluacion_reglas" | "evaluaciones_factibilidad" | "excepciones_factibilidad" | "feria_productos" | "feria_vendedores" | "ferias" | "gestores" | "modulos" | "notificaciones" | "organizadores" | "parametros_motor" | "permiso_eventos" | "permisos" | "productos" | "solicitud_documentos" | "solicitud_productos" | "solicitudes" | "spatial_ref_sys" | "tarifas" | "tokens_seguridad" | "usuarios" | "verificaciones_qr" | "zona_productos" | "zonas" | "sesiones"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2602,6 +2603,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    sesiones: {
+      payload: Prisma.$sesionesPayload<ExtArgs>
+      fields: Prisma.sesionesFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.sesionesFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sesionesPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.sesionesFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sesionesPayload>
+        }
+        findFirst: {
+          args: Prisma.sesionesFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sesionesPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.sesionesFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sesionesPayload>
+        }
+        findMany: {
+          args: Prisma.sesionesFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sesionesPayload>[]
+        }
+        create: {
+          args: Prisma.sesionesCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sesionesPayload>
+        }
+        createMany: {
+          args: Prisma.sesionesCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.sesionesCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sesionesPayload>[]
+        }
+        delete: {
+          args: Prisma.sesionesDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sesionesPayload>
+        }
+        update: {
+          args: Prisma.sesionesUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sesionesPayload>
+        }
+        deleteMany: {
+          args: Prisma.sesionesDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.sesionesUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.sesionesUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sesionesPayload>[]
+        }
+        upsert: {
+          args: Prisma.sesionesUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$sesionesPayload>
+        }
+        aggregate: {
+          args: Prisma.SesionesAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSesiones>
+        }
+        groupBy: {
+          args: Prisma.sesionesGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SesionesGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.sesionesCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SesionesCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3028,6 +3103,20 @@ export const ZonasScalarFieldEnum = {
 } as const
 
 export type ZonasScalarFieldEnum = (typeof ZonasScalarFieldEnum)[keyof typeof ZonasScalarFieldEnum]
+
+
+export const SesionesScalarFieldEnum = {
+  id: 'id',
+  usuario_id: 'usuario_id',
+  refresh_token_hash: 'refresh_token_hash',
+  refresh_token_anterior_hash: 'refresh_token_anterior_hash',
+  refresh_expira_en: 'refresh_expira_en',
+  revocada_en: 'revocada_en',
+  creada_en: 'creada_en',
+  actualizado_en: 'actualizado_en'
+} as const
+
+export type SesionesScalarFieldEnum = (typeof SesionesScalarFieldEnum)[keyof typeof SesionesScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -3586,6 +3675,7 @@ export type GlobalOmitConfig = {
   verificaciones_qr?: Prisma.verificaciones_qrOmit
   zona_productos?: Prisma.zona_productosOmit
   zonas?: Prisma.zonasOmit
+  sesiones?: Prisma.sesionesOmit
 }
 
 /* Types for Logging */

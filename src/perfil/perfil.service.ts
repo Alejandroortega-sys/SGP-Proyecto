@@ -208,6 +208,11 @@ export class PerfilService {
           canal: 'app',
         },
       });
+      // Por seguridad, se cierran todas las sesiones del usuario.
+      await tx.sesiones.updateMany({
+        where: { usuario_id: id, revocada_en: null },
+        data: { revocada_en: new Date() },
+      });
     });
 
     try {
@@ -225,7 +230,8 @@ export class PerfilService {
 
     return {
       mensaje:
-        'Contraseña actualizada correctamente. Enviamos un aviso a tu correo.',
+        'Contraseña actualizada correctamente. Cerramos todas tus sesiones; ' +
+        'inicia sesión de nuevo. Enviamos un aviso a tu correo.',
     };
   }
 

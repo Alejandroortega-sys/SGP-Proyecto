@@ -52,13 +52,21 @@ export class LoginResponseDto {
   })
   accessToken!: string;
 
+  /** Token opaco para renovar la sesión sin volver a pedir credenciales. */
+  @ApiProperty({ example: '9f8c1b...' })
+  refreshToken!: string;
+
   /** Esquema de autorización; siempre `Bearer`. */
   @ApiProperty({ example: 'Bearer' })
   tokenType!: string;
 
-  /** Vigencia del token en segundos (1800 para gestor, 28800 para el resto). */
+  /** Vigencia del access token en segundos (1800 gestor, 28800 resto). */
   @ApiProperty({ example: 28800 })
   expiresIn!: number;
+
+  /** Vigencia del refresh token en segundos. */
+  @ApiProperty({ example: 604800 })
+  refreshExpiresIn!: number;
 
   /** Datos públicos del usuario autenticado. */
   @ApiProperty({ type: UsuarioLoginDto })
@@ -95,4 +103,31 @@ export class LoginPrimerAccesoResponseDto {
       'Debes cambiar tu contraseña para activar la cuenta y acceder a la plataforma.',
   })
   mensaje!: string;
+}
+
+/** Respuesta de `POST /auth/refresh`. */
+export class RefreshResponseDto {
+  /** Nuevo JWT de acceso. */
+  @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
+  accessToken!: string;
+
+  /** Nuevo refresh token; el anterior queda invalidado por rotación. */
+  @ApiProperty({ example: '9f8c1b...' })
+  refreshToken!: string;
+
+  /** Esquema de autorización; siempre `Bearer`. */
+  @ApiProperty({ example: 'Bearer' })
+  tokenType!: string;
+
+  /** Vigencia del access token en segundos. */
+  @ApiProperty({ example: 28800 })
+  expiresIn!: number;
+
+  /** Vigencia del refresh token en segundos. */
+  @ApiProperty({ example: 604800 })
+  refreshExpiresIn!: number;
+
+  /** Datos públicos del usuario autenticado. */
+  @ApiProperty({ type: UsuarioLoginDto })
+  usuario!: UsuarioLoginDto;
 }

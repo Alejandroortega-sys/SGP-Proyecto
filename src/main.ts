@@ -11,6 +11,17 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // CORS: el frontend (Next.js) corre en otro origen. Se permite únicamente
+  // el origen configurado en FRONTEND_URL y los encabezados que usa la API
+  // (JSON + Authorization para el JWT). No se usa '*' para no abrir la API
+  // a cualquier sitio.
+  app.enableCors({
+    origin: process.env.FRONTEND_URL ?? 'http://localhost:3001',
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 204,
+  });
+
   // Detrás de un proxy inverso (nginx), la IP real del cliente llega en el
   // encabezado X-Forwarded-For. Solo se activa con TRUST_PROXY=true: en
   // desarrollo debe quedar apagado para que nadie pueda falsear su IP y

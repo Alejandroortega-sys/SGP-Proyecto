@@ -166,6 +166,13 @@ const prisma = {
     create: jest.fn(),
   },
   notificaciones: { create: jest.fn() },
+  sesiones: {
+    deleteMany: jest.fn(),
+    create: jest.fn(),
+    findFirst: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+  },
   $executeRaw: jest.fn(),
   $queryRaw: jest.fn(),
   $transaction: jest.fn(),
@@ -176,6 +183,7 @@ const correo = {
   enviarCodigoRecuperacion: jest.fn(),
   enviarAvisoCambioPassword: jest.fn(),
   enviarCredencialesGestor: jest.fn(),
+  enviarAvisoEstadoCuenta: jest.fn(),
 };
 
 describe('Organizadores (e2e)', () => {
@@ -216,6 +224,7 @@ describe('Organizadores (e2e)', () => {
           correo: usuario.correo,
           rol: usuario.rol,
           perfil: usuario.perfil,
+          sid: usuario.id.toString(),
         },
         { expiresIn: 1_800 },
       );
@@ -343,6 +352,11 @@ describe('Organizadores (e2e)', () => {
     prisma.tokens_seguridad.create.mockResolvedValue(undefined);
     prisma.notificaciones.create.mockResolvedValue(undefined);
     prisma.$executeRaw.mockResolvedValue(1);
+    prisma.sesiones.deleteMany.mockResolvedValue({ count: 0 });
+    prisma.sesiones.create.mockResolvedValue({ id: 1n });
+    prisma.sesiones.findFirst.mockResolvedValue({ id: 1n });
+    prisma.sesiones.update.mockResolvedValue({});
+    prisma.sesiones.updateMany.mockResolvedValue({ count: 1 });
     prisma.$queryRaw.mockResolvedValue([{ bloqueado: false, minutos: 0 }]);
     prisma.$transaction.mockImplementation(
       async (callback: (cliente: typeof prisma) => Promise<unknown>) =>
@@ -353,6 +367,7 @@ describe('Organizadores (e2e)', () => {
     correo.enviarCodigoRecuperacion.mockResolvedValue(undefined);
     correo.enviarAvisoCambioPassword.mockResolvedValue(undefined);
     correo.enviarCredencialesGestor.mockResolvedValue(undefined);
+    correo.enviarAvisoEstadoCuenta.mockResolvedValue(undefined);
   });
 
   it('registra la cuenta de organizador y envía el código de activación', async () => {

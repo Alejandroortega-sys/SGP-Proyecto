@@ -179,3 +179,8 @@ export type zona_productos = Prisma.zona_productosModel
  * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
  */
 export type zonas = Prisma.zonasModel
+/**
+ * Model sesiones
+ * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+ */
+export type sesiones = Prisma.sesionesModel

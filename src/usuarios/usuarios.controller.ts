@@ -83,7 +83,13 @@ export class UsuariosController {
     description:
       'La cuenta fue creada, pero no se pudo enviar el código de activación',
   })
+  @ApiTooManyRequestsResponse({
+    description:
+      'La IP superó el límite de 10 peticiones por minuto; el encabezado ' +
+      'Retry-After indica los segundos de espera',
+  })
   @Public()
+  @UseGuards(ThrottlerGuard)
   @Post('comerciantes')
   crearComerciante(
     @Body() dto: CrearComercianteDto,
@@ -119,7 +125,13 @@ export class UsuariosController {
     description:
       'La cuenta fue creada, pero no se pudo enviar el código de activación',
   })
+  @ApiTooManyRequestsResponse({
+    description:
+      'La IP superó el límite de 10 peticiones por minuto; el encabezado ' +
+      'Retry-After indica los segundos de espera',
+  })
   @Public()
+  @UseGuards(ThrottlerGuard)
   @Post('organizadores')
   crearOrganizador(
     @Body() dto: CrearOrganizadorDto,
@@ -145,7 +157,13 @@ export class UsuariosController {
     description: 'El código es inválido, ya fue usado o ha expirado',
   })
   @ApiConflictResponse({ description: 'La cuenta ya está activa' })
+  @ApiTooManyRequestsResponse({
+    description:
+      'La IP superó el límite de 10 peticiones por minuto; el encabezado ' +
+      'Retry-After indica los segundos de espera',
+  })
   @Public()
+  @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
   @Post('activacion')
   activarCuenta(@Body() dto: ActivarCuentaDto): Promise<CuentaResponseDto> {
@@ -173,7 +191,13 @@ export class UsuariosController {
   @ApiServiceUnavailableResponse({
     description: 'No se pudo enviar el nuevo código de activación',
   })
+  @ApiTooManyRequestsResponse({
+    description:
+      'La IP superó el límite de 10 peticiones por minuto; el encabezado ' +
+      'Retry-After indica los segundos de espera',
+  })
   @Public()
+  @UseGuards(ThrottlerGuard)
   @HttpCode(HttpStatus.OK)
   @Post('activacion/reenviar')
   reenviarCodigo(@Body() dto: ReenviarCodigoDto): Promise<MensajeResponseDto> {

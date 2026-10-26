@@ -1,7 +1,7 @@
 -- ============================================================================
 --  PLATAFORMA WEB DE GESTIÓN DEL ESPACIO PÚBLICO DE TULUÁ — EQUIPO 6
 --  Script 02 · DATOS DE PRUEBA (SEED)
---  Uso  : psql -U postgres -d "SPG-Prueba" -f 02_seed_datos_prueba.sql
+--  Uso  : psql -U postgres -d "sgp_tulua" -f 02_seed_datos_prueba.sql
 --  (Ejecutar DESPUÉS de 01_creacion_bd.sql)
 --
 --  Contraseñas de prueba (hashes argon2id generados con la librería `argon2`):

@@ -26,7 +26,7 @@
 | Validación | `ValidationPipe` global con `whitelist`, `forbidNonWhitelisted` y `transform` |
 | Errores de BD | Traducidos a HTTP por `PrismaExceptionFilter` |
 | Correo | Nodemailer; sin SMTP escribe el contenido en el log en desarrollo |
-| Rate limit | Login y recuperación de contraseña, por IP |
+| Rate limit | Login, registro, activación y recuperación de contraseña, por IP |
 | Frontend | **No existe todavía**; este documento es la base para construirlo |
 
 ### 1.2 Módulos del backend relacionados con el Sprint 1
@@ -37,7 +37,8 @@
 | `usuarios` | `/usuarios` | Registro, activación, recuperación y corrección por gestor |
 | `perfil` | `/perfil` | Perfil de comerciantes y organizadores |
 | `organizadores` | `/organizadores` | Organización propia del organizador |
-| `gestor` | `/gestor` | Administración de cuentas, comerciantes y organizaciones |
+| `gestor` | `/gestor` | Administración de cuentas, comerciantes, organizaciones, perfil y auditoría |
+| `notificaciones` | `/notificaciones` | Bandeja de notificaciones del usuario autenticado |
 | `panel` | `/panel` | Resumen inicial del gestor |
 | `correo` | — | Envío de códigos, credenciales temporales y avisos |
 | `common` | — | Filtro de errores, auditoría, parseo de IDs y serialización de BigInt |
@@ -52,7 +53,7 @@ Según la correspondencia documentada en `docs/`:
 | HU-02 | Login seguro, intentos fallidos y bloqueo | **Implementado** |
 | HU-03 | Creación de gestores municipales con invitación | **Implementado** |
 | HU-04 | Perfil en tres secciones y cambio de contraseña | **Implementado para comerciante y organizador** |
-| HU-05 | Activación, suspensión e inactivación con auditoría | **Implementado con vacíos de motivo/notificación** |
+| HU-05 | Activación, suspensión e inactivación con auditoría | **Implementado; el motivo se envía por correo** |
 | HU-06 | Roles, permisos y acceso al panel | **Implementado** |
 | HU-07 | Registro de organización y validación por gestor | **Implementado** |
 
@@ -80,40 +81,33 @@ GET  http://localhost:3000/perfil
 GET  http://localhost:3000/gestor/usuarios
 ```
 
-> **Decisión pendiente:** `AGENTS.md` menciona el prefijo `/api/v1`, pero el código
-> actual **no lo usa**. Antes de escribir el cliente HTTP hay que decidir una de dos
-> opciones:
->
-> 1. Mantener las rutas actuales sin prefijo.
-> 2. Añadir `app.setGlobalPrefix('api/v1')` en `src/main.ts` y actualizar Swagger,
->    pruebas y `NEXT_PUBLIC_API_URL`.
->
-> Este documento usa las rutas **reales actuales**. Si se agrega el prefijo, todas las
-> rutas de este documento deben ir precedidas por `/api/v1`.
+> **Decisión cerrada:** la API se mantiene **sin prefijo global**. Las rutas reales
+> comienzan directamente en `/auth`, `/perfil`, `/gestor`, etc. No se usará
+> `app.setGlobalPrefix('api/v1')` en este sprint.
 
-Variable sugerida para Next.js:
+Variable para Next.js:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
-### 2.2 CORS: requisito antes de conectar Next.js
+### 2.2 CORS: habilitado para el frontend
 
-Actualmente el backend **no habilita CORS**. El frontend previsto corre en
-`http://localhost:3001` (variable `FRONTEND_URL`), por lo que las peticiones del
-navegador fallarán hasta que se habilite.
-
-Antes de construir el frontend se debe agregar en `src/main.ts` algo equivalente a:
+El backend ya habilita CORS en `src/main.ts` para el origen configurado en
+`FRONTEND_URL` (por defecto `http://localhost:3001`). La configuración permite
+los métodos `GET`, `POST`, `PATCH`, `PUT`, `DELETE` y `OPTIONS`, y los encabezados
+`Content-Type` y `Authorization`.
 
 ```ts
 app.enableCors({
   origin: process.env.FRONTEND_URL ?? 'http://localhost:3001',
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204,
 });
 ```
 
-No se debe usar `origin: '*'` si más adelante se enviarán cookies.
+No se usa `origin: '*'`: el frontend debe ejecutarse en el origen permitido.
 
 ### 2.3 Documentación interactiva
 
@@ -140,8 +134,25 @@ El token se obtiene en `POST /auth/login` o en `POST /auth/gestor/primer-acceso`
 | Comerciante | 8 horas (`expiresIn: 28800`) |
 | Organizador | 8 horas (`expiresIn: 28800`) |
 
-**No existe refresh token ni endpoint de logout en el backend actual.** Cuando el token
-expira, la API responde `401` y el frontend debe borrar la sesión y enviar al login.
+**La autenticación usa access token + refresh token.** El access token dura 30
+minutos para gestores y 8 horas para comerciantes/organizadores. El refresh token
+dura 7 días por defecto (`JWT_REFRESH_EXPIRES_IN_SECONDS=604800`) y se guarda
+hasheado en la tabla `sesiones`.
+
+Cuando el access token expira, el frontend llama a `POST /auth/refresh` con el
+refresh token. El backend rota el refresh: el anterior queda invalidado y se
+emiten dos tokens nuevos. Si el refresh no es válido, está revocado, expiró o se
+reutiliza el anterior, responde `401`.
+
+`POST /auth/logout` marca `sesiones.revocada_en` en la base de datos. El access
+token deja de servir inmediatamente y el refresh tampoco puede rotarse. La
+revocación es persistente: sobrevive a reinicios del servidor. Opcionalmente se
+puede enviar `{ "todas": true }` para cerrar todas las sesiones del usuario.
+
+> Los access tokens emitidos antes de la introducción de `sesiones` no tienen el
+> claim `sid` y serán rechazados con `401`. Tras el despliegue, todos los usuarios
+> deben iniciar sesión una vez.
+
 La recomendación de almacenamiento para el MVP es `sessionStorage` o memoria; si se usa
 `localStorage`, debe asumirse el riesgo de XSS y aplicarse una política estricta de
 contenido. Una cookie `httpOnly` requeriría un BFF o un cambio de contrato del backend.
@@ -229,6 +240,11 @@ o una lista.
 |---|---|
 | `POST /auth/login` | 10 peticiones por IP por minuto |
 | `POST /auth/gestor/primer-acceso` | 10 peticiones por IP por minuto |
+| `POST /auth/refresh` | 10 peticiones por IP por minuto |
+| `POST /usuarios/comerciantes` | 10 peticiones por IP por minuto |
+| `POST /usuarios/organizadores` | 10 peticiones por IP por minuto |
+| `POST /usuarios/activacion` | 10 peticiones por IP por minuto |
+| `POST /usuarios/activacion/reenviar` | 10 peticiones por IP por minuto |
 | `POST /usuarios/password/recuperar` | 10 peticiones por IP por minuto |
 | `POST /usuarios/password/restablecer` | 10 peticiones por IP por minuto |
 
@@ -238,7 +254,7 @@ El resto de endpoints no tiene rate limit explícito en el código actual.
 
 ## 3. Catálogo de endpoints existentes
 
-**Total: 25 endpoints de negocio** (más Swagger y el endpoint raíz de salud).
+**Total: 36 endpoints de negocio** (más Swagger y el endpoint raíz de salud).
 
 | # | Método | Ruta | Acceso | Uso en el frontend |
 |---|---|---|---|---|
@@ -259,7 +275,7 @@ El resto de endpoints no tiene rate limit explícito en el código actual.
 | 15 | `GET` | `/gestor/usuarios` | Gestor | Listado general de cuentas |
 | 16 | `GET` | `/gestor/comerciantes` | Gestor | Listado específico de comerciantes |
 | 17 | `GET` | `/gestor/usuarios/:id` | Gestor | Detalle de una cuenta |
-| 18 | `PATCH` | `/gestor/usuarios/:id/estado` | Gestor administrador | Activar, suspender o inactivar |
+| 18 | `PATCH` | `/gestor/usuarios/:id/estado` | Gestor administrador | Activar, suspender o inactivar; envía correo con motivo |
 | 19 | `GET` | `/gestor/organizaciones` | Gestor | Listado de organizaciones |
 | 20 | `GET` | `/gestor/organizaciones/:id` | Gestor | Detalle de una organización |
 | 21 | `PATCH` | `/gestor/organizaciones/:id/estado` | Gestor administrador | Validar o suspender organización |
@@ -267,6 +283,17 @@ El resto de endpoints no tiene rate limit explícito en el código actual.
 | 23 | `GET` | `/organizadores/mi-organizacion` | Organizador | Ver la organización propia |
 | 24 | `PATCH` | `/organizadores/mi-organizacion` | Organizador | Actualizar la organización |
 | 25 | `PATCH` | `/usuarios/:id/comerciante` | Gestor | Corregir datos sensibles del comerciante |
+| 26 | `GET` | `/auth/me` | Autenticado | Recuperar la sesión actual |
+| 27 | `POST` | `/auth/logout` | Autenticado | Cerrar sesión y revocar el token |
+| 28 | `GET` | `/gestor/perfil` | Gestor | Ver el perfil del gestor autenticado |
+| 29 | `PATCH` | `/gestor/perfil` | Gestor | Editar nombre, apellido y teléfono |
+| 30 | `PATCH` | `/gestor/perfil/password` | Gestor | Cambiar la contraseña del gestor |
+| 31 | `POST` | `/gestor/gestores/:id/reenviar-invitacion` | Gestor administrador | Reenviar credenciales temporales |
+| 32 | `GET` | `/notificaciones` | Autenticado | Listar notificaciones propias |
+| 33 | `PATCH` | `/notificaciones/:id/leida` | Autenticado | Marcar una notificación como leída |
+| 34 | `PATCH` | `/notificaciones/leer-todas` | Autenticado | Marcar todas como leídas |
+| 35 | `GET` | `/gestor/auditoria` | Gestor administrador | Consultar la auditoría sin datos sensibles |
+| 36 | `POST` | `/auth/refresh` | Público | Renovar la sesión con refresh token |
 
 ---
 
@@ -311,8 +338,10 @@ Es texto plano, no JSON. Sirve para comprobar que el servidor está arriba.
 {
   "requiereCambioPassword": false,
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "9f8c1b...",
   "tokenType": "Bearer",
   "expiresIn": 28800,
+  "refreshExpiresIn": 604800,
   "usuario": {
     "id": "3",
     "nombre": "María",
@@ -392,8 +421,10 @@ Se usa **solo** cuando el login devolvió `requiereCambioPassword: true`.
 {
   "requiereCambioPassword": false,
   "accessToken": "...",
+  "refreshToken": "9f8c1b...",
   "tokenType": "Bearer",
   "expiresIn": 1800,
+  "refreshExpiresIn": 604800,
   "usuario": {
     "id": "9",
     "nombre": "Ana",
@@ -1013,8 +1044,9 @@ No acepta `estado`, `validadoPor` ni `validadoEn`: eso corresponde al gestor.
 
 - Pantalla “Crear gestor” solo visible para administrador.
 - Tras el `201`, mostrar confirmación y explicar que debe revisar el correo.
-- Si `503`, advertir que la cuenta pudo crearse y que hoy **no existe un endpoint para
-  reenviar la invitación** (ver sección 8).
+- Si `503`, advertir que la cuenta pudo crearse y usar
+  `POST /gestor/gestores/:id/reenviar-invitacion` para generar una nueva contraseña
+  temporal.
 
 ---
 
@@ -1263,8 +1295,23 @@ Estados permitidos: `activa`, `suspendida`, `inactiva`.
 | La cuenta no existe | `404` |
 | Se activa una cuenta | Se limpian intentos fallidos y bloqueo |
 
-**Importante:** el cuerpo actual **no acepta motivo**. La auditoría guarda el estado
-anterior y el nuevo, pero no una justificación textual. Ver sección 8.
+**Motivo:** el cuerpo acepta `motivo` (3–300 caracteres). Es opcional, pero se
+recomienda enviarlo al suspender o inactivar. El backend envía un correo al titular
+con el motivo; no se agrega ninguna columna nueva a la base de datos. El motivo
+también se devuelve en la respuesta del administrador.
+
+```json
+{
+  "estado": "suspendida",
+  "motivo": "Incumplimiento del horario autorizado"
+}
+```
+
+Al intentar iniciar sesión con una cuenta suspendida o inactiva, el login responde
+`403` con el mensaje genérico:
+
+- Suspensión: «Su cuenta ha sido suspendida, comuníquese con soporte para activarla.»
+- Inactivación: «Su cuenta ha sido desactivada, comuníquese con soporte para activarla.»
 
 **Uso en el frontend:**
 
@@ -1406,6 +1453,199 @@ con los datos del organizador. `404` si no existe.
 - Solo para gestores, no para el propio comerciante.
 - El comerciante ve esos campos como solo lectura en `/perfil`.
 
+### 5.11 Sesión, refresh y logout — `/auth/me`, `/auth/refresh`, `/auth/logout`
+
+#### `GET /auth/me`
+
+**Acceso:** autenticado (cualquier rol activo).
+
+Devuelve el mismo objeto `usuario` que entrega el login:
+
+```json
+{
+  "id": "3",
+  "nombre": "María",
+  "apellido": "Gómez",
+  "correo": "maria.gomez@gmail.com",
+  "rol": "comerciante",
+  "perfil": null,
+  "estado": "activa"
+}
+```
+
+Sirve para validar la sesión al recargar la página y decidir la redirección por rol.
+Responde `401` si el token falta, es inválido, expiró o su sesión fue revocada.
+
+#### `POST /auth/refresh`
+
+**Acceso:** público con rate limit de 10 peticiones por IP por minuto.
+
+```json
+{ "refreshToken": "9f8c1b..." }
+```
+
+**Respuesta `200`:**
+
+```json
+{
+  "accessToken": "...",
+  "refreshToken": "...",
+  "tokenType": "Bearer",
+  "expiresIn": 28800,
+  "refreshExpiresIn": 604800,
+  "usuario": {
+    "id": "3",
+    "nombre": "María",
+    "apellido": "Gómez",
+    "correo": "maria.gomez@gmail.com",
+    "rol": "comerciante",
+    "perfil": null,
+    "estado": "activa"
+  }
+}
+```
+
+El refresh anterior queda invalidado por rotación. Si se reutiliza, la sesión se
+revoca y responde `401`.
+
+#### `POST /auth/logout`
+
+**Acceso:** autenticado.
+**Respuesta:** `204 No Content`.
+
+Cuerpo opcional:
+
+```json
+{ "todas": false }
+```
+
+El backend marca `sesiones.revocada_en` para la sesión actual. El access token deja
+de servir inmediatamente y el refresh token ya no puede rotarse. Con `todas: true`
+se revocan todas las sesiones del usuario. El frontend debe eliminar ambos tokens
+de su almacenamiento.
+
+---
+
+### 5.12 Perfil del gestor — `/gestor/perfil`
+
+**Acceso:** rol `gestor` (revisor y administrador).
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/gestor/perfil` | Datos del gestor autenticado |
+| `PATCH` | `/gestor/perfil` | Actualiza `nombre`, `apellido` y/o `telefono` |
+| `PATCH` | `/gestor/perfil/password` | Cambia la contraseña del gestor |
+
+**Respuesta de `GET /gestor/perfil`:**
+
+```json
+{
+  "id": "1",
+  "nombre": "Laura",
+  "apellido": "Martínez",
+  "correo": "admin@tulua.gov.co",
+  "telefono": "3001122334",
+  "perfil": "administrador",
+  "estado": "activa",
+  "creadoEn": "2026-09-15T14:30:00.000Z",
+  "actualizadoEn": "2026-09-20T10:00:00.000Z"
+}
+```
+
+**Cuerpo de `PATCH /gestor/perfil/password`:**
+
+```json
+{
+  "passwordActual": "Admin1234",
+  "passwordNueva": "NuevaClave456",
+  "confirmarPassword": "NuevaClave456"
+}
+```
+
+El cambio de contraseña exige la actual, aplica la política de 8–128 caracteres con
+al menos un número y envía un aviso al correo institucional.
+
+---
+
+### 5.13 Reenviar invitación a un gestor
+
+**Ruta:** `POST /gestor/gestores/:id/reenviar-invitacion`
+**Acceso:** solo gestor administrador.
+**Respuesta:** `200`.
+
+```json
+{
+  "id": "9",
+  "correo": "ana.lopez@tulua.gov.co",
+  "perfil": "revisor",
+  "mensaje": "Invitación reenviada. El gestor recibirá una nueva contraseña temporal por correo."
+}
+```
+
+Reglas:
+
+- Solo para cuentas con rol `gestor` y estado `pendiente_activacion`.
+- Genera una nueva contraseña temporal, actualiza el hash y limpia bloqueos.
+- Envía el correo con las credenciales.
+- Si la cuenta ya está activa o no está pendiente, responde `409`.
+- La contraseña temporal no se devuelve en la respuesta.
+
+---
+
+### 5.14 Notificaciones — `/notificaciones`
+
+**Acceso:** cualquier usuario autenticado. Cada usuario solo ve sus propias
+notificaciones.
+
+#### `GET /notificaciones`
+
+Query params: `leida` (`true`/`false`), `pagina` (desde 1), `limite` (1–100).
+
+```json
+{
+  "datos": [
+    {
+      "id": "12",
+      "tipo": "cambio_password",
+      "asunto": "Contraseña actualizada",
+      "cuerpo": "La contraseña de tu cuenta fue actualizada.",
+      "canal": "app",
+      "leida": false,
+      "creadaEn": "2026-09-20T10:00:00.000Z"
+    }
+  ],
+  "paginacion": {
+    "pagina": 1,
+    "limite": 20,
+    "total": 1,
+    "totalPaginas": 1
+  },
+  "noLeidas": 1
+}
+```
+
+#### `PATCH /notificaciones/:id/leida`
+
+Cuerpo opcional: `{ "leida": true }`. Por defecto marca como leída. Una notificación
+de otro usuario responde `404`.
+
+#### `PATCH /notificaciones/leer-todas`
+
+Marca todas las no leídas del usuario y devuelve `{ "actualizadas": 2, "mensaje": "..." }`.
+
+---
+
+### 5.15 Auditoría — `GET /gestor/auditoria`
+
+**Acceso:** solo gestor administrador.
+
+Query params: `tabla`, `registroId`, `accion` (`insert`/`update`/`delete`), `pagina`,
+`limite`.
+
+Devuelve los registros de `auditoria` con el actor y los valores anterior/nuevo.
+Los campos `password_hash`, `token_hash` y `qr_token` se eliminan recursivamente
+antes de responder.
+
 ---
 
 ## 6. Flujos de frontend
@@ -1452,7 +1692,7 @@ con los datos del organizador. `404` si no existe.
    - Guardar el correo.
    - Redirigir a `/primer-acceso`.
 3. Si hay `accessToken`:
-   - Guardar token y `usuario`.
+   - Guardar `accessToken`, `refreshToken` y `usuario`.
    - Redirigir según rol:
 
 | `usuario.rol` | `usuario.perfil` | Destino sugerido |
@@ -1561,8 +1801,9 @@ representante ni tipo de feria. Esos datos se registran después de activar la c
 - La contraseña debe tener 8–128 caracteres y al menos un número.
 - Al completar, redirigir a `/login`.
 - No permitir recuperación para cuentas pendientes: esas deben usar activación.
-- Si el usuario es un gestor pendiente que perdió su contraseña temporal, hoy no hay
-  flujo implementado (ver sección 8).
+- Si el usuario es un gestor pendiente que perdió su contraseña temporal, el
+  administrador puede reenviar la invitación con
+  `POST /gestor/gestores/:id/reenviar-invitacion`.
 
 ### 6.6 Primer acceso del gestor
 
@@ -1632,20 +1873,26 @@ Después del login, consultar `GET /perfil`.
 
 - Puede ver todo.
 - Puede crear gestores.
-- Puede activar, suspender e inactivar cuentas.
+- Puede reenviar la invitación a un gestor pendiente.
+- Puede activar, suspender e inactivar cuentas; al suspender o inactivar se envía
+  un correo al titular con el motivo informado.
 - Puede activar o suspender organizaciones.
 - Puede corregir datos sensibles de comerciantes.
+- Puede consultar la auditoría del sistema.
 
 ### 6.10 Sesión y expiración
 
-- Guardar `accessToken` y `usuario` al iniciar sesión.
+- Guardar `accessToken`, `refreshToken` y `usuario` al iniciar sesión.
 - Añadir el header `Authorization` en cada petición protegida.
-- Ante `401`, limpiar la sesión y redirigir a `/login`.
-- Ante `403` por cuenta no activa, mostrar el mensaje y cerrar sesión.
-- El token del gestor dura 30 minutos; el de comerciante/organizador, 8 horas.
-- No hay refresh token: cuando expire, el usuario debe iniciar sesión de nuevo.
-- Para recordar la sesión tras recargar, el frontend puede guardar el usuario y llamar
-  a `/perfil` o `/panel`; si no hay endpoint `/auth/me`, esta es la alternativa actual.
+- Al recargar, llamar a `GET /auth/me` para validar el token y recuperar el rol.
+- Ante `401` por access token expirado, intentar `POST /auth/refresh` **una sola vez**.
+  Si el refresh falla, borrar ambos tokens y redirigir a `/login`.
+- No reintentar el refresh en bucle si el `401` viene de una sesión revocada.
+- Ante `403` por cuenta suspendida o inactiva, mostrar el mensaje y cerrar sesión.
+- El access token del gestor dura 30 minutos; el de comerciante/organizador, 8 horas.
+  El refresh token dura 7 días por defecto.
+- Para cerrar sesión, llamar a `POST /auth/logout` y eliminar ambos tokens del
+  almacenamiento local. La revocación queda persistida en `sesiones.revocada_en`.
 
 ---
 
@@ -1704,69 +1951,36 @@ Debe centralizar:
 
 ---
 
-## 8. Endpoints y ajustes que faltan para cerrar el Sprint 1
+## 8. Estado de los faltantes del Sprint 1
 
-**Ninguno de los endpoints funcionales de HU-01 a HU-07 está ausente.** Los siguientes
-son necesarios para que el frontend cubra el sprint sin improvisar contratos.
+**Todos los endpoints funcionales y de soporte previstos para el Sprint 1 quedaron
+implementados.**
 
-### 8.1 Prioridad P0 — bloqueantes para conectar Next.js
+### 8.1 Implementado en este sprint
 
-| Falta | Motivo | Propuesta |
-|---|---|---|
-| **CORS** | El frontend en `:3001` no puede llamar a la API | Habilitar `app.enableCors` con `FRONTEND_URL` |
-| **Decidir prefijo** | El código no usa `/api/v1`, pero `AGENTS.md` lo menciona | Mantener rutas actuales o agregar `setGlobalPrefix('api/v1')` y actualizar todo |
-| **Sesión actual** | No hay endpoint para recuperar la sesión al recargar | `GET /auth/me` que devuelva el mismo `usuario` del login |
-| **Contrato de logout** | No hay endpoint de cierre de sesión | Documentar logout local o crear `POST /auth/logout` |
+| Elemento | Estado |
+|---|---|
+| CORS para `FRONTEND_URL` | **Implementado** en `src/main.ts` |
+| Prefijo de API | **Se mantiene sin prefijo global**; documentación corregida |
+| `GET /auth/me` | **Implementado** |
+| `POST /auth/refresh` | **Implementado** con rotación y detección de reutilización |
+| `POST /auth/logout` | **Implementado**; revoca la sesión en la tabla `sesiones` |
+| Tabla `sesiones` | **Creada** en `sgp_tulua` para refresh tokens y logout persistente |
+| `GET/PATCH /gestor/perfil` | **Implementado** |
+| `PATCH /gestor/perfil/password` | **Implementado**; revoca las sesiones |
+| `POST /gestor/gestores/:id/reenviar-invitacion` | **Implementado** |
+| Motivo y correo al suspender/inactivar | **Implementado**; el motivo viaja en el correo, sin columna nueva |
+| Módulo de notificaciones | **Implementado** (`GET`, marcar una, marcar todas) |
+| Consulta de auditoría | **Implementado** solo para administrador y con datos sensibles filtrados |
+| Rate limit en registro, activación y refresh | **Implementado** a 10 peticiones por minuto |
 
-**Contrato propuesto para `GET /auth/me`:**
-
-```json
-{
-  "id": "3",
-  "nombre": "María",
-  "apellido": "Gómez",
-  "correo": "maria.gomez@gmail.com",
-  "rol": "comerciante",
-  "perfil": null,
-  "estado": "activa"
-}
-```
-
-Debe requerir `Authorization: Bearer <token>` y responder `401` si el token no es válido.
-
-### 8.2 Prioridad P1 — completar la experiencia del Sprint 1
-
-| Falta | Motivo | Propuesta |
-|---|---|---|
-| Perfil del gestor | `/perfil` solo acepta comerciante/organizador | `GET /gestor/perfil` |
-| Cambio de contraseña del gestor | El gestor solo puede cambiarla en el primer acceso | `PATCH /gestor/perfil/password` |
-| Reenvío de invitación al gestor | Si el correo falla, la cuenta queda pendiente y no hay recuperación | `POST /gestor/gestores/:id/reenviar-invitacion` |
-| Motivo al suspender/inactivar una cuenta | La auditoría no guarda una justificación textual y el usuario no recibe aviso | Añadir `motivo` a `PATCH /gestor/usuarios/:id/estado` y crear notificación |
-| Notificaciones | El backend las escribe, pero no hay forma de leerlas | `GET /notificaciones`, `PATCH /notificaciones/:id/leida`, `PATCH /notificaciones/leer-todas` |
-| Consulta de auditoría | HU-05 registra, pero el panel no puede mostrarlo | `GET /gestor/auditoria?tabla=&registroId=&pagina=` |
-| Rate limit en registro y activación | `AGENTS.md` lo exige; hoy solo login y recuperación lo tienen | Aplicar `ThrottlerGuard` a registro y activación |
-
-**Contrato propuesto para el cambio de estado con motivo:**
-
-```json
-{
-  "estado": "suspendida",
-  "motivo": "Reporte de incumplimiento en el horario autorizado"
-}
-```
-
-El `motivo` debería ser obligatorio para `suspendida` e `inactiva`, guardarse en la
-auditoría y aparecer en la notificación del usuario.
-
-### 8.3 Prioridad P2 — decisiones posteriores
+### 8.2 Decisiones posteriores (P2)
 
 | Falta | Nota |
 |---|---|
-| `POST /auth/refresh` | No existe refresh token; si se implementa, definir cookies y rotación |
-| `POST /auth/logout` | Con JWT sin estado, el logout puede ser local; si se requiere invalidación, necesita lista negra |
 | Cambio de correo | Requiere verificación en el correo nuevo; hoy está fuera de alcance |
-| Recuperación para gestor pendiente | Se resuelve con el reenvío de invitación |
 | Documentos de la organización | El modelo actual no tiene tabla para documentos de organizador |
+| Listado/revocación de sesiones por dispositivo | La tabla lo permite; no se expone aún un endpoint de administración de sesiones |
 
 ---
 
@@ -1779,9 +1993,6 @@ Estos módulos **no deben conectarse a endpoints inexistentes**. Se deben mostra
 |---|---|---|
 | Eventos y ferias de la bienvenida | Sin endpoint público en Sprint 1 | Contenido estático o placeholder |
 | Mapa interactivo ciudadano | Corresponde al Sprint 2 (GIS) | Vista “Próximamente”; no inventar endpoint |
-| Notificaciones en la app | Solo se escriben en BD; sin controller | No mostrar campana activa todavía |
-| Auditoría visible en el panel | Se registra, pero no se expone | No prometer historial en la UI |
-| Perfil del gestor | No existe endpoint propio | Mostrar solo datos de `GET /panel` |
 | Solicitudes de espacio | Sprint 3 | No incluir en menú del Sprint 1 |
 | Ferias y calendario | Sprint 3 | No incluir |
 | Permisos y QR | Sprint 5 | No incluir |
@@ -1828,8 +2039,8 @@ Toda pantalla que consuma datos debe tener:
 | Situación | Mensaje |
 |---|---|
 | Cuenta pendiente | “Tu cuenta está pendiente de activación. Revisa el código enviado a tu correo.” |
-| Cuenta suspendida | “Tu cuenta está suspendida. Comunícate con la Secretaría de Gobierno.” |
-| Cuenta inactiva | “Tu cuenta está inactiva. Comunícate con la Secretaría de Gobierno.” |
+| Cuenta suspendida | “Su cuenta ha sido suspendida, comuníquese con soporte para activarla.” |
+| Cuenta inactiva | “Su cuenta ha sido desactivada, comuníquese con soporte para activarla.” |
 | Bloqueo por intentos | “La cuenta está bloqueada temporalmente. Inténtalo en X minutos.” |
 | Organización en revisión | “Tu organización está pendiente de validación por la Alcaldía.” |
 | Organización suspendida | “Tu organización está suspendida. Revisa el motivo o contacta a la Alcaldía.” |
@@ -1888,24 +2099,30 @@ Swagger: `http://localhost:3000/api/docs`.
 
 ## 12. Checklist de integración del frontend
 
-- [ ] Decidir y fijar la URL base (con o sin `/api/v1`).
-- [ ] Habilitar CORS en el backend para `FRONTEND_URL`.
+- [ ] Usar `NEXT_PUBLIC_API_URL=http://localhost:3000` (sin prefijo).
+- [ ] Verificar que CORS responde con el origen de `FRONTEND_URL`.
 - [ ] Crear `lib/api-client.ts` con manejo central de token y errores.
 - [ ] Definir tipos TypeScript basados en este documento o en Swagger.
 - [ ] Implementar layout público con navbar responsive.
 - [ ] Implementar bienvenida con contenido estático y CTAs.
 - [ ] Implementar login con redirección por rol/perfil.
+- [ ] Implementar `GET /auth/me` para recuperar la sesión al recargar.
+- [ ] Implementar `POST /auth/refresh` y la rotación de tokens.
+- [ ] Implementar `POST /auth/logout` y borrar ambos tokens locales.
 - [ ] Implementar el reto de primer acceso del gestor.
 - [ ] Implementar registro de comerciante y organizador con validaciones espejo.
 - [ ] Implementar activación y reenvío de código.
 - [ ] Implementar recuperación y restablecimiento de contraseña.
 - [ ] Implementar perfil de comerciante y organizador.
+- [ ] Implementar perfil y cambio de contraseña del gestor.
 - [ ] Implementar onboarding y edición de la organización.
 - [ ] Implementar panel del gestor con indicadores.
 - [ ] Implementar listados, filtros y paginación de usuarios.
-- [ ] Implementar detalle de cuenta y cambio de estado según perfil.
+- [ ] Implementar detalle de cuenta y cambio de estado según perfil, con motivo y aviso.
 - [ ] Implementar listado, detalle y validación de organizaciones.
-- [ ] Implementar creación de gestores.
+- [ ] Implementar creación y reenvío de invitación de gestores.
+- [ ] Implementar la bandeja de notificaciones.
+- [ ] Implementar la consulta de auditoría solo para administrador.
 - [ ] Implementar corrección de datos de comerciante por gestor.
 - [ ] Ocultar acciones no permitidas para el revisor.
 - [ ] Añadir estados de carga, vacío, error y éxito.
@@ -1916,37 +2133,36 @@ Swagger: `http://localhost:3000/api/docs`.
 
 ## 13. Riesgos y observaciones
 
-1. **CORS ausente:** es el primer bloqueo técnico para conectar Next.js.
-2. **Prefijo de API inconsistente:** el código y `AGENTS.md` no coinciden; resolverlo
-   antes de escribir decenas de llamadas.
-3. **Sin refresh token:** la sesión del gestor expira en 30 minutos y obliga a un nuevo
-   login; el frontend debe manejarlo con elegancia.
-4. **Sin `/auth/me`:** recuperar la sesión al recargar requiere lógica por rol usando
-   `/perfil` o `/panel`.
-5. **Gestor pendiente sin reenvío:** si el correo de invitación falla, hoy no hay salida
-   desde la API.
-6. **Suspensión sin motivo:** la HU-05 puede quedar incompleta si se exige justificación.
-7. **Notificaciones no consultables:** se crean en la BD, pero el usuario no puede verlas
-   desde la app.
-8. **Correo en desarrollo:** los códigos solo aparecen en el log; el equipo de frontend
-   debe saberlo para probar.
-9. **Paginación:** se usa `pagina`/`limite`, no `page`/`limit`; el cliente debe respetar
+1. **CORS restringido:** solo funciona el origen de `FRONTEND_URL`; en producción debe
+   configurarse el dominio real.
+2. **Prefijo:** la API se mantiene sin prefijo global; `NEXT_PUBLIC_API_URL` no debe
+   incluir `/api/v1`.
+3. **Rotación de refresh:** cada refresh invalida el anterior. El frontend debe guardar
+   siempre el último refresh y no reintentar con uno viejo.
+4. **Logout persistente:** la revocación se guarda en `sesiones.revocada_en`. Los
+   access tokens de la sesión dejan de servir inmediatamente.
+5. **Correo en desarrollo:** los códigos y las contraseñas temporales solo aparecen en el
+   log si `MAIL_HOST` está vacío; el equipo de frontend debe saberlo para probar.
+6. **Paginación:** se usa `pagina`/`limite`, no `page`/`limit`; el cliente debe respetar
    el contrato real.
-10. **Datos sensibles:** el frontend nunca debe mostrar `password_hash` ni `qr_token`;
-    el backend ya los excluye, pero no deben añadirse a tipos locales por error.
+7. **Datos sensibles:** el frontend nunca debe mostrar `password_hash`, `token_hash`,
+   `refresh_token_hash` ni `qr_token`; el backend ya los excluye.
+8. **Auditoría:** solo el administrador puede consultarla y el backend filtra los campos
+   sensibles antes de responder.
 
 ---
 
 ## 14. Resumen para el equipo de frontend
 
-- La API del Sprint 1 está **funcionalmente completa** para las siete historias.
-- Se puede construir ya: bienvenida, login, registro, activación, recuperación, perfiles,
-  organizaciones y panel de gestión de usuarios.
-- Antes de conectar, resolver **CORS**, **prefijo de API** y, preferiblemente,
-  **`GET /auth/me`**.
-- Los módulos de eventos, mapa, notificaciones, auditoría, solicitudes, ferias, permisos,
-  cobros y dashboard analítico **no pertenecen al Sprint 1** y no tienen endpoints
-  disponibles todavía.
+- La API del Sprint 1 está **completa** para las siete historias.
+- Ya se puede construir: bienvenida, login, sesión actual, logout, registro, activación,
+  recuperación, perfiles, perfil del gestor, organizaciones, notificaciones, auditoría y
+  panel de gestión de usuarios.
+- CORS, prefijo de API, `GET /auth/me`, refresh token con rotación, logout persistente,
+  perfil del gestor, reenvío de invitación, motivo de suspensión, notificaciones,
+  auditoría y rate limits **ya están implementados**.
+- Los módulos de eventos, mapa, solicitudes, ferias, permisos, cobros y dashboard
+  analítico **no pertenecen al Sprint 1** y no tienen endpoints disponibles todavía.
 - La bienvenida debe usar contenido estático y placeholders para eventos y mapa.
 - El frontend debe tratar los IDs como string, manejar `message` como string o array y
   respetar los roles `comerciante`, `organizador`, `gestor/revisor` y

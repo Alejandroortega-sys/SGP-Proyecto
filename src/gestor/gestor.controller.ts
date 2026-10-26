@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -25,11 +27,25 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UsuarioActual } from '../auth/decorators/usuario-actual.decorator';
 import type { UsuarioAutenticado } from '../auth/interfaces/usuario-autenticado.interface';
 import { parseIdBigint } from '../common/parse-id';
+import type { CambiarPasswordDto } from '../perfil/dto/cambiar-password.dto';
+import { MensajeResponseDto } from '../usuarios/dto/comerciante-response.dto';
+import {
+  ListarAuditoriaQueryDto,
+  ListarAuditoriaResponseDto,
+} from './dto/auditoria.dto';
 import {
   CambiarEstadoUsuarioDto,
   UsuarioEstadoActualizadoDto,
 } from './dto/cambiar-estado-usuario.dto';
-import { CrearGestorDto, GestorCreadoDto } from './dto/crear-gestor.dto';
+import {
+  CrearGestorDto,
+  GestorCreadoDto,
+  InvitacionGestorReenviadaDto,
+} from './dto/crear-gestor.dto';
+import {
+  ActualizarPerfilGestorDto,
+  PerfilGestorResponseDto,
+} from './dto/perfil-gestor.dto';
 import { ListarComerciantesQueryDto } from './dto/listar-comerciantes-query.dto';
 import { ListarComerciantesResponseDto } from './dto/listar-comerciantes-response.dto';
 import { ListarUsuariosQueryDto } from './dto/listar-usuarios-query.dto';
@@ -56,6 +72,148 @@ import { GestorService } from './gestor.service';
 @Controller('gestor')
 export class GestorController {
   constructor(private readonly gestor: GestorService) {}
+
+  /**
+   * Devuelve los datos del gestor autenticado.
+   */
+  @ApiOperation({
+    summary: 'Ver mi perfil de gestor',
+    description:
+      'Devuelve los datos personales, el correo institucional, el perfil ' +
+      '(revisor o administrador) y el estado de la cuenta del gestor ' +
+      'autenticado.',
+  })
+  @ApiOkResponse({ type: PerfilGestorResponseDto })
+  @ApiUnauthorizedResponse({
+    description: 'Falta el token de acceso o es inválido/expirado',
+  })
+  @ApiForbiddenResponse({ description: 'El rol del usuario no es gestor' })
+  @Get('perfil')
+  verPerfil(
+    @UsuarioActual() usuario: UsuarioAutenticado,
+  ): Promise<PerfilGestorResponseDto> {
+    return this.gestor.verPerfil(parseIdBigint(usuario.id));
+  }
+
+  /**
+   * Actualiza los datos personales del gestor autenticado.
+   */
+  @ApiOperation({
+    summary: 'Actualizar mi perfil de gestor',
+    description:
+      'Actualiza nombre, apellido y/o teléfono del gestor autenticado (al ' +
+      'menos uno). El correo, el perfil y el estado no se modifican desde ' +
+      'este endpoint. El cambio queda auditado con el gestor como actor.',
+  })
+  @ApiOkResponse({ type: PerfilGestorResponseDto })
+  @ApiBadRequestResponse({ description: 'Ningún campo válido en el cuerpo' })
+  @ApiUnauthorizedResponse({
+    description: 'Falta el token de acceso o es inválido/expirado',
+  })
+  @ApiForbiddenResponse({ description: 'El rol del usuario no es gestor' })
+  @Patch('perfil')
+  actualizarPerfil(
+    @UsuarioActual() usuario: UsuarioAutenticado,
+    @Body() dto: ActualizarPerfilGestorDto,
+  ): Promise<PerfilGestorResponseDto> {
+    return this.gestor.actualizarPerfil(
+      parseIdBigint(usuario.id),
+      dto,
+    );
+  }
+
+  /**
+   * Cambia la contraseña del gestor autenticado.
+   */
+  @ApiOperation({
+    summary: 'Cambiar mi contraseña de gestor',
+    description:
+      'Exige la contraseña actual y guarda la nueva con la política del ' +
+      'registro (8–128 caracteres y al menos un número). Envía un aviso al ' +
+      'correo institucional y registra el cambio en la auditoría.',
+  })
+  @ApiOkResponse({ type: MensajeResponseDto })
+  @ApiBadRequestResponse({
+    description: 'La contraseña actual es incorrecta o la nueva no cumple la política',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Falta el token de acceso o es inválido/expirado',
+  })
+  @ApiForbiddenResponse({ description: 'El rol del usuario no es gestor' })
+  @Patch('perfil/password')
+  cambiarPassword(
+    @UsuarioActual() usuario: UsuarioAutenticado,
+    @Body() dto: CambiarPasswordDto,
+  ): Promise<MensajeResponseDto> {
+    return this.gestor.cambiarPassword(parseIdBigint(usuario.id), dto);
+  }
+
+  /**
+   * Consulta la auditoría de cambios. Solo administrador.
+   */
+  @ApiOperation({
+    summary: 'Consultar la auditoría (administrador)',
+    description:
+      'Acceso exclusivo de gestores con perfil «administrador». Devuelve ' +
+      'los cambios registrados en `auditoria`, con filtros por tabla, ' +
+      'registro y acción. Los valores JSON se limpian para no exponer ' +
+      '`password_hash`, `token_hash` ni `qr_token`.',
+  })
+  @ApiOkResponse({ type: ListarAuditoriaResponseDto })
+  @ApiBadRequestResponse({ description: 'Parámetros de consulta inválidos' })
+  @ApiUnauthorizedResponse({
+    description: 'Falta el token de acceso o es inválido/expirado',
+  })
+  @ApiForbiddenResponse({
+    description: 'El rol no es gestor o el perfil no es administrador',
+  })
+  @PerfilGestor('administrador')
+  @Get('auditoria')
+  listarAuditoria(
+    @Query() dto: ListarAuditoriaQueryDto,
+  ): Promise<ListarAuditoriaResponseDto> {
+    return this.gestor.listarAuditoria(dto);
+  }
+
+  /**
+   * Reenvía la invitación a un gestor pendiente de primer acceso.
+   */
+  @ApiOperation({
+    summary: 'Reenviar invitación a un gestor pendiente (administrador)',
+    description:
+      'Acceso exclusivo de gestores con perfil «administrador». Genera una ' +
+      'nueva contraseña temporal para una cuenta de gestor en ' +
+      '«pendiente_activacion», actualiza el hash y envía las credenciales al ' +
+      'correo institucional. La contraseña temporal no se devuelve en la ' +
+      'respuesta.',
+  })
+  @ApiOkResponse({ type: InvitacionGestorReenviadaDto })
+  @ApiBadRequestResponse({ description: 'Identificador no válido' })
+  @ApiUnauthorizedResponse({
+    description: 'Falta el token de acceso o es inválido/expirado',
+  })
+  @ApiForbiddenResponse({
+    description: 'El rol no es gestor o el perfil no es administrador',
+  })
+  @ApiNotFoundResponse({ description: 'El gestor no existe' })
+  @ApiConflictResponse({
+    description: 'La cuenta ya está activa o no está pendiente de activación',
+  })
+  @ApiServiceUnavailableResponse({
+    description: 'No se pudo enviar el correo con la nueva contraseña temporal',
+  })
+  @PerfilGestor('administrador')
+  @HttpCode(HttpStatus.OK)
+  @Post('gestores/:id/reenviar-invitacion')
+  reenviarInvitacion(
+    @Param('id') id: string,
+    @UsuarioActual() gestor: UsuarioAutenticado,
+  ): Promise<InvitacionGestorReenviadaDto> {
+    return this.gestor.reenviarInvitacion(
+      parseIdBigint(id),
+      parseIdBigint(gestor.id),
+    );
+  }
 
   /**
    * Crea un gestor con perfil revisor o administrador. Solo administrador.

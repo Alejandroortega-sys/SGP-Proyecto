@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { SesionesService } from './sesiones.service';
 import { crearOpcionesThrottler } from './throttler.config';
 
 /**
@@ -40,7 +41,7 @@ import { crearOpcionesThrottler } from './throttler.config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, ThrottlerGuard],
-  exports: [AuthService],
+  providers: [AuthService, SesionesService, ThrottlerGuard],
+  exports: [AuthService, SesionesService],
 })
 export class AuthModule {}

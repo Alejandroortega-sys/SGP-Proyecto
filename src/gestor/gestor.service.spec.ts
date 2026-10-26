@@ -1,6 +1,8 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
+  Logger,
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -25,11 +27,17 @@ const CONFIG = {
 function crearCorreoMock(): {
   correo: CorreoService;
   enviarCredencialesGestor: jest.Mock;
+  enviarAvisoEstadoCuenta: jest.Mock;
 } {
   const enviarCredencialesGestor = jest.fn().mockResolvedValue(undefined);
+  const enviarAvisoEstadoCuenta = jest.fn().mockResolvedValue(undefined);
   return {
-    correo: { enviarCredencialesGestor } as unknown as CorreoService,
+    correo: {
+      enviarCredencialesGestor,
+      enviarAvisoEstadoCuenta,
+    } as unknown as CorreoService,
     enviarCredencialesGestor,
+    enviarAvisoEstadoCuenta,
   };
 }
 
@@ -196,6 +204,8 @@ function crearPrisma(): {
     update: jest.Mock;
   };
   notificaciones: { create: jest.Mock };
+  auditoria: { findMany: jest.Mock; count: jest.Mock };
+  sesiones: { updateMany: jest.Mock };
   queryRaw: jest.Mock;
   executeRaw: jest.Mock;
   transaction: jest.Mock;
@@ -208,6 +218,8 @@ function crearPrisma(): {
     update: jest.fn(),
   };
   const notificaciones = { create: jest.fn().mockResolvedValue(undefined) };
+  const auditoria = { findMany: jest.fn(), count: jest.fn() };
+  const sesiones = { updateMany: jest.fn().mockResolvedValue({ count: 1 }) };
   const queryRaw = jest.fn().mockResolvedValue([]);
   const executeRaw = jest.fn().mockResolvedValue(1);
   const transaction = jest.fn(
@@ -217,6 +229,8 @@ function crearPrisma(): {
   const prisma = {
     usuarios,
     notificaciones,
+    auditoria,
+    sesiones,
     $queryRaw: queryRaw,
     $executeRaw: executeRaw,
     $transaction: transaction,
@@ -226,6 +240,8 @@ function crearPrisma(): {
     prisma,
     usuarios,
     notificaciones,
+    auditoria,
+    sesiones,
     queryRaw,
     executeRaw,
     transaction,
@@ -249,6 +265,14 @@ function usuarioEstado(
 }
 
 describe('GestorService', () => {
+  beforeAll(() => {
+    jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
   describe('crearGestor', () => {
     it('crea la cuenta, el perfil, la auditoría y envía la contraseña temporal', async () => {
       const { prisma, usuarios, executeRaw } = crearPrisma();
@@ -335,6 +359,194 @@ describe('GestorService', () => {
           1n,
         ),
       ).rejects.toThrow(ServiceUnavailableException);
+    });
+  });
+
+  describe('perfil del gestor', () => {
+    const PERFIL = {
+      id: 1n,
+      nombre: 'Laura',
+      apellido: 'Martínez',
+      telefono: '3001122334',
+      correo: 'admin@tulua.gov.co',
+      rol: 'gestor',
+      estado: 'activa',
+      creado_en: FECHA,
+      actualizado_en: FECHA,
+      gestores_gestores_usuario_idTousuarios: { perfil: 'administrador' },
+    };
+
+    it('devuelve el perfil del gestor autenticado', async () => {
+      const { prisma, usuarios } = crearPrisma();
+      usuarios.findUnique.mockResolvedValue(PERFIL);
+      const service = crearService(prisma);
+
+      const perfil = await service.verPerfil(1n);
+
+      expect(perfil).toEqual({
+        id: '1',
+        nombre: 'Laura',
+        apellido: 'Martínez',
+        correo: 'admin@tulua.gov.co',
+        telefono: '3001122334',
+        perfil: 'administrador',
+        estado: 'activa',
+        creadoEn: FECHA,
+        actualizadoEn: FECHA,
+      });
+    });
+
+    it('actualiza los datos personales y audita con el propio gestor', async () => {
+      const { prisma, usuarios, executeRaw } = crearPrisma();
+      usuarios.findUnique.mockResolvedValue(PERFIL);
+      usuarios.update.mockResolvedValue(PERFIL);
+      const service = crearService(prisma);
+
+      await service.actualizarPerfil(1n, {
+        nombre: ' Laura ',
+        telefono: '3115550000',
+      });
+
+      expect(usuarios.update).toHaveBeenCalledWith({
+        where: { id: 1n },
+        data: { nombre: 'Laura', telefono: '3115550000' },
+      });
+      expect(executeRaw).toHaveBeenCalledTimes(1);
+    });
+
+    it('rechaza el cambio de contraseña si la actual no coincide', async () => {
+      const { prisma, usuarios } = crearPrisma();
+      usuarios.findUnique.mockResolvedValue({
+        id: 1n,
+        rol: 'gestor',
+        nombre: 'Laura',
+        correo: 'admin@tulua.gov.co',
+        password_hash: 'hash-invalido',
+      });
+
+      await expect(
+        crearService(prisma).cambiarPassword(1n, {
+          passwordActual: 'incorrecta',
+          passwordNueva: 'NuevaClave456',
+          confirmarPassword: 'NuevaClave456',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(usuarios.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('reenviarInvitacion', () => {
+    it('genera una nueva contraseña temporal y envía el correo', async () => {
+      const { prisma, usuarios, notificaciones } = crearPrisma();
+      const { correo, enviarCredencialesGestor } = crearCorreoMock();
+      usuarios.findUnique.mockResolvedValue({
+        id: 9n,
+        nombre: 'Ana',
+        correo: 'ana.lopez@tulua.gov.co',
+        rol: 'gestor',
+        estado: 'pendiente_activacion',
+        gestores_gestores_usuario_idTousuarios: { perfil: 'revisor' },
+      });
+      usuarios.update.mockResolvedValue({});
+      const service = crearService(prisma, correo);
+
+      const respuesta = await service.reenviarInvitacion(9n, 1n);
+
+      expect(usuarios.update).toHaveBeenCalledWith({
+        where: { id: 9n },
+        data: {
+          password_hash: expect.any(String),
+          intentos_fallidos: 0,
+          bloqueado_hasta: null,
+        },
+      });
+      expect(notificaciones.create).toHaveBeenCalled();
+      expect(enviarCredencialesGestor).toHaveBeenCalledWith(
+        'ana.lopez@tulua.gov.co',
+        'Ana',
+        'revisor',
+        expect.stringMatching(/^.{8,}$/),
+        'http://localhost:3001/login',
+      );
+      expect(respuesta).toMatchObject({
+        id: '9',
+        correo: 'ana.lopez@tulua.gov.co',
+        perfil: 'revisor',
+      });
+    });
+
+    it('no reenvía la invitación a una cuenta ya activa', async () => {
+      const { prisma, usuarios } = crearPrisma();
+      usuarios.findUnique.mockResolvedValue({
+        id: 9n,
+        nombre: 'Ana',
+        correo: 'ana.lopez@tulua.gov.co',
+        rol: 'gestor',
+        estado: 'activa',
+        gestores_gestores_usuario_idTousuarios: { perfil: 'revisor' },
+      });
+
+      await expect(
+        crearService(prisma).reenviarInvitacion(9n, 1n),
+      ).rejects.toThrow(ConflictException);
+      expect(usuarios.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('listarAuditoria', () => {
+    it('página los registros y elimina los campos sensibles del JSON', async () => {
+      const { prisma, auditoria } = crearPrisma();
+      auditoria.findMany.mockResolvedValue([
+        {
+          id: 101n,
+          tabla: 'usuarios',
+          registro_id: 5n,
+          accion: 'update',
+          valor_anterior: {
+            nombre: 'José',
+            password_hash: 'hash-anterior',
+            anidado: { token_hash: 'token' },
+          },
+          valor_nuevo: {
+            nombre: 'José Antonio',
+            password_hash: 'hash-nuevo',
+            qr_token: 'qr',
+          },
+          creado_en: FECHA,
+          usuarios: {
+            id: 1n,
+            nombre: 'Laura',
+            apellido: 'Martínez',
+            correo: 'admin@tulua.gov.co',
+          },
+        },
+      ]);
+      auditoria.count.mockResolvedValue(1);
+
+      const resultado = await crearService(prisma).listarAuditoria({
+        pagina: 1,
+        limite: 20,
+      });
+
+      expect(resultado.paginacion).toEqual({
+        pagina: 1,
+        limite: 20,
+        total: 1,
+        totalPaginas: 1,
+      });
+      expect(resultado.datos[0].valorAnterior).toEqual({
+        nombre: 'José',
+        anidado: {},
+      });
+      expect(resultado.datos[0].valorNuevo).toEqual({
+        nombre: 'José Antonio',
+      });
+      expect(resultado.datos[0].actor).toEqual({
+        id: '1',
+        nombre: 'Laura',
+        apellido: 'Martínez',
+        correo: 'admin@tulua.gov.co',
+      });
     });
   });
 
@@ -699,6 +911,26 @@ describe('GestorService', () => {
           estado: true,
         },
       });
+    });
+
+    it('envía el correo de suspensión con el motivo informado', async () => {
+      const { prisma } = prepararEstado(usuarioEstado('activa'));
+      const { correo, enviarAvisoEstadoCuenta } = crearCorreoMock();
+      const service = crearService(prisma, correo);
+
+      const respuesta = await service.cambiarEstado(
+        5n,
+        { estado: 'suspendida', motivo: 'Horario incumplido' },
+        1n,
+      );
+
+      expect(enviarAvisoEstadoCuenta).toHaveBeenCalledWith(
+        'jose.perez@hotmail.com',
+        usuarioEstado('activa').nombre,
+        'suspendida',
+        'Horario incumplido',
+      );
+      expect(respuesta.motivo).toBe('Horario incumplido');
     });
 
     it('responde 404 si la cuenta no existe', async () => {

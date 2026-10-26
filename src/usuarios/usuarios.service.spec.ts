@@ -37,6 +37,7 @@ interface PrismaMock {
     updateMany: jest.Mock;
   };
   notificaciones: { create: jest.Mock };
+  sesiones: { updateMany: jest.Mock };
   $executeRaw: jest.Mock;
   $transaction: jest.Mock;
 }
@@ -52,6 +53,7 @@ function crearPrismaMock(): PrismaMock {
       updateMany: jest.fn(),
     },
     notificaciones: { create: jest.fn() },
+    sesiones: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
     $executeRaw: jest.fn(),
     $transaction: jest.fn(),
   };

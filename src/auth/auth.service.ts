@@ -7,12 +7,14 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { enteroPositivo } from '../common/entero-positivo';
 import { fijarActorAuditoria } from '../common/auditoria';
 import { OPCIONES_ARGON2 } from '../common/opciones-argon2';
+import { parseIdBigint } from '../common/parse-id';
 import type {
   estado_usuario,
   perfil_gestor,
@@ -22,10 +24,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
   LoginPrimerAccesoResponseDto,
   LoginResponseDto,
+  RefreshResponseDto,
 } from './dto/login-response.dto';
 import type { LoginDto } from './dto/login.dto';
+import type { LogoutDto } from './dto/logout.dto';
 import type { PrimerAccesoGestorDto } from './dto/primer-acceso-gestor.dto';
+import type { RefreshTokenDto } from './dto/refresh-token.dto';
 import type { JwtPayload } from './interfaces/jwt-payload.interface';
+import { SesionesService } from './sesiones.service';
 
 /** Mensaje único para no revelar si el correo está registrado. */
 const CREDENCIALES_INVALIDAS = 'Credenciales inválidas';
@@ -45,9 +51,9 @@ const MENSAJES_ESTADO: Record<estado_usuario, string> = {
     'La cuenta está pendiente de activación. Revisa tu correo e ingresa el ' +
     'código de activación.',
   suspendida:
-    'La cuenta está suspendida. Comunícate con la Secretaría de Gobierno.',
+    'Su cuenta ha sido suspendida, comuníquese con soporte para activarla.',
   inactiva:
-    'La cuenta está inactiva. Comunícate con la Secretaría de Gobierno.',
+    'Su cuenta ha sido desactivada, comuníquese con soporte para activarla.',
   activa: '',
 };
 
@@ -94,6 +100,8 @@ export class AuthService {
   private readonly expiracionNormal: number;
   /** Vigencia del token para gestores. */
   private readonly expiracionGestor: number;
+  /** Vigencia del refresh token, en segundos. */
+  private readonly expiracionRefresh: number;
   /** Fallos consecutivos que provocan el bloqueo. */
   private readonly maxIntentos: number;
   /** Duración del bloqueo, en minutos. */
@@ -102,6 +110,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    private readonly sesiones: SesionesService,
     config: ConfigService,
   ) {
     this.expiracionNormal = enteroPositivo(
@@ -111,6 +120,10 @@ export class AuthService {
     this.expiracionGestor = enteroPositivo(
       config.get<string>('JWT_GESTOR_EXPIRES_IN_SECONDS'),
       1_800,
+    );
+    this.expiracionRefresh = enteroPositivo(
+      config.get<string>('JWT_REFRESH_EXPIRES_IN_SECONDS'),
+      604_800,
     );
     this.maxIntentos = enteroPositivo(
       config.get<string>('LOGIN_MAX_ATTEMPTS'),
@@ -230,15 +243,23 @@ export class AuthService {
 
     this.logger.log(`Inicio de sesión correcto: ${correo} (${usuario.rol})`);
 
-    return this.emitirSesion({
-      id: usuario.id,
-      nombre: usuario.nombre,
-      apellido: usuario.apellido,
-      correo: usuario.correo,
-      rol: usuario.rol,
-      estado: usuario.estado,
-      perfil,
-    });
+    const sesion = await this.sesiones.crear(
+      usuario.id,
+      this.expiracionRefresh,
+    );
+
+    return this.emitirSesion(
+      {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        apellido: usuario.apellido,
+        correo: usuario.correo,
+        rol: usuario.rol,
+        estado: usuario.estado,
+        perfil,
+      },
+      sesion,
+    );
   }
 
   /**
@@ -351,20 +372,140 @@ export class AuthService {
 
     this.logger.log(`Primer acceso completado: ${correo} (gestor)`);
 
-    return this.emitirSesion({
-      id: usuario.id,
-      nombre: usuario.nombre,
-      apellido: usuario.apellido,
-      correo: usuario.correo,
-      rol: usuario.rol,
-      estado: 'activa',
-      perfil,
+    const sesion = await this.sesiones.crear(
+      usuario.id,
+      this.expiracionRefresh,
+    );
+
+    return this.emitirSesion(
+      {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        apellido: usuario.apellido,
+        correo: usuario.correo,
+        rol: usuario.rol,
+        estado: 'activa',
+        perfil,
+      },
+      sesion,
+    );
+  }
+
+  /**
+   * Renueva el access token usando un refresh token válido.
+   *
+   * El refresh se rota: el token recibido queda como anterior y se emite uno
+   * nuevo. Si se intenta reutilizar el anterior, la sesión se revoca.
+   */
+  async refresh(dto: RefreshTokenDto): Promise<RefreshResponseDto> {
+    const validacion = await this.sesiones.validarRefresh(dto.refreshToken);
+    if (!validacion || validacion.reutilizado) {
+      throw new UnauthorizedException('Refresh token inválido o expirado');
+    }
+
+    const usuario = await this.prisma.usuarios.findUnique({
+      where: { id: validacion.usuarioId },
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        correo: true,
+        rol: true,
+        estado: true,
+        gestores_gestores_usuario_idTousuarios: {
+          select: { perfil: true },
+        },
+      },
     });
+
+    if (!usuario) {
+      await this.sesiones.revocar(validacion.id, validacion.usuarioId);
+      throw new UnauthorizedException('La cuenta de la sesión ya no existe');
+    }
+
+    if (usuario.estado !== 'activa') {
+      await this.sesiones.revocar(validacion.id, validacion.usuarioId);
+      throw new ForbiddenException(MENSAJES_ESTADO[usuario.estado]);
+    }
+
+    const perfil =
+      usuario.rol === 'gestor'
+        ? (usuario.gestores_gestores_usuario_idTousuarios?.perfil ?? null)
+        : null;
+
+    const rotado = await this.sesiones.rotar(
+      validacion.id,
+      dto.refreshToken,
+      this.expiracionRefresh,
+    );
+
+    const sesion = await this.emitirSesion(
+      {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        apellido: usuario.apellido,
+        correo: usuario.correo,
+        rol: usuario.rol,
+        estado: 'activa',
+        perfil,
+      },
+      {
+        id: validacion.id,
+        refreshToken: rotado.refreshToken,
+        refreshExpiraEn: rotado.refreshExpiraEn,
+      },
+    );
+
+    return {
+      accessToken: sesion.accessToken,
+      refreshToken: sesion.refreshToken,
+      tokenType: sesion.tokenType,
+      expiresIn: sesion.expiresIn,
+      refreshExpiresIn: sesion.refreshExpiresIn,
+      usuario: sesion.usuario,
+    };
+  }
+
+  /**
+   * Cierra la sesión actual o todas las sesiones del usuario.
+   *
+   * La revocación se guarda en `sesiones.revocada_en`, por lo que el access
+   * token deja de servir inmediatamente y sobrevive a reinicios del servidor.
+   * El frontend debe eliminar ambos tokens de su almacenamiento.
+   *
+   * @param idUsuario Identificador del usuario autenticado (string del JWT).
+   * @param token JWT completo recibido en `Authorization`.
+   * @param dto Si `todas` es `true`, revoca todas las sesiones del usuario.
+   */
+  async logout(
+    idUsuario: string,
+    token: string,
+    dto: LogoutDto = {},
+  ): Promise<void> {
+    const payload = await this.jwt
+      .verifyAsync<JwtPayload>(token)
+      .catch(() => null);
+    if (!payload?.sid) {
+      throw new UnauthorizedException('Token de acceso sin sesión');
+    }
+
+    const id = parseIdBigint(idUsuario);
+    if (dto.todas) {
+      await this.sesiones.revocarTodas(id);
+      return;
+    }
+
+    await this.sesiones.revocar(parseIdBigint(payload.sid), id);
   }
 
   /** Construye la respuesta de login con el JWT de acceso. */
   private async emitirSesion(
     usuario: UsuarioSesion,
+    sesion: {
+      id: bigint;
+      refreshToken: string;
+      refreshExpiraEn: Date;
+    },
   ): Promise<LoginResponseDto> {
     const expiresIn =
       usuario.rol === 'gestor' ? this.expiracionGestor : this.expiracionNormal;
@@ -373,16 +514,29 @@ export class AuthService {
       sub: usuario.id.toString(),
       correo: usuario.correo,
       rol: usuario.rol,
+      sid: sesion.id.toString(),
       ...(usuario.perfil ? { perfil: usuario.perfil } : {}),
     };
 
-    const accessToken = await this.jwt.signAsync(payload, { expiresIn });
+    const accessToken = await this.jwt.signAsync(payload, {
+      expiresIn,
+      // Evita que dos logins en el mismo segundo generen el mismo JWT (y que
+      // un logout revoque involuntariamente la sesión nueva).
+      jwtid: randomUUID(),
+    });
+
+    const refreshExpiresIn = Math.max(
+      0,
+      Math.round((sesion.refreshExpiraEn.getTime() - Date.now()) / 1_000),
+    );
 
     return {
       requiereCambioPassword: false,
       accessToken,
+      refreshToken: sesion.refreshToken,
       tokenType: 'Bearer',
       expiresIn,
+      refreshExpiresIn,
       usuario: {
         id: usuario.id.toString(),
         nombre: usuario.nombre,

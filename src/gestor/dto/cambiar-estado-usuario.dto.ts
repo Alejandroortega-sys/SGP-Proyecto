@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn } from 'class-validator';
+import { IsIn, IsOptional, IsString, Length } from 'class-validator';
 import type { estado_usuario } from '../../generated/prisma/client';
 
 /** Estados a los que un administrador puede llevar una cuenta. */
@@ -31,6 +31,24 @@ export class CambiarEstadoUsuarioDto {
     message: 'El estado debe ser "activa", "suspendida" o "inactiva"',
   })
   estado!: EstadoCuentaGestionable;
+
+  /**
+   * Motivo de la suspensión o inactivación. Se usa en el correo que recibe
+   * el titular y en el mensaje de confirmación del administrador. No se
+   * almacena en una columna nueva.
+   */
+  @ApiProperty({
+    example: 'Incumplimiento del horario autorizado',
+    required: false,
+    description:
+      'Motivo de la suspensión o inactivación; se incluye en el correo al titular',
+  })
+  @IsOptional()
+  @IsString({ message: 'El motivo debe ser texto' })
+  @Length(3, 300, {
+    message: 'El motivo debe tener entre 3 y 300 caracteres',
+  })
+  motivo?: string;
 }
 
 /** Respuesta de `PATCH /gestor/usuarios/:id/estado`. */
@@ -60,6 +78,14 @@ export class UsuarioEstadoActualizadoDto {
     example: 'suspendida',
   })
   estado!: estado_usuario;
+
+  /** Motivo informado al titular, si se envió. */
+  @ApiProperty({
+    example: 'Incumplimiento del horario autorizado',
+    required: false,
+    nullable: true,
+  })
+  motivo?: string | null;
 
   /** Mensaje orientador sobre el resultado de la operación. */
   @ApiProperty({

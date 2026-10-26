@@ -8,6 +8,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { PerfilGestorGuard } from './auth/guards/perfil-gestor.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { GestorModule } from './gestor/gestor.module';
+import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { OrganizadoresModule } from './organizadores/organizadores.module';
 import { PanelModule } from './panel/panel.module';
 import { PerfilModule } from './perfil/perfil.module';
@@ -28,6 +29,7 @@ import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter'
     PerfilModule,
     GestorModule,
     OrganizadoresModule,
+    NotificacionesModule,
   ],
   controllers: [AppController],
   providers: [

@@ -19,7 +19,7 @@ La aplicación web (PWA responsive) tiene **cuatro roles**:
 
 **Módulos funcionales:** (1) autenticación y cuentas con roles, (2) geo-portal GIS con zonas y catálogo de espacios, (3) trámites de solicitud/asignación digital, (4) motor de factibilidad (densidad y reglas urbanas, sin IoT), (5) permisos digitales con QR, verificación ciudadana y dashboard analítico.
 
-**El esquema real de la BD ya existe:** `01_creacion_bd.sql` (29 tablas, 16 enums, triggers, funciones, restricciones EXCLUDE y 4 vistas materializadas) es la máxima autoridad del dominio.
+**El esquema real de la BD ya existe:** `01_creacion_bd.sql` (30 tablas, 17 enums, triggers, funciones, restricciones EXCLUDE y 4 vistas materializadas) es la máxima autoridad del dominio. La tabla `sesiones` se creó con `03_sesiones.sql`.
 
 **Exclusiones del alcance (jamás las implementes ni las "resuelvas" sin aprobación):**
 - Sin sensores/hardware/IoT: toda la simulación de flujo y ocupación es algorítmica sobre datos de BD.
@@ -33,15 +33,15 @@ La aplicación web (PWA responsive) tiene **cuatro roles**:
 
 | Capa | Tecnología | Estado |
 |---|---|---|
-| Base de datos | **PostgreSQL 18 + PostGIS 3.6** (extensiones `postgis`, `btree_gist`, `citext`, `pgcrypto`) | ✅ creada y verificada (`01_creacion_bd.sql`; BD local de desarrollo: `SGP-Tulua`) |
-| Lenguaje | **TypeScript** (strict) | 🔴 sin crear |
-| Backend | **NestJS** (API REST, prefijo `/api/v1`) | 🔴 sin crear |
-| ORM | **Prisma** | 🔴 sin crear |
+| Base de datos | **PostgreSQL 18 + PostGIS 3.6** (extensiones `postgis`, `btree_gist`, `citext`, `pgcrypto`) | ✅ creada y verificada (`01_creacion_bd.sql`; BD local de desarrollo: `sgp_tulua`) |
+| Lenguaje | **TypeScript** (strict) | ✅ implementado |
+| Backend | **NestJS** (API REST, sin prefijo global) | ✅ implementado |
+| ORM | **Prisma** | ✅ implementado |
 | Frontend | **Next.js** (App Router, en `frontend/`) | 🔴 sin crear |
-| Tests (previsto) | Jest + Supertest (unit + e2e) | 🔴 sin crear |
-| Lint / formato | ESLint + Prettier (configurar al crear el backend, con aprobación) | 🔴 sin crear |
+| Tests (previsto) | Jest + Supertest (unit + e2e) | ✅ unitarias y e2e |
+| Lint / formato | ESLint + Prettier (configurar al crear el backend, con aprobación) | ✅ oxlint + Prettier |
 
-**Estado real inicial:** el repositorio **solo contiene documentación y scripts SQL** — no hay `package.json`, ni código de backend, ni frontend. La BD `SGP-Tulua` ya está creada y poblada con datos de prueba; sus credenciales viven solo en el `.env` local (**jamás las escribas en un archivo del repo ni las comitees**). Las credenciales de los usuarios de prueba están documentadas en la cabecera de `02_seed_datos_prueba.sql`.
+**Estado actual:** el repositorio contiene documentación, scripts SQL, el backend NestJS implementado (Sprint 1), pruebas unitarias/e2e, Swagger y `prisma/schema.prisma`. El frontend Next.js todavía no existe. La BD de desarrollo ya está creada y poblada con datos de prueba; sus credenciales viven solo en el `.env` local (**jamás las escribas en un archivo del repo ni las comitees**). Las credenciales de los usuarios de prueba están documentadas en la cabecera de `02_seed_datos_prueba.sql`.
 
 **Librerías (instalar solo con aprobación, ver §10):** `@nestjs/config`, `@nestjs/jwt`, `@nestjs/passport`, `@nestjs/swagger`, `helmet`, `class-validator`, `class-transformer`, `bcrypt` o `argon2`, y la librería de mapas del frontend.
 
@@ -115,7 +115,7 @@ Nombres **reales** de la BD: español, `snake_case`, plural, tipos `geometry(Pol
 
 | Módulo NestJS | Tablas reales | Notas |
 |---|---|---|
-| `auth` / `usuarios` | `usuarios`, `comerciantes`, `organizadores`, `gestores`, `tokens_seguridad` | Usuario 1:1 **por rol** con CHECK; correo (`citext`) y documento únicos |
+| `auth` / `usuarios` | `usuarios`, `comerciantes`, `organizadores`, `gestores`, `tokens_seguridad`, `sesiones` | Usuario 1:1 **por rol** con CHECK; correo (`citext`) y documento únicos; refresh tokens y logout persistente en `sesiones` |
 | `zonas` (GIS) | `zonas`, `zona_productos`, `productos`, `parametros_motor` | Polígonos con validación topológica; parámetros versionados por fila |
 | `censo` / `espacios` | `modulos`, `espacios_temporales`, `espacio_bloqueos` | Puntos geográficos; bloques de fechas sin solaparse |
 | `tramites` | `solicitudes`, `solicitud_productos`, `solicitud_documentos` | Ciclo del trámite; corrección de documentos vía `reemplaza_a` |
@@ -241,7 +241,7 @@ La BD implementa reglas de negocio con **triggers, funciones, restricciones de e
   - **Comerciante:** solo su perfil, sus solicitudes, permisos y cobros.
   - **Organizador:** solo su organización y sus ferias.
   - **Gestor:** `revisor` revisa trámites; `administrador` administra cuentas, zonas y parámetros (perfil desde `gestores.perfil`).
-- API REST, prefijo `/api/v1`, recursos en plural español: `/usuarios`, `/zonas`, `/espacios`, `/solicitudes`, `/ferias`, `/permisos`, `/verificaciones`. No mezcles inglés y español en la misma ruta.
+- API REST, **sin prefijo global**, recursos en plural español: `/usuarios`, `/zonas`, `/espacios`, `/solicitudes`, `/ferias`, `/permisos`, `/verificaciones`. No mezcles inglés y español en la misma ruta.
 - GeoJSON para el mapa: `GET /zonas/geojson` devuelve un FeatureCollection generado con `ST_AsGeoJSON` (§7) — el frontend lo renderiza tal cual.
 - HTTP correcto: `201` crear, `204` borrar, `400` validación, `401` no autenticado, `403` sin permiso, `404` no existe, `409` conflicto de unicidad/EXCLUDE, `422` regla de negocio violada. Nunca devuelvas `200` con `{error: ...}`.
 - Paginación estándar: `?page=1&limit=20` → `{ data, meta: { total, page, limit } }`.
@@ -268,7 +268,7 @@ La BD implementa reglas de negocio con **triggers, funciones, restricciones de e
 1. **Inyección SQL:** solo Prisma parametrizado o `Prisma.sql`. Nunca concatenar variables en consultas ni interpolar strings en SQL crudo.
 2. **XSS:** al renderizar en el frontend, React lo escapa por defecto; prohibido usar `dangerouslySetInnerHTML` con contenido sin sanear (incluyendo nombres/heredados de la BD).
 3. **Contraseñas:** se hashean desde la app (bcrypt o argon2, se definirá con aprobación). Jamás texto plano, jamás en logs o respuestas. El `hash` del seed usa `pgcrypto crypt()` solo para datos de prueba.
-4. **Autenticación:** JWT de vida corta + refresh token; cookies `httpOnly`, `secure`, `sameSite=strict` si viajan por cookie. Rate limiting en login y registro. Bloqueo temporal del usuario tras 5 intentos fallidos (con `intentos_fallidos` y `bloqueado_hasta` — la BD o la app acumulan, siempre registra qué capa lo hizo).
+4. **Autenticación:** access token JWT de vida corta + refresh token opaco. El refresh se guarda **hasheado** en `sesiones`; el access token lleva el claim `sid`. El logout y la suspensión/inactivación revocan `sesiones.revocada_en` (invalidación persistente). Rate limiting en login, registro, activación y refresh. Bloqueo temporal del usuario tras 5 intentos fallidos (con `intentos_fallidos` y `bloqueado_hasta` — la BD o la app acumulan, siempre registra qué capa lo hizo).
 5. **Verificación QR pública:** endpoint SIN autenticación con rate limiting por IP; devuelve **datos mínimos**: validez, vigencia, categoría del permiso y nombre del titular comercial. **Jamás** documento, teléfono, correo, dirección ni hashes de tokens.
 6. **Datos personales:** los DTOs difieren por rol; no expongas documento ni contacto de una cuenta a otra sin que sean datos de negocio del recurso pedido. Auditoría (JSONB) solo es visible para gestores.
 7. **Subida de archivos:** solo PDF/JPEG/PNG; valida el tipo real (magic bytes) además de la extensión; límite de tamaño configurable (`UPLOAD_MAX_BYTES`); nombre generado por servidor (UUID) para servir; la descarga exige autorización (dueño del documento, o gestor para sus casos).
@@ -319,7 +319,7 @@ La BD implementa reglas de negocio con **triggers, funciones, restricciones de e
 
 Basados en el esquema real y en las reglas de BD (§6). Si dudas de un estado o paso, confirma en `baseDatos.md`.
 
-1. **Registro y activación de cuenta:** comerciante se registra → usuario `pendiente_activacion` + token (`tokens_seguridad`, tipo `activacion`) → enlaza/activa → `activa` (+ `comerciantes` con documento, categoría y contacto). Login → JWT; a los 5 intentos fallidos, bloqueo temporal (`bloqueado_hasta`).
+1. **Registro y activación de cuenta:** comerciante se registra → usuario `pendiente_activacion` + token (`tokens_seguridad`, tipo `activacion`) → enlaza/activa → `activa` (+ `comerciantes` con documento, categoría y contacto). Login → access token + refresh token; la sesión se guarda en `sesiones`. `POST /auth/refresh` rota el refresh; `POST /auth/logout` marca `revocada_en`. A los 5 intentos fallidos, bloqueo temporal (`bloqueado_hasta`).
 2. **Organización feria:** organizador registra organización → `pendiente_validacion` → gestor valida a `activa` (o la suspende). Solo con organización activa se pueden radicaciones de ferias.
 3. **Solicitud de uso temporal:** borrador → radicada (con `numero_radicado` automático) → adjunta documentos (`solicitud_documentos`, estado `pendiente`) → en revisión → o se devuelve con observaciones (documento corregido vía `reemplaza_a`), o se aprueba/rechaza. Al aprobar, el gestor evalúa factibilidad **llamando a `fn_evaluar_factibilidad`** y registra el dictamen + detalle por regla; si aprueba algo no factible, cita la excepción (`excepciones_factibilidad` con motivo).
 4. **Emisión de permiso:** con solicitud aprobada → `INSERT permisos` (número automático; trigger marca `emitido`) → carné digital con QR (`qr_token`). Renovación genera nuevo permiso con referencia al anterior (`renovado_desde`).
@@ -352,23 +352,24 @@ Una tarea está **done** cuando:
 
 ## 13. Variables de entorno
 
-Cuando se cree el backend, crea un `.env.example` (sin valores reales) con al menos:
+El backend usa `.env` (sin valores reales en el repo) con al menos:
 
 ```bash
 # Backend (NestJS)
 PORT=3000
-DATABASE_URL=postgresql://usuario:contrasena@localhost:5432/spg_prueba
-JWT_ACCESS_SECRET=
-JWT_ACCESS_EXPIRES_IN=
-JWT_REFRESH_SECRET=
+DATABASE_URL=postgresql://usuario:contrasena@localhost:5432/sgp_tulua
+JWT_SECRET=
+JWT_EXPIRES_IN_SECONDS=28800
+JWT_GESTOR_EXPIRES_IN_SECONDS=1800
+JWT_REFRESH_EXPIRES_IN_SECONDS=604800
 FRONTEND_URL=http://localhost:3001
 UPLOAD_MAX_BYTES=
 
 # Frontend (Next.js)
-NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
+NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
-- La BD local de desarrollo es **`SPG-Prueba`** (ya creada); el usuario/contraseña reales viven solo en tu `.env` local.
+- La BD local de desarrollo es **`sgp_tulua`**; el usuario/contraseña reales viven solo en tu `.env` local.
 - `.env` y sus variantes van en `.gitignore` desde el día uno; **jamás entran al repo**.
 - No registres secretos en el código ni en el Swagger.
 

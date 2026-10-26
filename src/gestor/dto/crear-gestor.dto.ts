@@ -94,3 +94,25 @@ export class GestorCreadoDto {
   })
   mensaje!: string;
 }
+
+/** Respuesta de `POST /gestor/gestores/:id/reenviar-invitacion`. */
+export class InvitacionGestorReenviadaDto {
+  /** Identificador de la cuenta (BIGINT como string). */
+  @ApiProperty({ example: '9' })
+  id!: string;
+
+  /** Correo institucional al que se enviaron las credenciales. */
+  @ApiProperty({ example: 'ana.lopez@tulua.gov.co' })
+  correo!: string;
+
+  /** Perfil del gestor. */
+  @ApiProperty({ enum: PERFILES_GESTOR, example: 'revisor' })
+  perfil!: perfil_gestor;
+
+  /** Mensaje orientador. */
+  @ApiProperty({
+    example:
+      'Invitación reenviada. El gestor recibirá una nueva contraseña temporal.',
+  })
+  mensaje!: string;
+}

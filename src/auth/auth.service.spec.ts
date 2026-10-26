@@ -11,6 +11,7 @@ import { Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';
 import type { LoginDto } from './dto/login.dto';
+import type { SesionesService } from './sesiones.service';
 import {
   LoginPrimerAccesoResponseDto,
   LoginResponseDto,
@@ -113,7 +114,14 @@ function sesionDe(
 
 describe('AuthService', () => {
   let prisma: PrismaMock;
-  let jwt: { signAsync: jest.Mock };
+  let jwt: { signAsync: jest.Mock; verifyAsync: jest.Mock };
+  let sesiones: {
+    crear: jest.Mock;
+    validarRefresh: jest.Mock;
+    rotar: jest.Mock;
+    revocar: jest.Mock;
+    revocarTodas: jest.Mock;
+  };
   let service: AuthService;
 
   beforeAll(() => {
@@ -127,10 +135,31 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     prisma = crearPrismaMock();
-    jwt = { signAsync: jest.fn().mockResolvedValue('jwt.firmado') };
+    jwt = {
+      signAsync: jest.fn().mockResolvedValue('jwt.firmado'),
+      verifyAsync: jest.fn().mockResolvedValue({
+        sid: '10',
+        exp: 2_000_000_000,
+      }),
+    };
+    sesiones = {
+      crear: jest.fn().mockResolvedValue({
+        id: 10n,
+        refreshToken: 'refresh-token',
+        refreshExpiraEn: new Date(Date.now() + 604_800_000),
+      }),
+      validarRefresh: jest.fn(),
+      rotar: jest.fn().mockResolvedValue({
+        refreshToken: 'refresh-nuevo',
+        refreshExpiraEn: new Date(Date.now() + 604_800_000),
+      }),
+      revocar: jest.fn(),
+      revocarTodas: jest.fn(),
+    };
     service = new AuthService(
       prisma as unknown as PrismaService,
       jwt as unknown as JwtService,
+      sesiones as unknown as SesionesService,
       crearConfig(),
     );
     (argon2.verify as jest.Mock).mockReset();
@@ -155,8 +184,11 @@ describe('AuthService', () => {
       );
       expect(resultado.requiereCambioPassword).toBe(false);
       expect(resultado.accessToken).toBe('jwt.firmado');
+      expect(resultado.refreshToken).toBe('refresh-token');
       expect(resultado.tokenType).toBe('Bearer');
       expect(resultado.expiresIn).toBe(28_800);
+      expect(resultado.refreshExpiresIn).toBeGreaterThan(0);
+      expect(sesiones.crear).toHaveBeenCalledWith(3n, 604_800);
       expect(resultado.usuario).toEqual({
         id: '3',
         nombre: 'María',
@@ -171,8 +203,9 @@ describe('AuthService', () => {
           sub: '3',
           correo: 'maria.gomez@gmail.com',
           rol: 'comerciante',
+          sid: '10',
         },
-        { expiresIn: 28_800 },
+        expect.objectContaining({ expiresIn: 28_800 }),
       );
     });
 
@@ -195,8 +228,9 @@ describe('AuthService', () => {
           correo: 'admin@tulua.gov.co',
           rol: 'gestor',
           perfil: 'administrador',
+          sid: '10',
         },
-        { expiresIn: 1_800 },
+        expect.objectContaining({ expiresIn: 1_800 }),
       );
     });
 
@@ -340,7 +374,7 @@ describe('AuthService', () => {
         estado: 'inactiva',
       });
 
-      await expect(service.login(DTO)).rejects.toThrow('inactiva');
+      await expect(service.login(DTO)).rejects.toThrow('desactivada');
     });
   });
 
@@ -403,8 +437,9 @@ describe('AuthService', () => {
           correo: 'admin@tulua.gov.co',
           rol: 'gestor',
           perfil: 'administrador',
+          sid: '10',
         },
-        { expiresIn: 1_800 },
+        expect.objectContaining({ expiresIn: 1_800 }),
       );
     });
 
@@ -460,11 +495,61 @@ describe('AuthService', () => {
     });
   });
 
+  describe('logout', () => {
+    it('revoca la sesión actual del usuario', async () => {
+      await service.logout('3', 'token.a');
+
+      expect(sesiones.revocar).toHaveBeenCalledWith(10n, 3n);
+      expect(sesiones.revocarTodas).not.toHaveBeenCalled();
+    });
+
+    it('revoca todas las sesiones si se solicita', async () => {
+      await service.logout('3', 'token.a', { todas: true });
+
+      expect(sesiones.revocarTodas).toHaveBeenCalledWith(3n);
+      expect(sesiones.revocar).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('refresh', () => {
+    it('rota el refresh y emite nuevos tokens', async () => {
+      sesiones.validarRefresh.mockResolvedValue({
+        id: 10n,
+        usuarioId: 3n,
+        reutilizado: false,
+      });
+      prisma.usuarios.findUnique.mockResolvedValue(USUARIO_COMERCIANTE);
+
+      const resultado = await service.refresh({
+        refreshToken: 'refresh-viejo',
+      });
+
+      expect(sesiones.rotar).toHaveBeenCalledWith(10n, 'refresh-viejo', 604_800);
+      expect(resultado.accessToken).toBe('jwt.firmado');
+      expect(resultado.refreshToken).toBe('refresh-nuevo');
+      expect(resultado.refreshExpiresIn).toBeGreaterThan(0);
+    });
+
+    it('rechaza un refresh revocado o reutilizado', async () => {
+      sesiones.validarRefresh.mockResolvedValue({
+        id: 10n,
+        usuarioId: 3n,
+        reutilizado: true,
+      });
+
+      await expect(
+        service.refresh({ refreshToken: 'refresh-viejo' }),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(sesiones.rotar).not.toHaveBeenCalled();
+    });
+  });
+
   describe('configuración', () => {
     it('usa los valores por defecto si faltan las variables', async () => {
       const svc = new AuthService(
         prisma as unknown as PrismaService,
         jwt as unknown as JwtService,
+        sesiones as unknown as SesionesService,
         crearConfig({
           JWT_EXPIRES_IN_SECONDS: '',
           JWT_GESTOR_EXPIRES_IN_SECONDS: '0',
