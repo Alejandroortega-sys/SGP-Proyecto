@@ -25,6 +25,8 @@ interface DbErrorInfo {
   fields?: string[];
   /** Tabla involucrada. */
   table?: string;
+  /** Mensaje original de PostgreSQL (lo usan los RAISE EXCEPTION de triggers). */
+  message?: string;
 }
 
 interface TranslatedError {
@@ -58,9 +60,11 @@ const CHECK_CONSTRAINT_MESSAGES: Record<string, string> = {
   usuarios_check1: 'La cuenta no puede quedar activa sin contraseña',
   solicitudes_check: 'La fecha fin debe ser mayor o igual a la fecha de inicio',
   solicitudes_check1: 'La hora fin debe ser mayor a la hora de inicio',
-  ferias_check: 'La fecha fin de la feria debe ser mayor o igual a la fecha de inicio',
+  ferias_check:
+    'La fecha fin de la feria debe ser mayor o igual a la fecha de inicio',
   ferias_numero_puestos_check: 'El número de puestos debe ser mayor que cero',
-  permisos_check: 'La fecha fin del permiso debe ser mayor o igual a la fecha de inicio',
+  permisos_check:
+    'La fecha fin del permiso debe ser mayor o igual a la fecha de inicio',
   espacio_bloqueos_check:
     'La fecha fin del bloqueo debe ser mayor o igual a la fecha de inicio',
   zonas_geometria_check: 'La geometría de la zona no es válida',
@@ -74,7 +78,8 @@ const CHECK_CONSTRAINT_MESSAGES: Record<string, string> = {
 const EXCLUSION_CONSTRAINT_MESSAGES: Record<string, string> = {
   espacio_bloqueos_espacio_id_daterange_excl:
     'El espacio ya tiene un bloqueo que se solapa con esas fechas',
-  ferias_zona_id_daterange_excl: 'Ya hay una feria en esa zona dentro de esas fechas',
+  ferias_zona_id_daterange_excl:
+    'Ya hay una feria en esa zona dentro de esas fechas',
   permisos_espacio_id_daterange_excl:
     'El espacio ya está asignado a otro permiso dentro de esas fechas',
 };
@@ -87,11 +92,13 @@ const HTTP_ERROR_TITLES: Record<number, string> = {
   [HttpStatus.BAD_REQUEST]: 'Bad Request',
   [HttpStatus.NOT_FOUND]: 'Not Found',
   [HttpStatus.CONFLICT]: 'Conflict',
+  [HttpStatus.UNPROCESSABLE_ENTITY]: 'Unprocessable Entity',
   [HttpStatus.INTERNAL_SERVER_ERROR]: 'Internal Server Error',
   [HttpStatus.SERVICE_UNAVAILABLE]: 'Service Unavailable',
 };
 
 const PG_CODE_IN_MESSAGE = /Code: `([^`]+)`/;
+const PG_MESSAGE_IN_MESSAGE = /Message: `([^`]+)`/;
 const CONSTRAINT_IN_MESSAGE = /constraint "([^"]+)"/;
 const CONSTRAINT_TOKEN_IN_MESSAGE = /[«"]([^«»"]+)[»"]/g;
 /** Sufijos estándar de constraints de PostgreSQL. */
@@ -252,6 +259,13 @@ export class PrismaExceptionFilter implements ExceptionFilter {
         return { status: HttpStatus.BAD_REQUEST, message: checkMessage(info) };
       case '23P01': // exclusion_violation (solapamientos de fechas/zona)
         return { status: HttpStatus.CONFLICT, message: exclusionMessage(info) };
+      case 'P0001': // raise_exception de triggers (fn_validar_zona, permisos...)
+        return {
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          message:
+            info.message ??
+            'La operación viola una regla de negocio de la base de datos',
+        };
       case '22003': // numeric_value_out_of_range
         return {
           status: HttpStatus.BAD_REQUEST,
@@ -293,9 +307,13 @@ export class PrismaExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
       const body = exception.getResponse();
-      response.status(status).json(
-        typeof body === 'string' ? { statusCode: status, message: body } : body,
-      );
+      response
+        .status(status)
+        .json(
+          typeof body === 'string'
+            ? { statusCode: status, message: body }
+            : body,
+        );
       return;
     }
 
@@ -350,6 +368,7 @@ function extractFromRawPgError(err: JsonRecord): DbErrorInfo {
     pgCode: asString(err['code']),
     constraint: asString(err['constraint']),
     table: asString(err['table']),
+    message: asString(err['message']),
   };
 }
 
@@ -428,10 +447,16 @@ function extractDbInfo(err: Prisma.PrismaClientKnownRequestError): DbErrorInfo {
       fromAdapter.fields ??
       asStringArray(adapter?.['fields']),
     table: asString(meta['table']) ?? asString(adapter?.['table']),
+    message:
+      asString(adapter?.['originalMessage']) ??
+      PG_MESSAGE_IN_MESSAGE.exec(err.message)?.[1] ??
+      err.message,
   };
 }
 
-function extractFromCause(err: Prisma.PrismaClientUnknownRequestError): DbErrorInfo {
+function extractFromCause(
+  err: Prisma.PrismaClientUnknownRequestError,
+): DbErrorInfo {
   const info: DbErrorInfo = {};
   const cause = err.cause;
 
@@ -444,8 +469,14 @@ function extractFromCause(err: Prisma.PrismaClientUnknownRequestError): DbErrorI
       asString(cause['originalCode']) ??
       asString(cause['code']) ??
       pgCodeFromMessage(err.message);
+    info.message =
+      asString(cause['originalMessage']) ??
+      asString(cause['message']) ??
+      PG_MESSAGE_IN_MESSAGE.exec(err.message)?.[1] ??
+      err.message;
   } else {
     info.pgCode = pgCodeFromMessage(err.message);
+    info.message = PG_MESSAGE_IN_MESSAGE.exec(err.message)?.[1] ?? err.message;
   }
   return info;
 }

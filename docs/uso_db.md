@@ -292,6 +292,7 @@ Las `HttpException` (pipes, validaciones, `NotFoundException` propia, etc.) pasa
 | `P2011` / `23502` not_null_violation | 400 | "Falta un valor obligatorio en: …" |
 | `23514` check_violation (vía `P2010`/`P2039`) | 400 | Mensaje de la regla de negocio (14 checks mapeados, ej. "Un comerciante debe tener documento, teléfono y contraseña") |
 | `23P01` exclusion_violation (vía `P2010`/`P2039`) | 409 | "Ya hay una feria en esa zona dentro de esas fechas" (y los otros 2 solapamientos) |
+| `P0001` `RAISE EXCEPTION` de triggers (`fn_validar_zona`, motivo obligatorio…) | 422 | Mensaje legible lanzado por la base de datos |
 | `P2007` / `22P02` valor inválido | 400 | "Uno de los valores enviados no es válido" |
 | `P2020` / `22003` valor fuera de rango | 400 | "Un valor numérico está fuera del rango permitido" |
 | `22001` cadena demasiado larga | 400 | "Un valor excede la longitud máxima permitida" |

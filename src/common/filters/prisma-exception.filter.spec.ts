@@ -86,7 +86,11 @@ describe('PrismaExceptionFilter', () => {
     it('P2003 (violación de FK) → 409', () => {
       const { host, json } = createHost();
       const error = knownRequestError('P2003', {
-        meta: { driverAdapterError: { cause: { kind: 'ForeignKeyConstraintViolation' } } },
+        meta: {
+          driverAdapterError: {
+            cause: { kind: 'ForeignKeyConstraintViolation' },
+          },
+        },
       });
 
       filter.catch(error, host);
@@ -99,7 +103,8 @@ describe('PrismaExceptionFilter', () => {
     it('P2025 (registro no encontrado) → 404', () => {
       const { host, json } = createHost();
       const error = knownRequestError('P2025', {
-        message: 'An operation failed because it depends on one or more records that were required but not found.',
+        message:
+          'An operation failed because it depends on one or more records that were required but not found.',
       });
 
       filter.catch(error, host);
@@ -182,6 +187,23 @@ describe('PrismaExceptionFilter', () => {
       });
     });
 
+    it('P2010 con RAISE EXCEPTION P0001 → 422 con el mensaje del trigger', () => {
+      const { host, json } = createHost();
+      const error = knownRequestError('P2010', {
+        message:
+          'Raw query failed. Code: `P0001`. Message: `La zona «Centro» se solapa con la zona activa «Plaza Boyacá»: las geometrías no pueden superponerse`',
+      });
+
+      filter.catch(error, host);
+
+      expect(json).toHaveBeenCalledWith({
+        statusCode: 422,
+        message:
+          'La zona «Centro» se solapa con la zona activa «Plaza Boyacá»: las geometrías no pueden superponerse',
+        error: 'Unprocessable Entity',
+      });
+    });
+
     it('P1001 (BD inalcanzable) → 503', () => {
       const { host, json } = createHost();
       const error = knownRequestError('P1001', {
@@ -260,6 +282,25 @@ describe('PrismaExceptionFilter', () => {
       const body = json.mock.calls[0][0];
       expect(body.statusCode).toBe(409);
       expect(body.message).toContain('solapa');
+    });
+
+    it('raise_exception P0001 → 422 con el mensaje del trigger', () => {
+      const { host, json } = createHost();
+      const rawError = {
+        code: 'P0001',
+        severity: 'ERROR',
+        message:
+          'Geometría inválida para la zona «Centro»: el polígono se autointersecta',
+      };
+
+      filter.catch(rawError, host);
+
+      expect(json).toHaveBeenCalledWith({
+        statusCode: 422,
+        message:
+          'Geometría inválida para la zona «Centro»: el polígono se autointersecta',
+        error: 'Unprocessable Entity',
+      });
     });
   });
 

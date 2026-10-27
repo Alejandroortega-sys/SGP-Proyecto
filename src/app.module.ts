@@ -13,8 +13,10 @@ import { OrganizadoresModule } from './organizadores/organizadores.module';
 import { PanelModule } from './panel/panel.module';
 import { PerfilModule } from './perfil/perfil.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ProductosModule } from './productos/productos.module';
 import { CorreoModule } from './correo/correo.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
+import { ZonasModule } from './zonas/zonas.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 
 @Module({
@@ -30,6 +32,8 @@ import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter'
     GestorModule,
     OrganizadoresModule,
     NotificacionesModule,
+    ProductosModule,
+    ZonasModule,
   ],
   controllers: [AppController],
   providers: [
