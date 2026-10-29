@@ -39,8 +39,11 @@ El backend debe tener `FRONTEND_URL=http://localhost:3001` para aceptar el orige
 |---|---|
 | `pnpm dev` | Servidor de desarrollo en `http://localhost:3001` |
 | `pnpm build` | Build de producción: compila y ejecuta el typecheck de TypeScript |
-| `pnpm start` | Sirve el build de producción |
+| `pnpm start` | Sirve el build de producción en `http://localhost:3001` |
 | `pnpm lint` | Lint con ESLint y `eslint-config-next` |
+| `pnpm test` | Pruebas unitarias con Vitest |
+| `pnpm test:e2e` | Pruebas de usabilidad con Playwright (levanta API y frontend) |
+| `pnpm test:e2e:headed` | Playwright con navegador visible |
 
 ---
 
@@ -51,23 +54,39 @@ src/
 ├── app/
 │   ├── layout.tsx              # Layout raíz (tipografía Inter, metadata)
 │   ├── globals.css             # Design system (tokens de color institucionales)
-│   └── (publico)/              # Route group de rutas sin sesión
-│       ├── page.tsx            # /              bienvenida
-│       ├── login/              # /login         inicio de sesión
-│       ├── registro/           # /registro, /registro/comerciante, /registro/organizador
-│       ├── activar/            # /activar       código OTP de 6 dígitos
-│       ├── recuperar/          # /recuperar     solicitar código
-│       ├── restablecer/        # /restablecer   nueva contraseña
-│       └── primer-acceso/      # /primer-acceso gestor invitado
-├── components/ui/              # Design system propio: boton, tarjeta, campo,
-│                               # alerta, etiqueta (badges), spinner, iconos
-├── features/publico/           # Navbar, footer y formularios
-├── hooks/use-sesion.ts         # Restaura la sesión con GET /auth/me
+│   ├── (publico)/              # Rutas sin sesión
+│   │   ├── page.tsx            # /              bienvenida
+│   │   ├── login/              # /login
+│   │   ├── registro/           # /registro, comerciante y organizador
+│   │   ├── activar/            # /activar       código OTP de 6 dígitos
+│   │   ├── recuperar/          # /recuperar
+│   │   ├── restablecer/        # /restablecer
+│   │   └── primer-acceso/      # /primer-acceso gestor invitado
+│   ├── (comerciante)/          # /comerciante/inicio y /comerciante/perfil
+│   ├── (organizador)/          # inicio, perfil y mi-organizacion
+│   ├── (gestor)/               # panel, usuarios, comerciantes,
+│   │                           # organizaciones, gestores, auditoría y perfil
+│   └── (sesion)/               # /notificaciones para cualquier rol
+├── components/ui/              # Design system: boton, tarjeta, campo, tabla,
+│                               # paginación, modal, alerta, etiqueta, spinner
+├── features/
+│   ├── publico/                # Navbar, footer y formularios públicos
+│   ├── sesion/                 # GuardiaRol y MarcoSesion (navbar por rol)
+│   ├── inicio/                 # Resumen de comerciante y organizador
+│   ├── perfil/                 # Perfil editable + cambio de contraseña
+│   ├── organizador/            # Onboarding y edición de la organización
+│   ├── gestor/                 # Panel, listados, detalles, auditoría
+│   └── notificaciones/         # Bandeja de notificaciones
+├── hooks/
+│   ├── use-sesion.ts           # Restaura la sesión con GET /auth/me
+│   └── use-consulta-api.ts     # Carga, error y recarga de consultas
 ├── lib/
-│   ├── api-client.ts           # ÚNICO punto de HTTP (token, refresh, errores)
+│   ├── api-client.ts           # ÚNICO punto de HTTP (36 endpoints)
 │   ├── sesion.ts               # accessToken / refreshToken / usuario
+│   ├── rutas.ts                # Redirección por rol
+│   ├── formato.ts              # Fechas, roles, categorías y resúmenes
 │   └── validaciones.ts         # Reglas espejo de los DTOs del backend
-└── types/api.ts                # Tipos derivados de docs/Uso_endpoints.md
+└── types/api.ts                # Contrato completo del Sprint 1
 ```
 
 ---
@@ -79,15 +98,24 @@ src/
 - El backend responde `message` como `string | string[]`; el cliente los normaliza antes de mostrarlos.
 - Ante un `401` con sesión se intenta **una sola vez** `POST /auth/refresh`; si falla, se borran los tokens y se redirige a `/login`.
 - Los tokens viven en `sessionStorage` (recomendación del contrato del Sprint 1).
-- Las rutas de los roles (`/comerciante/*`, `/organizador/*`, `/gestor/*`) **aún no existen**: tras el login se redirige a `/`.
+- Tras el login se redirige según el rol: `/comerciante/inicio`, `/organizador/inicio` o `/gestor/panel`.
+- Los layouts de rol usan `GuardiaRol`; el backend sigue siendo la barrera real de autorización.
 
 ---
 
-## Rutas implementadas (Sprint 1, públicas)
+## Rutas implementadas (Sprint 1 completo)
 
-`/` · `/login` · `/registro` · `/registro/comerciante` · `/registro/organizador` · `/activar` · `/recuperar` · `/restablecer` · `/primer-acceso`
+**Públicas:** `/` · `/login` · `/registro` · `/registro/comerciante` · `/registro/organizador` · `/activar` · `/recuperar` · `/restablecer` · `/primer-acceso`
 
-Los módulos de mapa, solicitudes, ferias, permisos QR, cobros y dashboard (Sprints 2 a 6) se muestran como "Próximamente" y no consumen endpoints inexistentes.
+**Comerciante:** `/comerciante/inicio` · `/comerciante/perfil`
+
+**Organizador:** `/organizador/inicio` · `/organizador/perfil` · `/organizador/mi-organizacion`
+
+**Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
+
+**Transversal:** `/notificaciones`
+
+Los módulos de mapa, solicitudes, ferias, permisos QR, cobros y dashboard (Sprints 2 a 6) se muestran como "Próximamente" y no consumen endpoints inexistentes. El detalle del avance y los pendientes está en [`docs/avance_frontend.md`](../docs/avance_frontend.md).
 
 ---
 
@@ -95,7 +123,13 @@ Los módulos de mapa, solicitudes, ferias, permisos QR, cobros y dashboard (Spri
 
 ```bash
 pnpm lint      # ESLint sin errores
-pnpm build     # build verde (10 rutas)
+pnpm test      # Vitest: funciones de rutas, formato y validaciones
+pnpm test:e2e  # Playwright: flujos reales de todos los módulos
+pnpm build     # build verde (27 rutas)
 ```
+
+Las pruebas e2e usan **Microsoft Edge** (`channel: "msedge"`) y levantan la API y el
+frontend automáticamente. Requieren la base de datos `sgp_tulua` con el seed aplicado.
+El detalle de cobertura y resultados está en [`docs/avance_frontend.md`](../docs/avance_frontend.md).
 
 Para probar los flujos contra la API real, consulta la sección *"Cómo probar la app"* del README de la raíz (los códigos de activación salen en el log del backend si `MAIL_HOST` está vacío).

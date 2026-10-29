@@ -2,7 +2,7 @@ export const CORREO_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 export const TELEFONO_RE = /^[+0-9][0-9\s()-]{6,29}$/;
 export const DOCUMENTO_RE = /^[A-Za-z0-9-]{5,30}$/;
 export const CODIGO_6_RE = /^\d{6}$/;
-export const NIT_RE = /^\d{7,10}(-\d)?$/;
+export const NIT_RE = /^\d{8,10}(-\d)?$/;
 
 export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 128;

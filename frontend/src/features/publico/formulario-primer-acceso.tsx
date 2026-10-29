@@ -12,7 +12,8 @@ import {
   completarPrimerAcceso,
   type ApiError,
 } from "@/lib/api-client";
-import { guardarCorreoPendiente, obtenerCorreoPendiente } from "@/lib/sesion";
+import { esSesionPrimerAcceso, guardarCorreoPendiente, obtenerCorreoPendiente } from "@/lib/sesion";
+import { rutaInicio } from "@/lib/rutas";
 import { validarCorreo, validarPassword } from "@/lib/validaciones";
 
 interface EstadoCampo {
@@ -78,14 +79,18 @@ export function FormularioPrimerAcceso({
 
     try {
       const correoNormalizado = correo.trim().toLowerCase();
-      await completarPrimerAcceso({
+      const respuesta = await completarPrimerAcceso({
         correo: correoNormalizado,
         passwordActual,
         password,
         confirmarPassword,
       });
       guardarCorreoPendiente(correoNormalizado);
-      router.replace("/");
+      router.replace(
+        esSesionPrimerAcceso(respuesta)
+          ? "/login"
+          : rutaInicio(respuesta.usuario),
+      );
     } catch (capturado) {
       setError(comoApiError(capturado));
     } finally {

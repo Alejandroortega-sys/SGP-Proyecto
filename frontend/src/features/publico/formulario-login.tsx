@@ -9,6 +9,7 @@ import { CampoPassword, Campo } from "@/components/ui/campo";
 import { IconoCandado } from "@/components/ui/iconos";
 import { comoApiError, iniciarSesion, type ApiError } from "@/lib/api-client";
 import { esSesionPrimerAcceso, guardarCorreoPendiente } from "@/lib/sesion";
+import { rutaInicio } from "@/lib/rutas";
 import { validarCorreo } from "@/lib/validaciones";
 
 export function FormularioLogin() {
@@ -57,7 +58,7 @@ export function FormularioLogin() {
         return;
       }
 
-      router.replace("/");
+      router.replace(rutaInicio(respuesta.usuario));
     } catch (capturado) {
       const err = comoApiError(capturado);
       setError(err);

@@ -1,8 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { cerrarSesion, obtenerSesion } from "@/lib/api-client";
-import { haySesion, limpiarSesion } from "@/lib/sesion";
+import { cerrarSesion, comoApiError, obtenerSesion } from "@/lib/api-client";
+import {
+  haySesion,
+  limpiarSesion,
+  obtenerUsuario,
+} from "@/lib/sesion";
 import type { UsuarioSesion } from "@/types/api";
 
 export function useSesion() {
@@ -13,19 +17,27 @@ export function useSesion() {
     let activo = true;
     const pendiente = haySesion() ? obtenerSesion() : Promise.resolve(null);
 
-    pendiente.then(
-      (usuarioRemoto) => {
-        if (activo) setUsuario(usuarioRemoto);
-      },
-      () => {
-        if (activo) {
-          limpiarSesion();
-          setUsuario(null);
-        }
-      },
-    ).finally(() => {
-      if (activo) setCargando(false);
-    });
+    pendiente
+      .then(
+        (usuarioRemoto) => {
+          if (activo) setUsuario(usuarioRemoto);
+        },
+        (error) => {
+          if (!activo) return;
+          const apiError = comoApiError(error);
+          if (apiError.status === 401 || apiError.status === 403) {
+            limpiarSesion();
+            setUsuario(null);
+            return;
+          }
+          // Error de red o petición abortada: conservamos la sesión local y
+          // el usuario guardado; el backend seguirá validando cada petición.
+          setUsuario(obtenerUsuario());
+        },
+      )
+      .finally(() => {
+        if (activo) setCargando(false);
+      });
 
     return () => {
       activo = false;

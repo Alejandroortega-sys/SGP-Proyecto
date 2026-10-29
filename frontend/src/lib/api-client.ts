@@ -1,17 +1,46 @@
 import type {
+  ComercianteActualizado,
+  ComercianteListado,
   CuerpoError,
+  FiltrosAuditoria,
+  FiltrosComerciantes,
+  FiltrosNotificaciones,
+  FiltrosOrganizaciones,
+  FiltrosUsuarios,
+  GestorCreado,
+  InvitacionReenviada,
+  ListarAuditoriaResponse,
+  ListarNotificacionesResponse,
+  Notificacion,
+  Organizacion,
+  OrganizacionGestor,
+  Paginacion,
+  Panel,
+  Perfil,
+  PerfilGestorCompleto,
   RespuestaActivacion,
+  RespuestaCambioEstadoOrganizacion,
+  RespuestaCambioEstadoUsuario,
   RespuestaLogin,
   RespuestaMensaje,
   RespuestaRegistroComerciante,
   RespuestaRegistroOrganizador,
   SolicitudActivacion,
+  SolicitudActualizarPerfil,
+  SolicitudActualizarPerfilGestor,
+  SolicitudCambioEstadoUsuario,
+  SolicitudCambiarPassword,
+  SolicitudCorregirComerciante,
+  SolicitudCrearGestor,
   SolicitudLogin,
+  SolicitudOrganizacion,
   SolicitudPrimerAcceso,
   SolicitudRecuperacion,
   SolicitudRegistroComerciante,
   SolicitudRegistroOrganizador,
   SolicitudRestablecer,
+  UsuarioDetalle,
+  UsuarioListado,
   UsuarioSesion,
 } from "@/types/api";
 import { guardarSesion, limpiarSesion, obtenerAccessToken, obtenerRefreshToken } from "./sesion";
@@ -256,4 +285,260 @@ export async function cerrarSesion(): Promise<void> {
   } finally {
     limpiarSesion();
   }
+}
+
+function conParametros(
+  ruta: string,
+  parametros: Record<string, string | number | boolean | undefined | null>,
+): string {
+  const busqueda = new URLSearchParams();
+  for (const [clave, valor] of Object.entries(parametros)) {
+    if (valor === undefined || valor === null || valor === "") continue;
+    busqueda.set(clave, String(valor));
+  }
+  const consulta = busqueda.toString();
+  return consulta ? `${ruta}?${consulta}` : ruta;
+}
+
+/* ------------------------------------------------------------------ */
+/* Perfil                                                              */
+/* ------------------------------------------------------------------ */
+
+export function obtenerPerfil(): Promise<Perfil> {
+  return peticion<Perfil>("/perfil");
+}
+
+export function actualizarPerfil(
+  datos: SolicitudActualizarPerfil,
+): Promise<Perfil> {
+  return peticion<Perfil>("/perfil", { method: "PATCH", cuerpo: datos });
+}
+
+export function cambiarPasswordPerfil(
+  datos: SolicitudCambiarPassword,
+): Promise<RespuestaMensaje> {
+  return peticion<RespuestaMensaje>("/perfil/password", {
+    method: "PATCH",
+    cuerpo: datos,
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Organización propia                                                 */
+/* ------------------------------------------------------------------ */
+
+export function obtenerMiOrganizacion(): Promise<Organizacion> {
+  return peticion<Organizacion>("/organizadores/mi-organizacion");
+}
+
+export function crearMiOrganizacion(
+  datos: SolicitudOrganizacion,
+): Promise<Organizacion> {
+  return peticion<Organizacion>("/organizadores/mi-organizacion", {
+    method: "POST",
+    cuerpo: datos,
+  });
+}
+
+export function actualizarMiOrganizacion(
+  datos: Partial<SolicitudOrganizacion>,
+): Promise<Organizacion> {
+  return peticion<Organizacion>("/organizadores/mi-organizacion", {
+    method: "PATCH",
+    cuerpo: datos,
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Panel y perfil del gestor                                           */
+/* ------------------------------------------------------------------ */
+
+export function obtenerPanel(): Promise<Panel> {
+  return peticion<Panel>("/panel");
+}
+
+export function obtenerPerfilGestor(): Promise<PerfilGestorCompleto> {
+  return peticion<PerfilGestorCompleto>("/gestor/perfil");
+}
+
+export function actualizarPerfilGestor(
+  datos: SolicitudActualizarPerfilGestor,
+): Promise<PerfilGestorCompleto> {
+  return peticion<PerfilGestorCompleto>("/gestor/perfil", {
+    method: "PATCH",
+    cuerpo: datos,
+  });
+}
+
+export function cambiarPasswordGestor(
+  datos: SolicitudCambiarPassword,
+): Promise<RespuestaMensaje> {
+  return peticion<RespuestaMensaje>("/gestor/perfil/password", {
+    method: "PATCH",
+    cuerpo: datos,
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Gestión de usuarios                                                 */
+/* ------------------------------------------------------------------ */
+
+export function listarUsuarios(
+  filtros: FiltrosUsuarios = {},
+): Promise<{ datos: UsuarioListado[]; paginacion: Paginacion }> {
+  return peticion<{ datos: UsuarioListado[]; paginacion: Paginacion }>(
+    conParametros("/gestor/usuarios", {
+      busqueda: filtros.busqueda,
+      rol: filtros.rol,
+      estado: filtros.estado,
+      perfil: filtros.perfil,
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
+}
+
+export function listarComerciantes(
+  filtros: FiltrosComerciantes = {},
+): Promise<{ datos: ComercianteListado[]; paginacion: Paginacion }> {
+  return peticion<{ datos: ComercianteListado[]; paginacion: Paginacion }>(
+    conParametros("/gestor/comerciantes", {
+      busqueda: filtros.busqueda,
+      estado: filtros.estado,
+      categoria: filtros.categoria,
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
+}
+
+export function obtenerUsuarioDetalle(id: string): Promise<UsuarioDetalle> {
+  return peticion<UsuarioDetalle>(`/gestor/usuarios/${id}`);
+}
+
+export function cambiarEstadoUsuario(
+  id: string,
+  datos: SolicitudCambioEstadoUsuario,
+): Promise<RespuestaCambioEstadoUsuario> {
+  return peticion<RespuestaCambioEstadoUsuario>(
+    `/gestor/usuarios/${id}/estado`,
+    { method: "PATCH", cuerpo: datos },
+  );
+}
+
+export function corregirComerciante(
+  id: string,
+  datos: SolicitudCorregirComerciante,
+): Promise<ComercianteActualizado> {
+  return peticion<ComercianteActualizado>(`/usuarios/${id}/comerciante`, {
+    method: "PATCH",
+    cuerpo: datos,
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Gestores                                                            */
+/* ------------------------------------------------------------------ */
+
+export function crearGestor(datos: SolicitudCrearGestor): Promise<GestorCreado> {
+  return peticion<GestorCreado>("/gestor/gestores", {
+    method: "POST",
+    cuerpo: datos,
+  });
+}
+
+export function reenviarInvitacionGestor(
+  id: string,
+): Promise<InvitacionReenviada> {
+  return peticion<InvitacionReenviada>(
+    `/gestor/gestores/${id}/reenviar-invitacion`,
+    { method: "POST" },
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Organizaciones (gestor)                                             */
+/* ------------------------------------------------------------------ */
+
+export function listarOrganizaciones(
+  filtros: FiltrosOrganizaciones = {},
+): Promise<{ datos: OrganizacionGestor[]; paginacion: Paginacion }> {
+  return peticion<{ datos: OrganizacionGestor[]; paginacion: Paginacion }>(
+    conParametros("/gestor/organizaciones", {
+      busqueda: filtros.busqueda,
+      estado: filtros.estado,
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
+}
+
+export function obtenerOrganizacionGestor(
+  id: string,
+): Promise<OrganizacionGestor> {
+  return peticion<OrganizacionGestor>(`/gestor/organizaciones/${id}`);
+}
+
+export function cambiarEstadoOrganizacion(
+  id: string,
+  datos: { estado: "activa" | "suspendida"; motivo?: string },
+): Promise<RespuestaCambioEstadoOrganizacion> {
+  return peticion<RespuestaCambioEstadoOrganizacion>(
+    `/gestor/organizaciones/${id}/estado`,
+    { method: "PATCH", cuerpo: datos },
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Notificaciones                                                      */
+/* ------------------------------------------------------------------ */
+
+export function listarNotificaciones(
+  filtros: FiltrosNotificaciones = {},
+): Promise<ListarNotificacionesResponse> {
+  return peticion<ListarNotificacionesResponse>(
+    conParametros("/notificaciones", {
+      leida: filtros.leida,
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
+}
+
+export function marcarNotificacionLeida(
+  id: string,
+  leida = true,
+): Promise<Notificacion> {
+  return peticion<Notificacion>(`/notificaciones/${id}/leida`, {
+    method: "PATCH",
+    cuerpo: { leida },
+  });
+}
+
+export function marcarTodasNotificacionesLeidas(): Promise<{
+  actualizadas: number;
+  mensaje: string;
+}> {
+  return peticion<{ actualizadas: number; mensaje: string }>(
+    "/notificaciones/leer-todas",
+    { method: "PATCH" },
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Auditoría                                                           */
+/* ------------------------------------------------------------------ */
+
+export function listarAuditoria(
+  filtros: FiltrosAuditoria = {},
+): Promise<ListarAuditoriaResponse> {
+  return peticion<ListarAuditoriaResponse>(
+    conParametros("/gestor/auditoria", {
+      tabla: filtros.tabla,
+      registroId: filtros.registroId,
+      accion: filtros.accion,
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
 }
