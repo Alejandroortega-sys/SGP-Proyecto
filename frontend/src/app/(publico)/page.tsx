@@ -167,43 +167,49 @@ export default function PaginaBienvenida() {
                 Zonas, espacios y ferias
               </h2>
               <p className="mt-3 text-base leading-relaxed text-texto">
-                El Geo-Portal mostrará las zonas normativas del municipio, los
-                espacios disponibles y el calendario de ferias
-                agroecológicas.
+                El Geo-Portal muestra las zonas normativas del municipio con su
+                tipo, horario, aforo y productos permitidos. Los espacios
+                disponibles y el calendario de ferias se incorporarán en los
+                siguientes sprints.
               </p>
               <p className="mt-4 text-sm leading-relaxed text-texto">
-                Mientras tanto, puedes crear tu cuenta y comenzar con tu
-                registro de comerciante u organizador de ferias.
+                Puedes explorar el mapa sin crear una cuenta o registrar tu
+                comercio u organización para iniciar un trámite.
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <Link
-                  href="/registro"
+                  href="/mapa"
                   className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primario px-5 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
                 >
-                  Crear mi cuenta
+                  Abrir el mapa de zonas
                 </Link>
                 <Link
-                  href="/#como-funciona"
+                  href="/registro"
                   className="inline-flex min-h-11 items-center justify-center rounded-lg border border-borde bg-white px-5 py-2.5 text-sm font-semibold text-texto hover:bg-slate-50"
                 >
-                  Ver los pasos del trámite
+                  Crear mi cuenta
                 </Link>
               </div>
             </div>
 
-            <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50 p-6">
-              <span className="inline-flex items-center rounded-full border border-amber-200 bg-white px-2.5 py-1 text-xs font-semibold uppercase text-amber-700">
-                Próximamente
+            <div className="rounded-xl border border-borde bg-fondo p-6">
+              <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold uppercase text-emerald-700">
+                Disponible
               </span>
               <h3 className="mt-3 text-base font-bold text-titulo">
-                El Geo-Portal y el visor de ferias estarán disponibles en el
-                Sprint 2
+                Consulta las zonas del espacio público en el mapa
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-texto">
-                Estamos habilitando la consulta pública de zonas geográficas y
-                el calendario de eventos. Esta sección se actualizará
-                automáticamente cuando el módulo esté activo.
+                Activa o desactiva las capas por tipo de zona, toca un polígono
+                para ver sus restricciones y usa «Mi ubicación» desde tu
+                celular.
               </p>
+              <Link
+                href="/mapa"
+                className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-primario bg-white px-5 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+              >
+                Explorar el mapa
+              </Link>
             </div>
           </div>
         </div>

@@ -19,6 +19,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
   ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
@@ -34,6 +35,7 @@ import {
   ActualizarZonaDto,
   CambiarEstadoZonaDto,
   CrearZonaDto,
+  ListarZonasGeoJsonQueryDto,
   ListarZonasQueryDto,
   ListarZonasResponseDto,
   ZonaDetalleDto,
@@ -72,10 +74,19 @@ export class ZonasController {
     description:
       'Devuelve un FeatureCollection con las zonas activas. Cada feature ' +
       'incluye id, nombre, tipo, horarios, aforo y nombres de productos ' +
-      'permitidos. La geometría se genera con ST_AsGeoJSON. No requiere ' +
+      'permitidos. La geometría se genera con ST_AsGeoJSON y, si se envía ' +
+      '`zoom`, se simplifica con ST_SimplifyPreserveTopology. No requiere ' +
       'autenticación y está limitado por IP.',
   })
+  @ApiQuery({
+    name: 'zoom',
+    required: false,
+    description:
+      'Nivel de zoom del mapa (0–22). A menor zoom, mayor simplificación.',
+    example: 14,
+  })
   @ApiOkResponse({ type: ZonaFeatureCollectionDto })
+  @ApiBadRequestResponse({ description: 'El parámetro zoom no es válido' })
   @ApiTooManyRequestsResponse({
     description: 'Se superó el límite de peticiones por IP',
   })
@@ -88,8 +99,10 @@ export class ZonasController {
     },
   })
   @Get('geojson')
-  geojson(): Promise<ZonaFeatureCollectionDto> {
-    return this.zonas.geojson();
+  geojson(
+    @Query() dto: ListarZonasGeoJsonQueryDto,
+  ): Promise<ZonaFeatureCollectionDto> {
+    return this.zonas.geojson(dto);
   }
 
   /**

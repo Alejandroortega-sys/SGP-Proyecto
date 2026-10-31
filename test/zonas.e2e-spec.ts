@@ -503,6 +503,28 @@ describe('Zonas (e2e)', () => {
 
       expect(respuesta.body.type).toBe('FeatureCollection');
     });
+
+    it('acepta el nivel de zoom y devuelve el FeatureCollection', async () => {
+      const respuesta = await request(app.getHttpServer())
+        .get('/zonas/geojson?zoom=11')
+        .expect(200);
+
+      expect(respuesta.body.type).toBe('FeatureCollection');
+      expect(respuesta.body.features).toHaveLength(2);
+    });
+
+    it.each(['23', '-1', 'abc', '14.5'])(
+      'rechaza el zoom inválido %s',
+      async (zoom) => {
+        const respuesta = await request(app.getHttpServer())
+          .get(`/zonas/geojson?zoom=${zoom}`)
+          .expect(400);
+
+        expect(respuesta.body.message).toEqual(
+          expect.arrayContaining([expect.stringContaining('zoom')]),
+        );
+      },
+    );
   });
 
   describe('GET /zonas', () => {

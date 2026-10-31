@@ -141,7 +141,7 @@ Si `MAIL_HOST` **no** está configurado en el `.env` del backend, no se envía n
 ### 6.4 Flujo mínimo para validar el frontend
 
 1. **Comerciante:** `/registro/comerciante` → crear cuenta → copiar el código del log del backend → `/activar` → iniciar sesión → el navbar muestra el nombre y el rol → cerrar sesión.
-2. **Gestor:** iniciar sesión con `admin@tulua.gov.co` / `Admin1234` → debe quedar en `/` (las rutas de panel todavía no existen, ver §7).
+2. **Gestor:** iniciar sesión con `admin@tulua.gov.co` / `Admin1234` → debe quedar en `/gestor/panel`.
 3. **Recuperación:** `/recuperar` → copiar el código del log → `/restablecer` → nueva contraseña → login con la nueva clave.
 4. **Errores de seguridad:** 3 contraseñas incorrectas seguidas producen el bloqueo temporal (`423`) que el formulario muestra con los minutos restantes; el límite de peticiones por IP (`429`) muestra los segundos a esperar.
 
@@ -159,8 +159,8 @@ pnpm build     # debe compilar las 10 rutas
 
 | Sprint | Alcance | Estado |
 |---|---|---|
-| **1** | Autenticación y gestión de usuarios (HU-01 a HU-07) | Backend **completo** (36 endpoints); frontend **parcial** |
-| **2** | Geo-Portal y zonas (HU-08 a HU-15) | Backend en rama `Alejandro-Sprint2`; sin integrar en el frontend |
+| **1** | Autenticación y gestión de usuarios (HU-01 a HU-07) | Backend **completo** (36 endpoints); frontend implementado (ver `docs/avance_frontend.md`) |
+| **2** | Geo-Portal y zonas (HU-08 a HU-15) | **HU-08 implementada** (mapa Leaflet, GeoJSON con zoom y geolocalización) y backend de zonas completo; faltan HU-09, HU-10, HU-13, HU-14, HU-15 y la UI de HU-11/HU-12 |
 | **3** | Solicitudes y asignación de espacio | Pendiente |
 | **4** | Simulador de factibilidad y densidad | Pendiente |
 | **5** | Permisos con QR y cobros simulados | Pendiente |
@@ -170,15 +170,16 @@ pnpm build     # debe compilar las 10 rutas
 
 Rutas públicas funcionales, verificadas con `lint`, `build` y render HTTP 200:
 
-`/` · `/login` · `/registro` · `/registro/comerciante` · `/registro/organizador` · `/activar` · `/recuperar` · `/restablecer` · `/primer-acceso`
+`/` · `/mapa` · `/login` · `/registro` · `/registro/comerciante` · `/registro/organizador` · `/activar` · `/recuperar` · `/restablecer` · `/primer-acceso`
 
-Incluye: design system mobile-first (360 px, WCAG AA), estados de carga/vacío/error/éxito, sesión con `GET /auth/me` y `POST /auth/logout` en el navbar, rotación de refresh tokens y manejo de los códigos HTTP 401/403/423/429.
+Además, paneles protegidos por rol: `/comerciante/*`, `/organizador/*` y `/gestor/*`.
+
+Incluye: design system mobile-first (360 px, WCAG AA), estados de carga/vacío/error/éxito, sesión con `GET /auth/me` y `POST /auth/logout` en el navbar, rotación de refresh tokens, manejo de los códigos HTTP 401/403/423/429 y el Geo-Portal público con Leaflet.
 
 ### Frontend: qué falta
 
-- Rutas de los roles: `/comerciante/*`, `/organizador/*` y `/gestor/*`. **Por eso, al iniciar sesión el usuario queda en `/`**: la redirección por rol se activará cuando esas rutas existan.
-- Los módulos de mapa/Geo-Portal, solicitudes, ferias, permisos QR, cobros y dashboard analítico (Sprints 2 a 6) aparecen como "Próximamente" y no llaman a endpoints inexistentes.
-- Integración end-to-end con la API: **aún no se ha ejecutado** un login/registro real contra el backend desde el frontend; el backend no estaba corriendo durante la última verificación.
+- Módulos de los Sprints 3 a 6: solicitudes, ferias, permisos QR, cobros y dashboard analítico.
+- Del Sprint 2: catálogo de espacios (HU-09), filtros y búsqueda (HU-10), censo de módulos (HU-13), importación (HU-14), espacios temporales y bloqueos (HU-15), y la interfaz de administración de zonas (HU-11/HU-12).
 
 ---
 

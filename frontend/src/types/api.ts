@@ -577,3 +577,37 @@ export interface ListarAuditoriaResponse {
   datos: AuditoriaItem[];
   paginacion: Paginacion;
 }
+
+/* ------------------------------------------------------------------ */
+/* Zonas / Geo-Portal                                                  */
+/* ------------------------------------------------------------------ */
+
+export type TipoZona = "permitida" | "restringida" | "alta_congestion";
+
+export interface HorariosZona {
+  inicio: string | null;
+  fin: string | null;
+}
+
+export interface ZonaGeoJsonProperties {
+  id: string;
+  nombre: string;
+  tipo: TipoZona;
+  horarios: HorariosZona;
+  aforo: number | null;
+  productos: string[];
+}
+
+export interface ZonaFeature {
+  type: "Feature";
+  geometry: {
+    type: "Polygon";
+    coordinates: number[][][];
+  };
+  properties: ZonaGeoJsonProperties;
+}
+
+export interface ZonaFeatureCollection {
+  type: "FeatureCollection";
+  features: ZonaFeature[];
+}

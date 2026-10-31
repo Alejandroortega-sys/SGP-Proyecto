@@ -117,12 +117,13 @@ describe('ZonasController', () => {
     });
   });
 
-  it('delega el GeoJSON público', async () => {
+  it('delega el GeoJSON público con el zoom recibido', async () => {
     const { service, mock } = crearServiceMock();
     const controller = new ZonasController(service);
+    const query = { zoom: 14 };
 
-    await controller.geojson();
+    await controller.geojson(query);
 
-    expect(mock.geojson).toHaveBeenCalledTimes(1);
+    expect(mock.geojson).toHaveBeenCalledWith(query);
   });
 });

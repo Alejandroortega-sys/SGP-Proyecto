@@ -273,6 +273,46 @@ export function sqlGeoJson(columna: ColumnaGeometria): Prisma.Sql {
   return Prisma.sql`ST_AsGeoJSON(${identificador})::jsonb`;
 }
 
+/**
+ * Fragmento SQL para leer una columna espacial como GeoJSON, opcionalmente
+ * simplificada para el nivel de zoom del mapa.
+ *
+ * Cuando `tolerancia` es `null` solo se reducen los decimales. Cuando hay
+ * tolerancia se usa `ST_SimplifyPreserveTopology`; si la simplificación deja
+ * la geometría vacía (posible en polígonos muy pequeños) se devuelve la
+ * geometría original para no romper el contrato GeoJSON.
+ *
+ * Los valores viajan siempre parametrizados y el nombre de la columna sale de
+ * una lista cerrada, nunca de la entrada del usuario.
+ */
+export function sqlGeoJsonSimplificado(
+  columna: ColumnaGeometria,
+  opciones: { tolerancia: number | null; decimales: number },
+): Prisma.Sql {
+  const identificador = COLUMNAS_GEOJSON[columna];
+  if (identificador === undefined) {
+    throw new BadRequestException(
+      `La columna de geometría "${String(columna)}" no es válida`,
+    );
+  }
+
+  const decimales = Prisma.sql`${opciones.decimales}::int`;
+
+  if (opciones.tolerancia === null) {
+    return Prisma.sql`ST_AsGeoJSON(${identificador}, ${decimales})::jsonb`;
+  }
+
+  const simplificada = Prisma.sql`ST_SimplifyPreserveTopology(${identificador}, ${opciones.tolerancia}::float8)`;
+
+  return Prisma.sql`ST_AsGeoJSON(
+    CASE
+      WHEN ST_IsEmpty(${simplificada}) THEN ${identificador}
+      ELSE ${simplificada}
+    END,
+    ${decimales}
+  )::jsonb`;
+}
+
 function parsearGeoJson(texto: string): unknown {
   try {
     return JSON.parse(texto) as unknown;

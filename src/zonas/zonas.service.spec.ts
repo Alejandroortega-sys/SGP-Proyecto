@@ -1,12 +1,13 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import type { GeoJsonPolygon } from '../common/geo';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActualizarZonaDto, CrearZonaDto } from './dto/zonas.dto';
 import { ZonasService } from './zonas.service';
 
 const FECHA = new Date('2026-09-15T14:30:00.000Z');
 
-const POLIGONO = {
-  type: 'Polygon' as const,
+const POLIGONO: GeoJsonPolygon = {
+  type: 'Polygon',
   coordinates: [
     [
       [-76.196, 4.088],
@@ -478,7 +479,38 @@ describe('ZonasService', () => {
         { sql: string },
       ];
       expect(sql).toContain('WHERE z.activa = true');
-      expect(geometria.sql).toContain('ST_AsGeoJSON(geometria)');
+      expect(geometria.sql).toContain('ST_AsGeoJSON(geometria');
+      expect(geometria.sql).not.toContain('ST_SimplifyPreserveTopology');
+    });
+
+    it('simplifica la geometría cuando se recibe un zoom alejado', async () => {
+      const { prisma, mock } = crearPrisma();
+      mock.$queryRaw.mockResolvedValue([FILA_GEOJSON]);
+
+      const service = new ZonasService(prisma);
+      await service.geojson({ zoom: 11 });
+
+      const [, geometria] = mock.$queryRaw.mock.calls[0] as [
+        TemplateStringsArray,
+        { sql: string },
+      ];
+      expect(geometria.sql).toContain('ST_SimplifyPreserveTopology');
+      expect(geometria.sql).toContain('ST_IsEmpty');
+    });
+
+    it('no simplifica la geometría con zoom cercano pero reduce decimales', async () => {
+      const { prisma, mock } = crearPrisma();
+      mock.$queryRaw.mockResolvedValue([FILA_GEOJSON]);
+
+      const service = new ZonasService(prisma);
+      await service.geojson({ zoom: 18 });
+
+      const [, geometria] = mock.$queryRaw.mock.calls[0] as [
+        TemplateStringsArray,
+        { sql: string },
+      ];
+      expect(geometria.sql).not.toContain('ST_SimplifyPreserveTopology');
+      expect(geometria.sql).toContain('ST_AsGeoJSON(geometria');
     });
   });
 });

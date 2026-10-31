@@ -16,7 +16,7 @@ import { useSesion } from "@/hooks/use-sesion";
 const ENLACES = [
   { href: "/", texto: "Inicio" },
   { href: "/#como-funciona", texto: "Conoce el Proyecto" },
-  { href: "/#geo-portal", texto: "Mapa", proximamente: true },
+  { href: "/mapa", texto: "Mapa" },
   { href: "/#geo-portal", texto: "Ferias", proximamente: true },
 ] as const;
 

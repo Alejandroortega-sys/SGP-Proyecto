@@ -19,6 +19,7 @@ import {
 } from 'class-validator';
 import type { tipo_zona } from '../../generated/prisma/client';
 import type { GeoJsonPolygon } from '../../common/geo';
+import { ZOOM_MAXIMO, ZOOM_MINIMO } from '../geometria-zoom';
 
 /** Tipos de zona admitidos por el enum `tipo_zona` de la BD. */
 export const TIPOS_ZONA: readonly tipo_zona[] = [
@@ -263,6 +264,36 @@ export class ListarZonasQueryDto {
   @Min(1, { message: 'El límite debe ser mayor o igual a 1' })
   @Max(100, { message: 'El límite no puede superar 100' })
   limite?: number;
+}
+
+/** Query de `GET /zonas/geojson`. */
+export class ListarZonasGeoJsonQueryDto {
+  /**
+   * Nivel de zoom del mapa (0–22). Si se omite, se devuelve la geometría
+   * completa; si se envía, se simplifica según la escala visible.
+   */
+  @ApiPropertyOptional({
+    example: 14,
+    minimum: ZOOM_MINIMO,
+    maximum: ZOOM_MAXIMO,
+    description:
+      'Nivel de zoom del mapa. A menor zoom, mayor simplificación del polígono.',
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') {
+      return undefined;
+    }
+    return Number(value);
+  })
+  @IsInt({ message: 'El zoom debe ser un número entero' })
+  @Min(ZOOM_MINIMO, {
+    message: `El zoom no puede ser menor que ${ZOOM_MINIMO}`,
+  })
+  @Max(ZOOM_MAXIMO, {
+    message: `El zoom no puede ser mayor que ${ZOOM_MAXIMO}`,
+  })
+  zoom?: number;
 }
 
 /** Producto permitido dentro de una zona. */

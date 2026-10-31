@@ -7,6 +7,7 @@ import {
   poligonoASql,
   puntoASql,
   sqlGeoJson,
+  sqlGeoJsonSimplificado,
   validarPoligono,
   validarPunto,
 } from './geo';
@@ -227,6 +228,40 @@ describe('sqlGeoJson', () => {
     expect(() => sqlGeoJson('otra' as ColumnaGeometria)).toThrow(
       /no es válida/,
     );
+  });
+});
+
+describe('sqlGeoJsonSimplificado', () => {
+  it('solo reduce decimales cuando no hay tolerancia', () => {
+    const fragmento = sqlGeoJsonSimplificado('geometria', {
+      tolerancia: null,
+      decimales: 6,
+    });
+
+    expect(fragmento.sql).toContain('ST_AsGeoJSON');
+    expect(fragmento.sql).not.toContain('ST_SimplifyPreserveTopology');
+    expect(fragmento.sql).toContain('::int');
+  });
+
+  it('simplifica y protege contra geometrías vacías', () => {
+    const fragmento = sqlGeoJsonSimplificado('geometria', {
+      tolerancia: 0.0005,
+      decimales: 4,
+    });
+
+    expect(fragmento.sql).toContain('ST_SimplifyPreserveTopology');
+    expect(fragmento.sql).toContain('ST_IsEmpty');
+    expect(fragmento.sql).toContain('CASE');
+    expect(fragmento.sql).toContain('::float8');
+  });
+
+  it('rechaza una columna no permitida', () => {
+    expect(() =>
+      sqlGeoJsonSimplificado('otra' as ColumnaGeometria, {
+        tolerancia: null,
+        decimales: 6,
+      }),
+    ).toThrow(/no es válida/);
   });
 });
 

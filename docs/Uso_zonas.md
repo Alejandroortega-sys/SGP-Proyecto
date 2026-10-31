@@ -336,6 +336,27 @@ Respuesta `200`:
 
 **Acceso:** público, sin `Authorization`.
 
+### Query params
+
+| Parámetro | Tipo    | Obligatorio | Descripción |
+| --------- | ------- | ----------- | ----------- |
+| `zoom`    | entero  | No          | Nivel de zoom del mapa (0–22). A menor zoom, mayor simplificación del polígono |
+
+Si se omite `zoom`, se devuelve la geometría completa (comportamiento histórico).
+Si se envía, el backend aplica `ST_SimplifyPreserveTopology` y reduce los
+decimales de `ST_AsGeoJSON` según esta tabla:
+
+| Zoom    | Tolerancia (grados) | Decimales |
+| ------- | ------------------- | --------- |
+| ≤ 11    | 0.0005              | 4         |
+| 12–13   | 0.0002              | 4         |
+| 14–15   | 0.00005             | 5         |
+| 16–17   | sin simplificar     | 6         |
+| 18–22   | sin simplificar     | 7         |
+
+La simplificación nunca deja un polígono vacío: si `ST_SimplifyPreserveTopology`
+produce una geometría vacía, se devuelve la original.
+
 Devuelve un `FeatureCollection` con **solo las zonas activas**:
 
 ```json
@@ -376,7 +397,7 @@ Detalles:
 - Solo se incluyen productos **activos** en `properties.productos`.
 - El frontend puede pasar el objeto directamente a Leaflet/Mapbox.
 - **Rate limit:** 60 peticiones por minuto por IP (`ThrottlerGuard` + `@Throttle`). Al superarlo responde `429` con `Retry-After`.
-- No se aplica `ST_SimplifyPreserveTopology` todavía. La meta es responder en menos de 2 s; se medirá con datos reales y solo se simplificará si es necesario.
+- **Simplificación:** se aplica `ST_SimplifyPreserveTopology` cuando se envía `?zoom=`. El frontend la usa al cambiar de nivel de zoom y cachea la respuesta por nivel para no agotar el límite de peticiones.
 
 ---
 
@@ -408,6 +429,7 @@ await prisma.$transaction(async (tx) => {
 | `src/zonas/zonas.controller.ts`                 | Endpoints, roles, Swagger y rate limit                |
 | `src/zonas/zonas.service.ts`                    | Consultas SQL, transacciones, auditoría y mapeo       |
 | `src/zonas/dto/zonas.dto.ts`                    | DTOs de entrada, listado, detalle y GeoJSON           |
+| `src/zonas/geometria-zoom.ts`                   | Tolerancia y decimales de simplificación por zoom     |
 | `src/zonas/zonas.controller.spec.ts`            | Pruebas de roles, metadatos y delegación              |
 | `src/zonas/zonas.service.spec.ts`               | Pruebas de creación, edición, filtros y GeoJSON       |
 | `test/zonas.e2e-spec.ts`                        | Pruebas e2e de acceso, validación, rutas y rate limit |
@@ -433,6 +455,9 @@ Invoke-RestMethod -Uri 'http://localhost:3000/zonas/1' -Headers $auth
 
 # 4) GeoJSON público (sin token)
 Invoke-RestMethod -Uri 'http://localhost:3000/zonas/geojson'
+
+# 4b) GeoJSON simplificado para el nivel de zoom del mapa
+Invoke-RestMethod -Uri 'http://localhost:3000/zonas/geojson?zoom=14'
 
 # 5) Crear una zona
 Invoke-RestMethod -Method Post -Uri http://localhost:3000/zonas `

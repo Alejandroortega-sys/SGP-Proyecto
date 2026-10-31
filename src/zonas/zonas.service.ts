@@ -4,7 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { fijarActorAuditoria } from '../common/auditoria';
-import { leerGeoJson, poligonoASql, sqlGeoJson } from '../common/geo';
+import {
+  leerGeoJson,
+  poligonoASql,
+  sqlGeoJson,
+  sqlGeoJsonSimplificado,
+} from '../common/geo';
 import { parseIdBigint } from '../common/parse-id';
 import { Prisma, tipo_zona } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -12,6 +17,7 @@ import {
   ActualizarZonaDto,
   CambiarEstadoZonaDto,
   CrearZonaDto,
+  ListarZonasGeoJsonQueryDto,
   ListarZonasQueryDto,
   ListarZonasResponseDto,
   ProductoPermitidoDto,
@@ -20,6 +26,7 @@ import {
   ZonaFeatureCollectionDto,
   ZonaListadoItemDto,
 } from './dto/zonas.dto';
+import { opcionesGeometriaZoom } from './geometria-zoom';
 
 /** Columnas comunes del detalle de una zona. */
 const CAMPOS_DETALLE = Prisma.sql`
@@ -362,9 +369,18 @@ export class ZonasService {
    * FeatureCollection público con las zonas activas.
    *
    * La geometría se genera con `ST_AsGeoJSON` y los nombres de productos se
-   * agregan en la misma consulta para evitar N+1.
+   * agregan en la misma consulta para evitar N+1. Si se recibe `zoom`, el
+   * polígono se simplifica con `ST_SimplifyPreserveTopology` para reducir el
+   * peso de la respuesta en escalas alejadas.
    */
-  async geojson(): Promise<ZonaFeatureCollectionDto> {
+  async geojson(
+    dto: ListarZonasGeoJsonQueryDto = {},
+  ): Promise<ZonaFeatureCollectionDto> {
+    const geometria = sqlGeoJsonSimplificado(
+      'geometria',
+      opcionesGeometriaZoom(dto.zoom),
+    );
+
     const filas = await this.prisma.$queryRaw<FilaZonaGeoJson[]>`
       SELECT
         z.id,
@@ -373,7 +389,7 @@ export class ZonasService {
         to_char(z.horario_inicio, 'HH24:MI') AS horario_inicio,
         to_char(z.horario_fin, 'HH24:MI') AS horario_fin,
         z.aforo_maximo,
-        ${sqlGeoJson('geometria')} AS geometria,
+        ${geometria} AS geometria,
         COALESCE(
           (SELECT jsonb_agg(p.nombre ORDER BY p.nombre)
              FROM zona_productos zp

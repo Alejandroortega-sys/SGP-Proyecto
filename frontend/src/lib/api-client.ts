@@ -42,6 +42,7 @@ import type {
   UsuarioDetalle,
   UsuarioListado,
   UsuarioSesion,
+  ZonaFeatureCollection,
 } from "@/types/api";
 import { guardarSesion, limpiarSesion, obtenerAccessToken, obtenerRefreshToken } from "./sesion";
 
@@ -540,5 +541,22 @@ export function listarAuditoria(
       pagina: filtros.pagina,
       limite: filtros.limite,
     }),
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Zonas / Geo-Portal                                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Obtiene el GeoJSON público de zonas activas. Si se envía `zoom`, el backend
+ * simplifica las geometrías según la escala visible del mapa.
+ */
+export function obtenerZonasGeoJson(
+  zoom?: number,
+): Promise<ZonaFeatureCollection> {
+  return peticion<ZonaFeatureCollection>(
+    conParametros("/zonas/geojson", { zoom }),
+    { auth: false },
   );
 }
