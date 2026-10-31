@@ -14,6 +14,8 @@ const config: Config = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
   testRegex: '.*\\.spec\\.ts$',
+  // El frontend usa Vitest y Playwright; no debe ejecutarse con Jest.
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/frontend/'],
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },

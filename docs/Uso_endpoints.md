@@ -27,7 +27,7 @@
 | Errores de BD | Traducidos a HTTP por `PrismaExceptionFilter` |
 | Correo | Nodemailer; sin SMTP escribe el contenido en el log en desarrollo |
 | Rate limit | Login, registro, activación y recuperación de contraseña, por IP |
-| Frontend | **No existe todavía**; este documento es la base para construirlo |
+| Frontend | **Implementado para el Sprint 1** (Next.js 16): rutas públicas, paneles por rol, notificaciones y auditoría. Ver `docs/avance_frontend.md` |
 
 ### 1.2 Módulos del backend relacionados con el Sprint 1
 
