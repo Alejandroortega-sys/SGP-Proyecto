@@ -2,13 +2,14 @@ import type { ReactNode } from "react";
 import { combinarClases } from "@/lib/clases";
 import type { EstadoOrganizacion, EstadoUsuario } from "@/types/api";
 
-type Tono = "exitoso" | "pendiente" | "peligro" | "neutro";
+type Tono = "exitoso" | "pendiente" | "peligro" | "neutro" | "info";
 
 const CLASES_TONO: Record<Tono, string> = {
   exitoso: "border-emerald-200 bg-emerald-50 text-emerald-700",
   pendiente: "border-amber-200 bg-amber-50 text-amber-700",
   peligro: "border-rose-200 bg-rose-50 text-rose-700",
   neutro: "border-slate-200 bg-slate-100 text-slate-700",
+  info: "border-sky-200 bg-sky-50 text-sky-700",
 };
 
 const TEXTOS_ESTADO: Record<string, string> = {

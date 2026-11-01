@@ -184,3 +184,82 @@ body {
   border-top-color: #b91c1c;
   border-top-style: dotted;
 }
+
+/* ------------------------------------------------------------------ */
+/* HU-09: marcadores de espacios y agrupación por zoom                 */
+/* ------------------------------------------------------------------ */
+
+.sgp-marcador-espacio__contenedor,
+.sgp-cluster-espacios__contenedor {
+  background: transparent;
+  border: 0;
+}
+
+.sgp-marcador-espacio {
+  display: flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #ffffff;
+  border-radius: 9999px;
+  background-color: var(--color-marcador, #0d5f3a);
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.35);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.sgp-marcador-espacio:hover {
+  transform: scale(1.08);
+}
+
+.sgp-marcador-espacio--seleccionado {
+  outline: 3px solid #fbbf24;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgb(251 191 36 / 0.25);
+}
+
+.sgp-marcador-espacio__simbolo {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.sgp-cluster-espacios {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #ffffff;
+  border-radius: 9999px;
+  background-color: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgb(15 23 42 / 0.4);
+}
+
+.sgp-cluster-espacios__conteo {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.sgp-cluster-espacios__estados {
+  display: flex;
+  margin-top: 3px;
+  gap: 2px;
+}
+
+.sgp-cluster-espacios__punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+}
+
+.sgp-mapa .leaflet-marker-icon:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 3px;
+}

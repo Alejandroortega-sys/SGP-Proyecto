@@ -2,7 +2,7 @@
 
 **Proyecto:** Plataforma Web de Gestión del Espacio Público, Ferias Agroecológicas y Comercio Formal/Informal de Tuluá (Equipo 6)
 **Motor:** PostgreSQL 18 + PostGIS 3.6 · **Codificación:** UTF8 · **Convención:** `snake_case`, español
-**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba) · `03_sesiones.sql` (tabla de sesiones)
+**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba) · `03_sesiones.sql` (tabla de sesiones) · `04_espacios_hu09.sql` (migración de la ficha de espacios)
 **Base de desarrollo verificada:** `sgp_tulua`
 
 ---
@@ -13,7 +13,7 @@
 # 1) Crear la base de datos
 psql -U postgres -d postgres -c 'CREATE DATABASE "sgp_tulua";'
 
-# 2) Crear la estructura (30 tablas, 17 ENUM, 3 secuencias, 28 índices,
+# 2) Crear la estructura (30 tablas, 18 ENUM, 3 secuencias, 30 índices,
 #    6 funciones, 10 triggers y 4 vistas materializadas)
 psql -U postgres -d "sgp_tulua" -f 01_creacion_bd.sql
 
@@ -22,6 +22,9 @@ psql -U postgres -d "sgp_tulua" -f 02_seed_datos_prueba.sql
 
 # 4) Si la base ya existía antes de esta versión, crear solo la tabla de sesiones:
 psql -U postgres -d "sgp_tulua" -f 03_sesiones.sql
+
+# 5) HU-09: agregar tipo, sector, dimensiones y horario a espacios_temporales:
+psql -U postgres -d "sgp_tulua" -f 04_espacios_hu09.sql
 
 # Para repetir desde cero:
 psql -U postgres -d postgres -c 'DROP DATABASE "sgp_tulua" WITH (FORCE);'
@@ -90,7 +93,7 @@ erDiagram
 
 ---
 
-## 4. Tipos ENUM (17)
+## 4. Tipos ENUM (18)
 
 | Tipo | Valores |
 |---|---|
@@ -101,6 +104,7 @@ erDiagram
 | `categoria_comercio` | formal · informal |
 | `tipo_zona` | permitida · restringida · alta_congestion |
 | `estado_modulo` | activo · baja |
+| `tipo_espacio` | modulo · kiosco · puesto · espacio_movil |
 | `estado_espacio` | disponible · bloqueado · asignado · mantenimiento |
 | `estado_solicitud` | borrador · radicada · en_revision · devuelta · aprobada · rechazada · cancelada |
 | `estado_documento` | pendiente · validado · observado |
@@ -244,9 +248,13 @@ CHECK: debe haber `titular_id` o `titular_nombre`.
 |---|---|---|
 | id | BIGINT | PK, IDENTITY |
 | nombre | VARCHAR(150) | NOT NULL |
+| tipo | tipo_espacio | NOT NULL, DEFAULT puesto |
+| sector | VARCHAR(100) | Sector o barrio del espacio |
+| dimensiones | VARCHAR(60) | Medidas legibles (ej. `3 × 2 m`) |
 | zona_id | BIGINT | FK→zonas(id) |
 | ubicacion | geometry(Point,4326) | NOT NULL |
 | actividad_permitida | VARCHAR(100) | |
+| horario_inicio / horario_fin | TIME | Opcionales; si existen, `fin > inicio` |
 | estado | estado_espacio | DEFAULT disponible |
 | creado_por | BIGINT | FK→usuarios(id) |
 | creado_en | TIMESTAMPTZ | DEFAULT now() |
@@ -544,7 +552,7 @@ Las cuatro pruebas negativas se ejecutan dentro de `02_seed_datos_prueba.sql` y 
 
 ## 16. Índices
 
-- **B-tree:** usuarios(rol, estado), tokens(usuario, tipo), sesiones(usuario, revocada_en), sesiones(refresh_token_anterior_hash), modulos(estado, titular), espacios(zona), parametros(clave, vigente_desc), solicitudes(comerciante, estado, espacio+fecha), documentos(solicitud), ferias(zona), evaluaciones(solicitud), permisos(titular, estado), eventos(permiso, creado_en), verificaciones(creado_en), cobros(estado), notificaciones(usuario, leida), auditoria(tabla+registro, fecha).
+- **B-tree:** usuarios(rol, estado), tokens(usuario, tipo), sesiones(usuario, revocada_en), sesiones(refresh_token_anterior_hash), modulos(estado, titular), espacios(zona, estado), bloqueos(espacio+fechas), parametros(clave, vigente_desc), solicitudes(comerciante, estado, espacio+fecha), documentos(solicitud), ferias(zona), evaluaciones(solicitud), permisos(titular, estado), eventos(permiso, creado_en), verificaciones(creado_en), cobros(estado), notificaciones(usuario, leida), auditoria(tabla+registro, fecha).
 - **GIST espaciales:** `zonas(geometria)`, `modulos(ubicacion)`, `espacios_temporales(ubicacion)`, `evaluaciones_factibilidad(ubicacion)`.
 - **Únicos (para REFRESH CONCURRENTLY):** uno por vista materializada.
 
@@ -559,7 +567,7 @@ Las cuatro pruebas negativas se ejecutan dentro de `02_seed_datos_prueba.sql` y 
 | Zonas (4) | Centro–Calle 30 (permitida, aforo 40), Plaza Boyacá (alta congestión, aforo 15), Entorno Hospital (restringida, aforo 5), Parque La Guadua (permitida, aforo 25) — polígonos alrededor del centro de Tuluá |
 | Productos (6) | Frutas frescas, Verduras, Artesanías, Comidas rápidas, Ropa y calzado, Plantas ornamentales |
 | Módulos (6) | 2 con titular registrado, 4 con titular por nombre; mezcla formal/informal |
-| Espacios (4) | 3 disponibles, 1 bloqueado con bloqueo 25–31 oct 2026 |
+| Espacios (6) | 3 disponibles, 1 bloqueado con bloqueo 25–31 oct 2026, 1 asignado y 1 en mantenimiento; con tipo, sector, dimensiones y horario (HU-09) |
 | Parámetros | distancia_minima = 5 m · aforo_cuadrante_defecto = 40 · umbral_alerta = 80 % |
 | Solicitudes (4) | 1 aprobada, 1 radicada, 1 rechazada (con motivo), 1 borrador; 5 documentos (incluye corrección versionada con `reemplaza_a`) |
 | Ferias (2) | 1 aprobada (Dic 2026, Parque La Guadua, 20 puestos, 3 vendedores), 1 radicada (Ene 2027) |

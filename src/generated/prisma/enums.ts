@@ -140,6 +140,16 @@ export const rol_usuario = {
 export type rol_usuario = (typeof rol_usuario)[keyof typeof rol_usuario]
 
 
+export const tipo_espacio = {
+  modulo: 'modulo',
+  kiosco: 'kiosco',
+  puesto: 'puesto',
+  espacio_movil: 'espacio_movil'
+} as const
+
+export type tipo_espacio = (typeof tipo_espacio)[keyof typeof tipo_espacio]
+
+
 export const tipo_token = {
   activacion: 'activacion',
   recuperacion_password: 'recuperacion_password',

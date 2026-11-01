@@ -165,8 +165,13 @@ export type Espacio_bloqueosScalarFieldEnum = (typeof Espacio_bloqueosScalarFiel
 export const Espacios_temporalesScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
+  tipo: 'tipo',
+  sector: 'sector',
+  dimensiones: 'dimensiones',
   zona_id: 'zona_id',
   actividad_permitida: 'actividad_permitida',
+  horario_inicio: 'horario_inicio',
+  horario_fin: 'horario_fin',
   estado: 'estado',
   creado_por: 'creado_por',
   creado_en: 'creado_en'

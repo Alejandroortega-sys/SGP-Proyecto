@@ -75,15 +75,22 @@ model espacio_bloqueos {
   creado_en           DateTime            @default(now()) @db.Timestamptz(6)
   usuarios            usuarios            @relation(fields: [creado_por], references: [id], onDelete: NoAction, onUpdate: NoAction)
   espacios_temporales espacios_temporales @relation(fields: [espacio_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([espacio_id, fecha_inicio, fecha_fin], map: "idx_bloqueos_espacio_fechas")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model espacios_temporales {
   id                  BigInt                  @id @default(autoincrement())
   nombre              String                  @db.VarChar(150)
+  tipo                tipo_espacio            @default(puesto)
+  sector              String?                 @db.VarChar(100)
+  dimensiones         String?                 @db.VarChar(60)
   zona_id             BigInt?
   ubicacion           Unsupported("geometry")
   actividad_permitida String?                 @db.VarChar(100)
+  horario_inicio      DateTime?               @db.Time(6)
+  horario_fin         DateTime?               @db.Time(6)
   estado              estado_espacio          @default(disponible)
   creado_por          BigInt?
   creado_en           DateTime                @default(now()) @db.Timestamptz(6)
@@ -93,6 +100,7 @@ model espacios_temporales {
   permisos            permisos[]
   solicitudes         solicitudes[]
 
+  @@index([estado], map: "idx_espacios_estado")
   @@index([ubicacion], map: "idx_espacios_geom", type: Gist)
   @@index([zona_id], map: "idx_espacios_zona")
 }
@@ -605,6 +613,13 @@ enum rol_usuario {
   comerciante
   organizador
   gestor
+}
+
+enum tipo_espacio {
+  modulo
+  kiosco
+  puesto
+  espacio_movil
 }
 
 enum tipo_token {

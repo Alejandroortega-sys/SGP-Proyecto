@@ -124,6 +124,14 @@ export function InicioUsuario({ rol }: { rol: "comerciante" | "organizador" }) {
             <h2 className="text-base font-bold text-titulo">Accesos rápidos</h2>
           </TarjetaEncabezado>
           <TarjetaCuerpo className="flex flex-col gap-2 text-sm">
+            {!esOrganizador ? (
+              <Link
+                href="/comerciante/espacios"
+                className="rounded-lg border border-primario bg-primario-suave px-3 py-2 font-semibold text-primario hover:bg-primario-suave/80"
+              >
+                Consultar espacios disponibles
+              </Link>
+            ) : null}
             <Link
               href={esOrganizador ? "/organizador/perfil" : "/comerciante/perfil"}
               className="rounded-lg border border-borde px-3 py-2 font-medium text-titulo hover:bg-fondo"

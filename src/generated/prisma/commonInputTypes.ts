@@ -301,11 +301,28 @@ export type Enumcategoria_comercioWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumcategoria_comercioFilter<$PrismaModel>
 }
 
+export type Enumtipo_espacioFilter<$PrismaModel = never> = {
+  equals?: $Enums.tipo_espacio | Prisma.Enumtipo_espacioFieldRefInput<$PrismaModel>
+  in?: $Enums.tipo_espacio[] | Prisma.ListEnumtipo_espacioFieldRefInput<$PrismaModel>
+  notIn?: $Enums.tipo_espacio[] | Prisma.ListEnumtipo_espacioFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumtipo_espacioFilter<$PrismaModel> | $Enums.tipo_espacio
+}
+
 export type Enumestado_espacioFilter<$PrismaModel = never> = {
   equals?: $Enums.estado_espacio | Prisma.Enumestado_espacioFieldRefInput<$PrismaModel>
   in?: $Enums.estado_espacio[] | Prisma.ListEnumestado_espacioFieldRefInput<$PrismaModel>
   notIn?: $Enums.estado_espacio[] | Prisma.ListEnumestado_espacioFieldRefInput<$PrismaModel>
   not?: Prisma.NestedEnumestado_espacioFilter<$PrismaModel> | $Enums.estado_espacio
+}
+
+export type Enumtipo_espacioWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.tipo_espacio | Prisma.Enumtipo_espacioFieldRefInput<$PrismaModel>
+  in?: $Enums.tipo_espacio[] | Prisma.ListEnumtipo_espacioFieldRefInput<$PrismaModel>
+  notIn?: $Enums.tipo_espacio[] | Prisma.ListEnumtipo_espacioFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumtipo_espacioWithAggregatesFilter<$PrismaModel> | $Enums.tipo_espacio
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumtipo_espacioFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumtipo_espacioFilter<$PrismaModel>
 }
 
 export type Enumestado_espacioWithAggregatesFilter<$PrismaModel = never> = {
@@ -901,11 +918,28 @@ export type NestedEnumcategoria_comercioWithAggregatesFilter<$PrismaModel = neve
   _max?: Prisma.NestedEnumcategoria_comercioFilter<$PrismaModel>
 }
 
+export type NestedEnumtipo_espacioFilter<$PrismaModel = never> = {
+  equals?: $Enums.tipo_espacio | Prisma.Enumtipo_espacioFieldRefInput<$PrismaModel>
+  in?: $Enums.tipo_espacio[] | Prisma.ListEnumtipo_espacioFieldRefInput<$PrismaModel>
+  notIn?: $Enums.tipo_espacio[] | Prisma.ListEnumtipo_espacioFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumtipo_espacioFilter<$PrismaModel> | $Enums.tipo_espacio
+}
+
 export type NestedEnumestado_espacioFilter<$PrismaModel = never> = {
   equals?: $Enums.estado_espacio | Prisma.Enumestado_espacioFieldRefInput<$PrismaModel>
   in?: $Enums.estado_espacio[] | Prisma.ListEnumestado_espacioFieldRefInput<$PrismaModel>
   notIn?: $Enums.estado_espacio[] | Prisma.ListEnumestado_espacioFieldRefInput<$PrismaModel>
   not?: Prisma.NestedEnumestado_espacioFilter<$PrismaModel> | $Enums.estado_espacio
+}
+
+export type NestedEnumtipo_espacioWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.tipo_espacio | Prisma.Enumtipo_espacioFieldRefInput<$PrismaModel>
+  in?: $Enums.tipo_espacio[] | Prisma.ListEnumtipo_espacioFieldRefInput<$PrismaModel>
+  notIn?: $Enums.tipo_espacio[] | Prisma.ListEnumtipo_espacioFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumtipo_espacioWithAggregatesFilter<$PrismaModel> | $Enums.tipo_espacio
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumtipo_espacioFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumtipo_espacioFilter<$PrismaModel>
 }
 
 export type NestedEnumestado_espacioWithAggregatesFilter<$PrismaModel = never> = {

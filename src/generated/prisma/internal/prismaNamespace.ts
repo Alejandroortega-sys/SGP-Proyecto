@@ -2781,8 +2781,13 @@ export type Espacio_bloqueosScalarFieldEnum = (typeof Espacio_bloqueosScalarFiel
 export const Espacios_temporalesScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
+  tipo: 'tipo',
+  sector: 'sector',
+  dimensiones: 'dimensiones',
   zona_id: 'zona_id',
   actividad_permitida: 'actividad_permitida',
+  horario_inicio: 'horario_inicio',
+  horario_fin: 'horario_fin',
   estado: 'estado',
   creado_por: 'creado_por',
   creado_en: 'creado_en'
@@ -3262,6 +3267,19 @@ export type Enumcategoria_comercioFieldRefInput<$PrismaModel> = FieldRefInputTyp
  */
 export type ListEnumcategoria_comercioFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'categoria_comercio[]'>
     
+
+
+/**
+ * Reference to a field of type 'tipo_espacio'
+ */
+export type Enumtipo_espacioFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'tipo_espacio'>
+
+
+/**
+ * Reference to a field of type 'tipo_espacio[]'
+ */
+export type ListEnumtipo_espacioFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'tipo_espacio[]'>
+
 
 
 /**

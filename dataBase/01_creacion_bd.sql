@@ -22,6 +22,7 @@ CREATE TYPE estado_organizacion  AS ENUM ('pendiente_validacion','activa','suspe
 CREATE TYPE categoria_comercio   AS ENUM ('formal','informal');
 CREATE TYPE tipo_zona            AS ENUM ('permitida','restringida','alta_congestion');
 CREATE TYPE estado_modulo        AS ENUM ('activo','baja');
+CREATE TYPE tipo_espacio         AS ENUM ('modulo','kiosco','puesto','espacio_movil');
 CREATE TYPE estado_espacio       AS ENUM ('disponible','bloqueado','asignado','mantenimiento');
 CREATE TYPE estado_solicitud     AS ENUM ('borrador','radicada','en_revision','devuelta','aprobada','rechazada','cancelada');
 CREATE TYPE estado_documento     AS ENUM ('pendiente','validado','observado');
@@ -158,12 +159,26 @@ CREATE TABLE modulos (
 CREATE TABLE espacios_temporales (
   id                  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   nombre              VARCHAR(150) NOT NULL,
+  tipo                tipo_espacio NOT NULL DEFAULT 'puesto',
+  sector              VARCHAR(100),
+  dimensiones         VARCHAR(60),
   zona_id             BIGINT REFERENCES zonas(id),
   ubicacion           geometry(Point,4326) NOT NULL,
   actividad_permitida VARCHAR(100),
+  horario_inicio      TIME,
+  horario_fin         TIME,
   estado              estado_espacio NOT NULL DEFAULT 'disponible',
   creado_por          BIGINT REFERENCES usuarios(id),
-  creado_en           TIMESTAMPTZ NOT NULL DEFAULT now()
+  creado_en           TIMESTAMPTZ NOT NULL DEFAULT now(),
+  -- HU-09: el horario del espacio debe ser un rango completo y coherente.
+  CHECK (
+    (horario_inicio IS NULL AND horario_fin IS NULL)
+    OR (
+      horario_inicio IS NOT NULL
+      AND horario_fin IS NOT NULL
+      AND horario_fin > horario_inicio
+    )
+  )
 );
 
 CREATE TABLE espacio_bloqueos (
@@ -400,6 +415,8 @@ CREATE INDEX idx_sesiones_anterior     ON sesiones (refresh_token_anterior_hash)
 CREATE INDEX idx_modulos_estado        ON modulos (estado);
 CREATE INDEX idx_modulos_titular      ON modulos (titular_id);
 CREATE INDEX idx_espacios_zona         ON espacios_temporales (zona_id);
+CREATE INDEX idx_espacios_estado       ON espacios_temporales (estado);
+CREATE INDEX idx_bloqueos_espacio_fechas ON espacio_bloqueos (espacio_id, fecha_inicio, fecha_fin);
 CREATE INDEX idx_parametros_clave      ON parametros_motor (clave, vigente_desde DESC);
 CREATE INDEX idx_solicitudes_comerciante ON solicitudes (comerciante_id);
 CREATE INDEX idx_solicitudes_estado    ON solicitudes (estado);

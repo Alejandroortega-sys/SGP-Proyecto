@@ -611,3 +611,85 @@ export interface ZonaFeatureCollection {
   type: "FeatureCollection";
   features: ZonaFeature[];
 }
+
+/* ------------------------------------------------------------------ */
+/* Espacios temporales (HU-09)                                         */
+/* ------------------------------------------------------------------ */
+
+export type TipoEspacio = "modulo" | "kiosco" | "puesto" | "espacio_movil";
+
+export type EstadoEspacio =
+  | "disponible"
+  | "bloqueado"
+  | "asignado"
+  | "mantenimiento";
+
+export interface HorarioEspacio {
+  inicio: string | null;
+  fin: string | null;
+}
+
+export interface ZonaResumenEspacio {
+  id: string;
+  nombre: string;
+  tipo: TipoZona;
+}
+
+export interface ZonaRestricciones extends ZonaResumenEspacio {
+  activa: boolean;
+  horarioInicio: string | null;
+  horarioFin: string | null;
+  aforoMaximo: number | null;
+  productos: string[];
+}
+
+export interface BloqueoEspacio {
+  fechaInicio: string;
+  fechaFin: string;
+  motivo: string | null;
+  activo: boolean;
+}
+
+export interface PermisoEspacio {
+  numero: string;
+  fechaInicio: string;
+  fechaFin: string;
+}
+
+export interface EspacioListado {
+  id: string;
+  nombre: string;
+  tipo: TipoEspacio;
+  sector: string | null;
+  dimensiones: string | null;
+  actividadPermitida: string | null;
+  estado: EstadoEspacio;
+  estadoEfectivo: EstadoEspacio;
+  disponible: boolean;
+  motivoEstado: string | null;
+  ubicacion: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+  horario: HorarioEspacio;
+  zona: ZonaResumenEspacio | null;
+}
+
+export interface EspacioDetalle extends EspacioListado {
+  bloqueo: BloqueoEspacio | null;
+  permiso: PermisoEspacio | null;
+  zona: ZonaRestricciones | null;
+  creadoEn: string;
+}
+
+export interface ListarEspaciosResponse {
+  datos: EspacioListado[];
+  total: number;
+  disponibles: number;
+  noDisponibles: number;
+}
+
+export interface FiltrosEspacios {
+  incluirNoDisponibles?: boolean;
+  fecha?: string;
+}

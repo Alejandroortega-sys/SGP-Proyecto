@@ -25,6 +25,11 @@ interface EnlaceSesion {
 
 const ENLACES: EnlaceSesion[] = [
   { href: "/comerciante/inicio", texto: "Inicio", roles: ["comerciante"] },
+  {
+    href: "/comerciante/espacios",
+    texto: "Espacios",
+    roles: ["comerciante"],
+  },
   { href: "/comerciante/perfil", texto: "Mi perfil", roles: ["comerciante"] },
   { href: "/organizador/inicio", texto: "Inicio", roles: ["organizador"] },
   { href: "/organizador/perfil", texto: "Mi perfil", roles: ["organizador"] },

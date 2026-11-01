@@ -2,14 +2,17 @@ import type {
   ComercianteActualizado,
   ComercianteListado,
   CuerpoError,
+  EspacioDetalle,
   FiltrosAuditoria,
   FiltrosComerciantes,
+  FiltrosEspacios,
   FiltrosNotificaciones,
   FiltrosOrganizaciones,
   FiltrosUsuarios,
   GestorCreado,
   InvitacionReenviada,
   ListarAuditoriaResponse,
+  ListarEspaciosResponse,
   ListarNotificacionesResponse,
   Notificacion,
   Organizacion,
@@ -558,5 +561,35 @@ export function obtenerZonasGeoJson(
   return peticion<ZonaFeatureCollection>(
     conParametros("/zonas/geojson", { zoom }),
     { auth: false },
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Espacios temporales (HU-09)                                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Lista los espacios disponibles del comerciante. Con
+ * `incluirNoDisponibles` se incluyen bloqueados, asignados y en
+ * mantenimiento para consultar su ficha.
+ */
+export function obtenerEspacios(
+  filtros: FiltrosEspacios = {},
+): Promise<ListarEspaciosResponse> {
+  return peticion<ListarEspaciosResponse>(
+    conParametros("/espacios", {
+      incluirNoDisponibles: filtros.incluirNoDisponibles,
+      fecha: filtros.fecha,
+    }),
+  );
+}
+
+/** Obtiene la ficha completa de un espacio, incluso si no está disponible. */
+export function obtenerEspacio(
+  id: string,
+  fecha?: string,
+): Promise<EspacioDetalle> {
+  return peticion<EspacioDetalle>(
+    conParametros(`/espacios/${id}`, { fecha }),
   );
 }

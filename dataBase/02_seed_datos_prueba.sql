@@ -99,11 +99,16 @@ INSERT INTO modulos (codigo, ubicacion, categoria, titular_id, titular_nombre, a
   ('MOD-0006', ST_SetSRID(ST_MakePoint(-76.1875, 4.0900), 4326), 'informal', NULL, 'Rosa Betancur',  'Frutas Rosa',       NULL,                    'activo', (SELECT id FROM usuarios WHERE correo = 'revisor@tulua.gov.co'));
 
 \echo '=== 9/12 · Espacios temporales, bloqueos y parámetros del motor ==='
-INSERT INTO espacios_temporales (nombre, zona_id, ubicacion, actividad_permitida, estado, creado_por) VALUES
-  ('Espacio móvil Calle 30 - A',   (SELECT id FROM zonas WHERE nombre = 'Centro - Calle 30'), ST_SetSRID(ST_MakePoint(-76.1950, 4.0890), 4326), 'Venta de alimentos y frutas', 'disponible', (SELECT id FROM usuarios WHERE correo = 'admin@tulua.gov.co')),
-  ('Espacio móvil Calle 30 - B',   (SELECT id FROM zonas WHERE nombre = 'Centro - Calle 30'), ST_SetSRID(ST_MakePoint(-76.1940, 4.0888), 4326), 'Venta de alimentos y frutas', 'disponible', (SELECT id FROM usuarios WHERE correo = 'admin@tulua.gov.co')),
-  ('Espacio Plaza Boyacá - Norte', (SELECT id FROM zonas WHERE nombre = 'Plaza Boyacá'),      ST_SetSRID(ST_MakePoint(-76.1905, 4.0888), 4326), 'Artesanías',                  'bloqueado',  (SELECT id FROM usuarios WHERE correo = 'admin@tulua.gov.co')),
-  ('Kiosco Parque La Guadua',      (SELECT id FROM zonas WHERE nombre = 'Parque La Guadua'),  ST_SetSRID(ST_MakePoint(-76.1875, 4.0910), 4326), 'Ferias y emprendimientos',    'disponible', (SELECT id FROM usuarios WHERE correo = 'admin@tulua.gov.co'));
+INSERT INTO espacios_temporales (
+  nombre, tipo, sector, dimensiones, zona_id, ubicacion,
+  actividad_permitida, horario_inicio, horario_fin, estado, creado_por
+) VALUES
+  ('Espacio móvil Calle 30 - A',   'espacio_movil', 'Centro',           '3 × 2 m', (SELECT id FROM zonas WHERE nombre = 'Centro - Calle 30'), ST_SetSRID(ST_MakePoint(-76.1950, 4.0890), 4326), 'Venta de alimentos y frutas', TIME '06:00', TIME '14:00', 'disponible',    (SELECT id FROM usuarios WHERE correo = 'admin@tulua.gov.co')),
+  ('Espacio móvil Calle 30 - B',   'espacio_movil', 'Centro',           '3 × 2 m', (SELECT id FROM zonas WHERE nombre = 'Centro - Calle 30'), ST_SetSRID(ST_MakePoint(-76.1940, 4.0888), 4326), 'Venta de alimentos y frutas', TIME '06:00', TIME '14:00', 'disponible',    (SELECT id FROM usuarios WHERE correo = 'admin@tulua.gov.co')),
+  ('Espacio Plaza Boyacá - Norte', 'puesto',        'Plaza Boyacá',     '4 × 3 m', (SELECT id FROM zonas WHERE nombre = 'Plaza Boyacá'),      ST_SetSRID(ST_MakePoint(-76.1905, 4.0888), 4326), 'Artesanías',                  TIME '07:00', TIME '17:00', 'bloqueado',     (SELECT id FROM usuarios WHERE correo = 'admin@tulua.gov.co')),
+  ('Kiosco Parque La Guadua',      'kiosco',        'Parque La Guadua', '5 × 4 m', (SELECT id FROM zonas WHERE nombre = 'Parque La Guadua'),  ST_SetSRID(ST_MakePoint(-76.1875, 4.0910), 4326), 'Ferias y emprendimientos',    TIME '08:00', TIME '18:00', 'disponible',    (SELECT id FROM usuarios WHERE correo = 'admin@tulua.gov.co')),
+  ('Espacio Plaza Boyacá - Sur',   'puesto',        'Plaza Boyacá',     '4 × 3 m', (SELECT id FROM zonas WHERE nombre = 'Plaza Boyacá'),      ST_SetSRID(ST_MakePoint(-76.1908, 4.0885), 4326), 'Comidas rápidas',             TIME '07:00', TIME '17:00', 'asignado',      (SELECT id FROM usuarios WHERE correo = 'admin@tulua.gov.co')),
+  ('Módulo Parque La Guadua - Este','modulo',       'Parque La Guadua', '2 × 2 m', (SELECT id FROM zonas WHERE nombre = 'Parque La Guadua'),  ST_SetSRID(ST_MakePoint(-76.1878, 4.0908), 4326), 'Artesanías',                  TIME '08:00', TIME '18:00', 'mantenimiento', (SELECT id FROM usuarios WHERE correo = 'admin@tulua.gov.co'));
 
 INSERT INTO espacio_bloqueos (espacio_id, fecha_inicio, fecha_fin, motivo, creado_por) VALUES
   ((SELECT id FROM espacios_temporales WHERE nombre = 'Espacio Plaza Boyacá - Norte'), DATE '2026-10-25', DATE '2026-10-31',
