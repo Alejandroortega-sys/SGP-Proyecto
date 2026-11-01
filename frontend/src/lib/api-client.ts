@@ -15,6 +15,7 @@ import type {
   ListarEspaciosResponse,
   ListarNotificacionesResponse,
   Notificacion,
+  OpcionesEspacios,
   Organizacion,
   OrganizacionGestor,
   Paginacion,
@@ -580,8 +581,17 @@ export function obtenerEspacios(
     conParametros("/espacios", {
       incluirNoDisponibles: filtros.incluirNoDisponibles,
       fecha: filtros.fecha,
+      sector: filtros.sector,
+      actividad: filtros.actividad,
+      horaInicio: filtros.horaInicio,
+      horaFin: filtros.horaFin,
     }),
   );
+}
+
+/** Obtiene las listas cerradas de sectores y actividades para los filtros. */
+export function obtenerOpcionesEspacios(): Promise<OpcionesEspacios> {
+  return peticion<OpcionesEspacios>("/espacios/opciones");
 }
 
 /** Obtiene la ficha completa de un espacio, incluso si no está disponible. */

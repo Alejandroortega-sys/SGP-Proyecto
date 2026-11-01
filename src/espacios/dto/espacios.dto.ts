@@ -5,6 +5,7 @@ import {
   IsDateString,
   IsOptional,
   IsString,
+  Length,
   Matches,
 } from 'class-validator';
 import type {
@@ -30,11 +31,19 @@ export const ESTADOS_ESPACIO: readonly estado_espacio[] = [
   'mantenimiento',
 ];
 
+/** Formato de hora de 24 horas aceptado por los filtros. */
+const FORMATO_HORA = /^([01]\d|2[0-3]):[0-5]\d$/;
+
 /** Convierte `"true"`/`"false"` de query string a boolean. */
 function aBooleano(valor: unknown): unknown {
   if (valor === 'true') return true;
   if (valor === 'false') return false;
   return valor;
+}
+
+/** Recorta espacios de los textos antes de validarlos. */
+function recortar(valor: unknown): unknown {
+  return typeof valor === 'string' ? valor.trim() : valor;
 }
 
 /**
@@ -69,6 +78,44 @@ export class ListarEspaciosQueryDto {
   })
   @IsDateString({}, { message: 'La fecha no es válida' })
   fecha?: string;
+
+  /** Sector o barrio registrado en el espacio. */
+  @ApiPropertyOptional({ example: 'Centro' })
+  @IsOptional()
+  @Transform(({ value }) => recortar(value))
+  @IsString({ message: 'El sector debe ser texto' })
+  @Length(1, 100, {
+    message: 'El sector debe tener entre 1 y 100 caracteres',
+  })
+  sector?: string;
+
+  /** Actividad permitida registrada en el espacio. */
+  @ApiPropertyOptional({ example: 'Venta de alimentos y frutas' })
+  @IsOptional()
+  @Transform(({ value }) => recortar(value))
+  @IsString({ message: 'La actividad debe ser texto' })
+  @Length(1, 100, {
+    message: 'La actividad debe tener entre 1 y 100 caracteres',
+  })
+  actividad?: string;
+
+  /** Hora de inicio del rango solicitado (HH:MM). */
+  @ApiPropertyOptional({ example: '10:00' })
+  @IsOptional()
+  @IsString({ message: 'La hora de inicio debe ser texto' })
+  @Matches(FORMATO_HORA, {
+    message: 'La hora de inicio debe tener formato HH:MM',
+  })
+  horaInicio?: string;
+
+  /** Hora de fin del rango solicitado (HH:MM). */
+  @ApiPropertyOptional({ example: '12:00' })
+  @IsOptional()
+  @IsString({ message: 'La hora de fin debe ser texto' })
+  @Matches(FORMATO_HORA, {
+    message: 'La hora de fin debe tener formato HH:MM',
+  })
+  horaFin?: string;
 }
 
 /** Query de `GET /espacios/:id`. */
@@ -237,6 +284,21 @@ export class EspacioDetalleDto extends EspacioListadoDto {
 
   @ApiProperty({ example: '2026-10-01T12:00:00.000Z' })
   creadoEn!: Date;
+}
+
+/** Opciones disponibles para los filtros de sector y actividad. */
+export class OpcionesEspaciosResponseDto {
+  @ApiProperty({
+    type: [String],
+    example: ['Centro', 'Parque La Guadua', 'Plaza Boyacá'],
+  })
+  sectores!: string[];
+
+  @ApiProperty({
+    type: [String],
+    example: ['Artesanías', 'Comidas rápidas', 'Ventas de alimentos'],
+  })
+  actividades!: string[];
 }
 
 /** Respuesta de `GET /espacios`. */

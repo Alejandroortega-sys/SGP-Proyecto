@@ -21,6 +21,7 @@ import {
   EspacioDetalleDto,
   ListarEspaciosQueryDto,
   ListarEspaciosResponseDto,
+  OpcionesEspaciosResponseDto,
 } from './dto/espacios.dto';
 import { EspaciosService } from './espacios.service';
 
@@ -61,6 +62,23 @@ export class EspaciosController {
     @Query() dto: ListarEspaciosQueryDto,
   ): Promise<ListarEspaciosResponseDto> {
     return this.espacios.listar(dto);
+  }
+
+  @ApiOperation({
+    summary: 'Opciones de filtros de espacios',
+    description:
+      'Devuelve las listas cerradas de sectores y actividades registradas en ' +
+      'el catálogo de espacios. Se usan para construir el panel de filtros y ' +
+      'no dependen de los filtros aplicados.',
+  })
+  @ApiOkResponse({ type: OpcionesEspaciosResponseDto })
+  @ApiUnauthorizedResponse({
+    description: 'Falta el token de acceso o es inválido/expirado',
+  })
+  @ApiForbiddenResponse({ description: 'El rol del usuario no es comerciante' })
+  @Get('opciones')
+  opciones(): Promise<OpcionesEspaciosResponseDto> {
+    return this.espacios.opciones();
   }
 
   @ApiOperation({

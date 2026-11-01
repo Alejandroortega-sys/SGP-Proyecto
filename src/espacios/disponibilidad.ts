@@ -13,6 +13,8 @@ export interface PermisoDisponibilidad {
   numero: string;
   fechaInicio: string;
   fechaFin: string;
+  horaInicio?: string | null;
+  horaFin?: string | null;
 }
 
 /** Solicitud aprobada que ocupa un espacio sin permiso emitido todavía. */
@@ -20,6 +22,8 @@ export interface SolicitudDisponibilidad {
   numeroRadicado: string;
   fechaInicio: string;
   fechaFin: string;
+  horaInicio?: string | null;
+  horaFin?: string | null;
 }
 
 /** Contexto necesario para calcular el estado efectivo de un espacio. */
@@ -35,6 +39,47 @@ export interface ResultadoDisponibilidad {
   estadoEfectivo: estado_espacio;
   disponible: boolean;
   motivoEstado: string | null;
+}
+
+/** Horario permitido de un espacio o de su zona. */
+export interface HorarioDisponibilidad {
+  inicio: string | null;
+  fin: string | null;
+}
+
+/**
+ * Indica si el rango solicitado cabe dentro del horario permitido.
+ *
+ * - Sin rango solicitado no se restringe.
+ * - Sin horario definido no se restringe.
+ * - Con solo inicio o solo fin se valida el extremo disponible.
+ */
+export function cubreHorario(
+  horario: HorarioDisponibilidad,
+  inicio: string | null,
+  fin: string | null,
+): boolean {
+  if (!inicio || !fin) return true;
+  if (!horario.inicio && !horario.fin) return true;
+
+  if (horario.inicio && inicio < horario.inicio) return false;
+  if (horario.fin && fin > horario.fin) return false;
+  return true;
+}
+
+/**
+ * Indica si dos rangos horarios se cruzan.
+ *
+ * Se usan intervalos `[inicio, fin)`: un rango que termina justo cuando empieza
+ * el otro no se considera una colisión.
+ */
+export function seCruzaHorario(
+  inicioA: string,
+  finA: string,
+  inicioB: string,
+  finB: string,
+): boolean {
+  return inicioA < finB && finA > inicioB;
 }
 
 /** Convierte una fecha ISO `YYYY-MM-DD` a `DD/MM/YYYY` sin zonas horarias. */

@@ -1,7 +1,9 @@
 import {
   calcularDisponibilidad,
+  cubreHorario,
   formatearFechaCorta,
   formatearRangoFechas,
+  seCruzaHorario,
 } from './disponibilidad';
 
 const BLOQUEO = {
@@ -109,5 +111,25 @@ describe('disponibilidad de espacios', () => {
     expect(formatearRangoFechas('2026-10-25', '2026-10-31')).toBe(
       'del 25/10/2026 al 31/10/2026',
     );
+  });
+
+  it('valida si un rango cabe dentro del horario permitido', () => {
+    const horario = { inicio: '06:00', fin: '14:00' };
+
+    expect(cubreHorario(horario, '06:00', '14:00')).toBe(true);
+    expect(cubreHorario(horario, '08:00', '12:00')).toBe(true);
+    expect(cubreHorario(horario, '05:00', '12:00')).toBe(false);
+    expect(cubreHorario(horario, '10:00', '15:00')).toBe(false);
+    expect(cubreHorario({ inicio: null, fin: null }, '10:00', '15:00')).toBe(
+      true,
+    );
+    expect(cubreHorario(horario, null, null)).toBe(true);
+  });
+
+  it('detecta cruces de horarios con intervalos [inicio, fin)', () => {
+    expect(seCruzaHorario('10:00', '12:00', '11:00', '13:00')).toBe(true);
+    expect(seCruzaHorario('10:00', '12:00', '12:00', '14:00')).toBe(false);
+    expect(seCruzaHorario('10:00', '12:00', '06:00', '10:00')).toBe(false);
+    expect(seCruzaHorario('10:00', '12:00', '09:00', '11:00')).toBe(true);
   });
 });

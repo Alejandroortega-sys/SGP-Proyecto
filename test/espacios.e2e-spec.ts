@@ -255,8 +255,25 @@ describe('Espacios (e2e)', () => {
 
     prisma.$queryRaw.mockImplementation(
       (strings: TemplateStringsArray, ...valores: unknown[]) => {
+        const sql = strings.join('?');
         const argumentos = [strings, ...valores];
         const planos = valoresDe(argumentos);
+
+        if (sql.includes('btrim(sector)')) {
+          return Promise.resolve([
+            { valor: 'Centro' },
+            { valor: 'Parque La Guadua' },
+            { valor: 'Plaza Boyacá' },
+          ]);
+        }
+        if (sql.includes('btrim(actividad_permitida)')) {
+          return Promise.resolve([
+            { valor: 'Artesanías' },
+            { valor: 'Comidas rápidas' },
+            { valor: 'Ferias y emprendimientos' },
+            { valor: 'Venta de alimentos y frutas' },
+          ]);
+        }
 
         const id = planos.find((valor) => typeof valor === 'bigint');
         if (id !== undefined) {
@@ -264,7 +281,34 @@ describe('Espacios (e2e)', () => {
           return Promise.resolve(encontrada ? [encontrada] : []);
         }
 
-        return Promise.resolve(FILAS);
+        let resultado = [...FILAS];
+        const sector = planos.find(
+          (valor) =>
+            typeof valor === 'string' &&
+            ['Centro', 'Parque La Guadua', 'Plaza Boyacá'].includes(valor),
+        );
+        if (sector) {
+          resultado = resultado.filter(
+            (espacio) => espacio.sector === sector,
+          );
+        }
+        const actividad = planos.find(
+          (valor) =>
+            typeof valor === 'string' &&
+            [
+              'Artesanías',
+              'Comidas rápidas',
+              'Ferias y emprendimientos',
+              'Venta de alimentos y frutas',
+            ].includes(valor),
+        );
+        if (actividad) {
+          resultado = resultado.filter(
+            (espacio) => espacio.actividad_permitida === actividad,
+          );
+        }
+
+        return Promise.resolve(resultado);
       },
     );
 
@@ -359,6 +403,118 @@ describe('Espacios (e2e)', () => {
         .query({ incluirNoDisponibles: 'quizá' })
         .set('Authorization', `Bearer ${tokenComerciante}`)
         .expect(400);
+    });
+
+    it('combina filtros de sector y actividad', async () => {
+      const respuesta = await request(app.getHttpServer())
+        .get('/espacios')
+        .query({
+          sector: 'Centro',
+          actividad: 'Venta de alimentos y frutas',
+        })
+        .set('Authorization', `Bearer ${tokenComerciante}`)
+        .expect(200);
+
+      expect(respuesta.body.datos).toHaveLength(2);
+      expect(
+        respuesta.body.datos.every(
+          (espacio: { sector: string; actividadPermitida: string }) =>
+            espacio.sector === 'Centro' &&
+            espacio.actividadPermitida === 'Venta de alimentos y frutas',
+        ),
+      ).toBe(true);
+    });
+
+    it('acepta un rango horario dentro del horario permitido', async () => {
+      const respuesta = await request(app.getHttpServer())
+        .get('/espacios')
+        .query({
+          fecha: '2026-11-10',
+          horaInicio: '10:00',
+          horaFin: '12:00',
+        })
+        .set('Authorization', `Bearer ${tokenComerciante}`)
+        .expect(200);
+
+      expect(respuesta.body.total).toBeGreaterThan(0);
+      expect(
+        respuesta.body.datos.every(
+          (espacio: { horario: { inicio: string; fin: string } }) =>
+            espacio.horario.inicio <= '10:00' &&
+            espacio.horario.fin >= '12:00',
+        ),
+      ).toBe(true);
+    });
+
+    it('no devuelve espacios cuando el rango está fuera de todo horario', async () => {
+      const respuesta = await request(app.getHttpServer())
+        .get('/espacios')
+        .query({
+          fecha: '2026-11-10',
+          horaInicio: '18:00',
+          horaFin: '20:00',
+        })
+        .set('Authorization', `Bearer ${tokenComerciante}`)
+        .expect(200);
+
+      expect(respuesta.body.datos).toHaveLength(0);
+      expect(respuesta.body.total).toBe(0);
+    });
+
+    it('valida el rango horario y exige fecha', async () => {
+      await request(app.getHttpServer())
+        .get('/espacios')
+        .query({ fecha: '2026-11-10', horaInicio: '10:00' })
+        .set('Authorization', `Bearer ${tokenComerciante}`)
+        .expect(400);
+
+      await request(app.getHttpServer())
+        .get('/espacios')
+        .query({ horaInicio: '10:00', horaFin: '12:00' })
+        .set('Authorization', `Bearer ${tokenComerciante}`)
+        .expect(400);
+
+      await request(app.getHttpServer())
+        .get('/espacios')
+        .query({
+          fecha: '2026-11-10',
+          horaInicio: '12:00',
+          horaFin: '10:00',
+        })
+        .set('Authorization', `Bearer ${tokenComerciante}`)
+        .expect(400);
+    });
+  });
+
+  describe('GET /espacios/opciones', () => {
+    it('devuelve las listas de sectores y actividades', async () => {
+      const respuesta = await request(app.getHttpServer())
+        .get('/espacios/opciones')
+        .set('Authorization', `Bearer ${tokenComerciante}`)
+        .expect(200);
+
+      expect(respuesta.body).toEqual({
+        sectores: ['Centro', 'Parque La Guadua', 'Plaza Boyacá'],
+        actividades: [
+          'Artesanías',
+          'Comidas rápidas',
+          'Ferias y emprendimientos',
+          'Venta de alimentos y frutas',
+        ],
+      });
+    });
+
+    it('no es capturado por la ruta /espacios/:id', async () => {
+      const respuesta = await request(app.getHttpServer())
+        .get('/espacios/opciones')
+        .set('Authorization', `Bearer ${tokenComerciante}`)
+        .expect(200);
+
+      expect(Array.isArray(respuesta.body.sectores)).toBe(true);
+    });
+
+    it('exige autenticación', async () => {
+      await request(app.getHttpServer()).get('/espacios/opciones').expect(401);
     });
   });
 

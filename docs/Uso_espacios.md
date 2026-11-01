@@ -12,7 +12,8 @@ Este módulo permite al **comerciante autenticado** consultar los espacios dispo
 
 | Método | Ruta | Acceso | Descripción |
 |---|---|---|---|
-| `GET` | `/espacios` | Comerciante | Lista espacios disponibles con geometría y estado |
+| `GET` | `/espacios` | Comerciante | Lista espacios con filtros, geometría y estado |
+| `GET` | `/espacios/opciones` | Comerciante | Sectores y actividades para el panel de filtros |
 | `GET` | `/espacios/:id` | Comerciante | Ficha completa, incluso de espacios no disponibles |
 
 La ficha incluye **tipo, sector, dimensiones, actividad, horario, estado registrado, estado efectivo, bloqueo u ocupación vigente y restricciones de la zona**.
@@ -73,14 +74,29 @@ Los dos endpoints usan `@Roles('comerciante')`. Un gestor, organizador o usuario
 |---|---|---|---|
 | `incluirNoDisponibles` | boolean | `false` | Incluye bloqueados, asignados y en mantenimiento para consultar su ficha |
 | `fecha` | `YYYY-MM-DD` | fecha actual de la BD | Fecha con la que se evalúan bloqueos y ocupaciones |
+| `sector` | texto | — | Coincidencia exacta con `espacios_temporales.sector` |
+| `actividad` | texto | — | Coincidencia exacta con `actividad_permitida` |
+| `horaInicio` | `HH:MM` | — | Inicio del rango horario solicitado; requiere `horaFin` y `fecha` |
+| `horaFin` | `HH:MM` | — | Fin del rango horario solicitado; debe ser posterior a `horaInicio` |
 
 Ejemplos:
 
 ```http
 GET /espacios
 GET /espacios?incluirNoDisponibles=true
-GET /espacios?fecha=2026-10-31
+GET /espacios?fecha=2026-11-10
+GET /espacios?sector=Centro&actividad=Venta%20de%20alimentos%20y%20frutas
+GET /espacios?fecha=2026-11-10&horaInicio=10:00&horaFin=12:00
 ```
+
+Reglas del filtro horario:
+
+- `horaInicio` y `horaFin` se envían juntos.
+- El rango debe caber dentro del horario efectivo del espacio: horario propio o, si no tiene, horario de la zona.
+- Se cruza con `solicitudes.hora_inicio/hora_fin` de permisos vigentes y solicitudes aprobadas.
+- Un bloqueo de fechas bloquea el día completo.
+- Si el espacio y la zona no tienen horario, no se aplica restricción horaria.
+- Los estados registrados `bloqueado`, `asignado` y `mantenimiento` siempre se respetan.
 
 ### Respuesta `200`
 
@@ -117,9 +133,24 @@ GET /espacios?fecha=2026-10-31
 ```
 
 - `total` es la cantidad devuelta por el filtro actual.
-- `disponibles` y `noDisponibles` cuentan **todos** los espacios para la fecha consultada.
+- `disponibles` y `noDisponibles` cuentan los espacios que cumplen **todos** los filtros aplicados.
 - Si el espacio no tiene horario propio, `horario` hereda el de su zona.
 - La geometría se lee con `ST_AsGeoJSON(ubicacion)::jsonb` y se normaliza como `Point`.
+
+### Opciones de filtros — `GET /espacios/opciones`
+
+```http
+GET /espacios/opciones
+```
+
+```json
+{
+  "sectores": ["Centro", "Parque La Guadua", "Plaza Boyacá"],
+  "actividades": ["Artesanías", "Comidas rápidas", "Ferias y emprendimientos", "Venta de alimentos y frutas"]
+}
+```
+
+Las opciones se calculan sobre todos los espacios registrados, no solo sobre los disponibles, para que no desaparezcan al aplicar filtros.
 
 ### Errores
 
@@ -214,6 +245,18 @@ Ruta: **`/comerciante/espacios`**.
 - En móvil se muestran tarjetas equivalentes para evitar desplazamiento horizontal.
 - La tabla y el mapa consumen la misma respuesta y abren la misma ficha.
 
+### Panel de filtros
+
+- Selectores de **sector** y **actividad** con las opciones del catálogo.
+- Fecha y rango horario opcionales.
+- Conteo de resultados que se actualiza al aplicar los filtros.
+- Botones **Aplicar filtros** y **Limpiar filtros**.
+- En escritorio es una tarjeta visible sobre los resultados.
+- En móvil se abre como hoja inferior desde el botón «Filtros».
+- Si no hay coincidencias, muestra «No hay espacios disponibles con esos criterios» y permite limpiar los filtros.
+
+> El buscador de calles y barrios no forma parte de esta entrega por decisión del alcance.
+
 ### Ficha
 
 - **Escritorio:** panel lateral derecho.
@@ -238,6 +281,10 @@ Cubren:
 - Cálculo de disponibilidad con bloqueos, permisos y solicitudes.
 - Listado solo de disponibles y listado completo con `incluirNoDisponibles`.
 - Ficha de un espacio bloqueado con restricciones de zona.
+- Filtros combinados por sector y actividad.
+- Disponibilidad por fecha y rango horario.
+- Validación de horas incompletas, fuera de orden y sin fecha.
+- `GET /espacios/opciones`.
 - Roles: comerciante permitido; gestor, organizador y anónimo rechazados.
 - `400`/`404` y validación de fecha.
 
@@ -257,6 +304,10 @@ Cubren:
 - Ficha en panel lateral y hoja inferior.
 - Espacio bloqueado visible solo al activar «Mostrar no disponibles».
 - Agrupación al alejar y separación al acercar.
+- Filtros combinados por sector y actividad.
+- Consulta por fecha y horario.
+- Caso sin resultados y limpieza de filtros.
+- Panel de filtros móvil a 360 px.
 - Error de API y reintento.
 
 ---
@@ -268,6 +319,7 @@ Cubren:
 | Archivo | Contenido |
 |---|---|
 | `dataBase/04_espacios_hu09.sql` | Migración de columnas, enum, índices y datos |
+| `dataBase/05_filtros_hu10.sql` | Índices de filtros y disponibilidad |
 | `src/espacios/espacios.module.ts` | Módulo Nest |
 | `src/espacios/espacios.controller.ts` | Endpoints, roles y Swagger |
 | `src/espacios/espacios.service.ts` | Consultas SQL, cruces de disponibilidad y DTOs |
@@ -287,6 +339,8 @@ Cubren:
 | `frontend/src/features/espacios/agrupar-espacios.ts` | Agrupación pura por zoom |
 | `frontend/src/features/espacios/ficha-espacio.tsx` | Panel lateral / hoja inferior |
 | `frontend/src/features/espacios/tabla-espacios.tsx` | Tabla y tarjetas |
+| `frontend/src/features/espacios/panel-filtros.tsx` | Panel de filtros escritorio/móvil |
+| `frontend/src/features/espacios/filtros-espacios.ts` | Validación y helpers de filtros |
 | `frontend/src/features/espacios/estilos-espacio.ts` | Colores, símbolos y formatos |
 | `frontend/src/features/espacios/etiqueta-espacio.tsx` | Etiqueta de estado |
 | `frontend/e2e/espacios.spec.ts` | Pruebas Playwright |
@@ -296,8 +350,9 @@ Cubren:
 ## 9. Cómo probar con el seed
 
 ```powershell
-# 1) Aplicar la migración
+# 1) Aplicar las migraciones
 psql -U postgres -d "sgp_tulua" -f dataBase/04_espacios_hu09.sql
+psql -U postgres -d "sgp_tulua" -f dataBase/05_filtros_hu10.sql
 
 # 2) Login como comerciante
 $login = Invoke-RestMethod -Method Post -Uri http://localhost:3000/auth/login `
@@ -311,7 +366,16 @@ Invoke-RestMethod -Uri 'http://localhost:3000/espacios' -Headers $auth
 # 4) Todos los estados (6 con el seed)
 Invoke-RestMethod -Uri 'http://localhost:3000/espacios?incluirNoDisponibles=true' -Headers $auth
 
-# 5) Ficha de un espacio bloqueado
+# 5) Opciones de filtros
+Invoke-RestMethod -Uri 'http://localhost:3000/espacios/opciones' -Headers $auth
+
+# 6) Filtros combinados
+Invoke-RestMethod -Uri 'http://localhost:3000/espacios?sector=Centro&actividad=Venta%20de%20alimentos%20y%20frutas' -Headers $auth
+
+# 7) Disponibilidad por fecha y horario
+Invoke-RestMethod -Uri 'http://localhost:3000/espacios?fecha=2026-11-10&horaInicio=10:00&horaFin=12:00' -Headers $auth
+
+# 8) Ficha de un espacio bloqueado
 Invoke-RestMethod -Uri 'http://localhost:3000/espacios/3' -Headers $auth
 ```
 

@@ -15,15 +15,16 @@
 | Base de datos | Esquema completo de los 6 sprints ya creado (30 tablas, enums, triggers, `EXCLUDE`, vistas) |
 | **HU-08 — Mapa público de zonas** | **Implementada de extremo a extremo** |
 | **HU-09 — Espacios disponibles y ficha** | **Implementada de extremo a extremo** |
+| **HU-10 — Buscar y filtrar espacios** | **Implementada** (filtros, disponibilidad por fecha/hora, panel y sin resultados; búsqueda de calles/barrios fuera de alcance) |
 | HU-11 — Delimitar y clasificar zonas | Backend completo; falta la interfaz de edición |
 | HU-12 — Editar, desactivar y auditar zonas | Backend de edición/desactivación y auditoría; falta historial por zona y UI |
-| HU-10, HU-13, HU-14, HU-15 | Pendientes |
+| HU-13, HU-14, HU-15 | Pendientes |
 
 **Estado actual del Sprint 2:** el Geo-Portal público funciona con Leaflet, zonas coloreadas, leyenda, capas, popup, geolocalización y API GeoJSON con simplificación por zoom. El comerciante ya puede consultar los espacios disponibles en tabla o mapa, ver su ficha y distinguir los estados bloqueado, ocupado y en mantenimiento.
 
 ---
 
-## 2. Lo implementado en el Sprint 2: HU-08 y HU-09
+## 2. Lo implementado en el Sprint 2: HU-08, HU-09 y HU-10
 
 ### 2.1 Ruta pública y mapa
 
@@ -156,6 +157,36 @@ El seed ahora tiene 6 espacios: 3 disponibles, 1 bloqueado (25–31 oct 2026), 1
 - E2E backend: roles, listado, ficha, bloqueo, espacio asignado y errores.
 - Playwright: tabla vs API/BD, ficha de escritorio y móvil, toggle de no disponibles, agrupación por zoom y reintento.
 
+### 2.10 HU-10 — Buscar y filtrar espacios
+
+#### Backend
+
+- `GET /espacios` acepta `sector`, `actividad`, `fecha`, `horaInicio` y `horaFin`.
+- `GET /espacios/opciones` devuelve las listas cerradas de sectores y actividades.
+- La disponibilidad por fecha y horario cruza:
+  - horario propio del espacio o de su zona;
+  - `espacio_bloqueos`;
+  - `permisos` vigentes;
+  - `solicitudes` aprobadas, usando `solicitudes.hora_inicio/hora_fin`.
+- Los conteos `total`, `disponibles` y `noDisponibles` corresponden a los filtros aplicados.
+- Los estados registrados `bloqueado`, `asignado` y `mantenimiento` se respetan siempre.
+- Se agregan índices de sector, actividad y disponibilidad (`05_filtros_hu10.sql`).
+
+#### Frontend
+
+- Panel de filtros con sector, actividad, fecha y rango horario.
+- Conteo de resultados que se actualiza al aplicar filtros.
+- En escritorio es una tarjeta visible; en móvil se abre como hoja inferior.
+- Estado sin resultados: «No hay espacios disponibles con esos criterios», con sugerencia y botón para limpiar filtros.
+- El mapa y la tabla consumen el mismo resultado filtrado.
+- **La búsqueda de calles/barrios y el centrado del mapa por dirección quedan fuera de esta entrega por decisión del alcance.**
+
+#### Pruebas
+
+- Unitarias: filtros, validación horaria, cruces de horario y opciones.
+- E2E backend: combinación de filtros, fecha/hora, validaciones y opciones.
+- Playwright: filtros combinados, fecha/hora, sin resultados, limpieza y panel móvil.
+
 ---
 
 ## 3. Archivos implementados o modificados
@@ -175,6 +206,7 @@ El seed ahora tiene 6 espacios: 3 disponibles, 1 bloqueado (25–31 oct 2026), 1
 | `src/zonas/zonas.service.spec.ts` | Pruebas de simplificación y tipos GeoJSON |
 | `test/zonas.e2e-spec.ts` | Pruebas de zoom válido e inválido |
 | `dataBase/04_espacios_hu09.sql` | Migración de tipo, sector, dimensiones, horario e índices |
+| `dataBase/05_filtros_hu10.sql` | Índices de filtros y disponibilidad |
 | `src/espacios/espacios.module.ts` | Módulo de espacios |
 | `src/espacios/espacios.controller.ts` | `GET /espacios` y `GET /espacios/:id` |
 | `src/espacios/espacios.service.ts` | Consultas SQL y cruces de disponibilidad |
@@ -209,8 +241,10 @@ El seed ahora tiene 6 espacios: 3 disponibles, 1 bloqueado (25–31 oct 2026), 1
 | `frontend/src/features/espacios/tabla-espacios.tsx` | Tabla y tarjetas móviles |
 | `frontend/src/features/espacios/estilos-espacio.ts` | Colores, símbolos y formatos |
 | `frontend/src/features/espacios/etiqueta-espacio.tsx` | Etiqueta de estado |
-| `frontend/src/features/espacios/*.test.ts` | Pruebas Vitest de agrupación y formatos |
-| `frontend/e2e/espacios.spec.ts` | 7 pruebas Playwright de espacios |
+| `frontend/src/features/espacios/panel-filtros.tsx` | Panel de filtros escritorio/móvil |
+| `frontend/src/features/espacios/filtros-espacios.ts` | Validación y helpers de filtros |
+| `frontend/src/features/espacios/*.test.ts` | Pruebas Vitest de agrupación, formatos y filtros |
+| `frontend/e2e/espacios.spec.ts` | 11 pruebas Playwright de espacios |
 | `frontend/package.json` y `frontend/pnpm-lock.yaml` | `leaflet` y `@types/leaflet` |
 
 ### Documentación
@@ -227,10 +261,10 @@ El seed ahora tiene 6 espacios: 3 disponibles, 1 bloqueado (25–31 oct 2026), 1
 
 | Suite | Resultado |
 |---|---|
-| Backend unitarias | **29 suites, 297 pruebas aprobadas** |
-| Backend e2e | **9 suites, 84 pruebas aprobadas** |
-| Frontend Vitest | **6 archivos, 33 pruebas aprobadas** |
-| Frontend Playwright | **42 pruebas aprobadas**, incluidas 9 del mapa y 7 de espacios |
+| Backend unitarias | **29 suites, 307 pruebas aprobadas** |
+| Backend e2e | **9 suites, 91 pruebas aprobadas** |
+| Frontend Vitest | **7 archivos, 40 pruebas aprobadas** |
+| Frontend Playwright | **46 pruebas aprobadas**, incluidas 9 del mapa y 11 de espacios |
 | Backend lint | Sin errores |
 | Backend build | Correcto |
 | Frontend `tsc --noEmit` | Sin errores |
@@ -285,6 +319,10 @@ Resultado: `FeatureCollection` con las 4 zonas activas del seed.
 - Ficha con motivo de bloqueo y restricciones de la zona.
 - Agrupación de marcadores al alejar y separación al acercar.
 - Hoja inferior en móvil a 360 px sin desbordamiento.
+- Filtros combinados por sector y actividad.
+- Disponibilidad por fecha y horario.
+- Estado sin resultados y limpieza de filtros.
+- Panel de filtros móvil.
 - Error de API y reintento.
 
 ---
@@ -295,7 +333,7 @@ Resultado: `FeatureCollection` con las 4 zonas activas del seed.
 |---|---|---|---|
 | **HU-08** Mapa público de zonas | GeoJSON público con zoom | Mapa Leaflet completo | **Implementada** |
 | **HU-09** Espacios disponibles y ficha | Listado y ficha con estado efectivo | Tabla, mapa, agrupación y ficha responsive | **Implementada** |
-| **HU-10** Buscar y filtrar | Nada | Nada | Pendiente |
+| **HU-10** Buscar y filtrar | Filtros y disponibilidad por fecha/hora | Panel de filtros, conteo y sin resultados | **Implementada** (sin buscador de calles/barrios) |
 | **HU-11** Delimitar y clasificar zonas | Crear, clasificar, restricciones y validación | Nada | Backend completo; falta editor |
 | **HU-12** Editar, desactivar y auditar | Editar, desactivar y auditoría por trigger | Nada | Parcial; falta historial por zona y UI |
 | **HU-13** Censar módulos y puestos | Nada | Nada | Pendiente |
@@ -308,14 +346,7 @@ Resultado: `FeatureCollection` con las 4 zonas activas del seed.
 
 > **HU-09 ya está implementada** (ver §2.9). Queda fuera de esta lista de pendientes.
 
-### HU-10 — Buscar y filtrar
-
-- Filtros combinables por sector, actividad y fecha.
-- Conteo de resultados.
-- Disponibilidad por fecha considerando bloqueos y permisos aprobados.
-- Buscador de calles y barrios que centre el mapa.
-
-**Decisión pendiente:** proveedor de geocodificación o capa propia de barrios.
+> **HU-10 ya está implementada** (ver §2.10), salvo el buscador de calles/barrios, que se excluyó por decisión del alcance.
 
 ### HU-11 — Interfaz de administración de zonas
 
@@ -416,6 +447,12 @@ No se requiere iniciar sesión para consultar el mapa.
    - La ficha se abre como panel lateral en escritorio y hoja inferior a 360 px.
    - La ficha del espacio bloqueado muestra el motivo y las restricciones de Plaza Boyacá.
 
+7. Probar los filtros:
+   - Sector «Centro» y actividad «Venta de alimentos y frutas» → 2 resultados.
+   - Fecha `2026-11-10` y horario `10:00`–`12:00` → 2 resultados (el espacio con permiso vigente queda ocupado).
+   - Sector «Centro» y actividad «Artesanías» → estado sin resultados y botón para limpiar filtros.
+   - En móvil, abrir «Filtros», aplicar un sector y comprobar el conteo.
+
 ---
 
 ## 9. Conclusión
@@ -424,4 +461,6 @@ La **HU-08** quedó implementada de extremo a extremo: mapa público, API GeoJSO
 
 La **HU-09** quedó implementada de extremo a extremo: endpoints de espacios y ficha, estado efectivo con bloqueos/permisos/solicitudes, capa de marcadores con agrupación por zoom, vista de tabla, panel lateral en escritorio, hoja inferior en móvil y pruebas automatizadas.
 
-El Sprint 2 sigue **incompleto**: faltan HU-10, HU-13, HU-14 y HU-15, además de la interfaz de administración de zonas (HU-11) y el historial por zona (HU-12). El checklist de «Sprint terminado» de `Sprint2_Funcinalidades.md` todavía no se cumple.
+La **HU-10** quedó implementada: filtros combinables por sector y actividad, disponibilidad por fecha y horario, conteo de resultados, panel de filtros responsive y estado sin resultados. El buscador de calles/barrios se excluyó por decisión del alcance.
+
+El Sprint 2 sigue **incompleto**: faltan HU-13, HU-14 y HU-15, además de la interfaz de administración de zonas (HU-11) y el historial por zona (HU-12). El checklist de «Sprint terminado» de `Sprint2_Funcinalidades.md` todavía no se cumple.

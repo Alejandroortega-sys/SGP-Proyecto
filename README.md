@@ -160,7 +160,7 @@ pnpm build     # debe compilar las 10 rutas
 | Sprint | Alcance | Estado |
 |---|---|---|
 | **1** | Autenticación y gestión de usuarios (HU-01 a HU-07) | Backend **completo** (36 endpoints); frontend implementado (ver `docs/avance_frontend.md`) |
-| **2** | Geo-Portal y zonas (HU-08 a HU-15) | **HU-08 y HU-09 implementadas** (mapa público con GeoJSON y zoom; espacios disponibles con tabla, mapa, agrupación y ficha responsive). Backend de zonas completo; faltan HU-10, HU-13, HU-14, HU-15 y la UI de HU-11/HU-12 |
+| **2** | Geo-Portal y zonas (HU-08 a HU-15) | **HU-08, HU-09 y HU-10 implementadas** (mapa público; espacios con tabla, mapa, agrupación, ficha responsive y filtros por sector, actividad, fecha y horario). Backend de zonas completo; faltan HU-13, HU-14, HU-15 y la UI de HU-11/HU-12. La búsqueda de calles/barrios de HU-10 quedó fuera de alcance |
 | **3** | Solicitudes y asignación de espacio | Pendiente |
 | **4** | Simulador de factibilidad y densidad | Pendiente |
 | **5** | Permisos con QR y cobros simulados | Pendiente |
@@ -174,12 +174,12 @@ Rutas públicas funcionales, verificadas con `lint`, `build` y render HTTP 200:
 
 Además, paneles protegidos por rol: `/comerciante/*`, `/organizador/*` y `/gestor/*`.
 
-Incluye: design system mobile-first (360 px, WCAG AA), estados de carga/vacío/error/éxito, sesión con `GET /auth/me` y `POST /auth/logout` en el navbar, rotación de refresh tokens, manejo de los códigos HTTP 401/403/423/429, el Geo-Portal público con Leaflet y la consulta de espacios del comerciante en `/comerciante/espacios` (tabla, mapa con agrupación y ficha en panel lateral/hoja inferior).
+Incluye: design system mobile-first (360 px, WCAG AA), estados de carga/vacío/error/éxito, sesión con `GET /auth/me` y `POST /auth/logout` en el navbar, rotación de refresh tokens, manejo de los códigos HTTP 401/403/423/429, el Geo-Portal público con Leaflet y la consulta de espacios del comerciante en `/comerciante/espacios` (tabla, mapa con agrupación, ficha en panel lateral/hoja inferior y filtros por sector, actividad, fecha y horario).
 
 ### Frontend: qué falta
 
 - Módulos de los Sprints 3 a 6: solicitudes, ferias, permisos QR, cobros y dashboard analítico.
-- Del Sprint 2: filtros y búsqueda (HU-10), censo de módulos (HU-13), importación (HU-14), espacios temporales y bloqueos (HU-15), y la interfaz de administración de zonas (HU-11/HU-12).
+- Del Sprint 2: censo de módulos (HU-13), importación (HU-14), espacios temporales y bloqueos (HU-15), y la interfaz de administración de zonas (HU-11/HU-12). El buscador de calles/barrios de HU-10 quedó fuera de alcance.
 
 ---
 

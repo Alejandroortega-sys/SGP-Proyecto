@@ -314,6 +314,24 @@ export function IconoPersona({ className }: PropiedadesIcono) {
   );
 }
 
+export function IconoFiltro({ className }: PropiedadesIcono) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+      className={clases(className)}
+    >
+      <path d="M4 6h16M7 12h10M10 18h4" />
+    </svg>
+  );
+}
+
 export function IconoUbicacion({ className }: PropiedadesIcono) {
   return (
     <svg

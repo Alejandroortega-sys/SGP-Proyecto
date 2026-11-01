@@ -692,4 +692,13 @@ export interface ListarEspaciosResponse {
 export interface FiltrosEspacios {
   incluirNoDisponibles?: boolean;
   fecha?: string;
+  sector?: string;
+  actividad?: string;
+  horaInicio?: string;
+  horaFin?: string;
+}
+
+export interface OpcionesEspacios {
+  sectores: string[];
+  actividades: string[];
 }

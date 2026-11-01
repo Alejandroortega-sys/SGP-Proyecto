@@ -100,7 +100,9 @@ model espacios_temporales {
   permisos            permisos[]
   solicitudes         solicitudes[]
 
+  @@index([actividad_permitida], map: "idx_espacios_actividad")
   @@index([estado], map: "idx_espacios_estado")
+  @@index([sector], map: "idx_espacios_sector")
   @@index([ubicacion], map: "idx_espacios_geom", type: Gist)
   @@index([zona_id], map: "idx_espacios_zona")
 }
@@ -317,6 +319,7 @@ model permisos {
   solicitudes          solicitudes              @relation(fields: [solicitud_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   comerciantes         comerciantes             @relation(fields: [titular_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
 
+  @@index([espacio_id, estado, fecha_inicio, fecha_fin], map: "idx_permisos_espacio_estado_fechas")
   @@index([estado], map: "idx_permisos_estado")
   @@index([titular_id], map: "idx_permisos_titular")
 }
@@ -389,6 +392,7 @@ model solicitudes {
 
   @@index([comerciante_id], map: "idx_solicitudes_comerciante")
   @@index([estado], map: "idx_solicitudes_estado")
+  @@index([espacio_id, estado, fecha_inicio, fecha_fin], map: "idx_solicitudes_espacio_estado_fechas")
   @@index([espacio_id, fecha_inicio], map: "idx_solicitudes_fechas")
 }
 

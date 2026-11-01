@@ -8,7 +8,7 @@ import { Cargando, EstadoVacio } from "@/components/ui/estado-vacio";
 import { IconoMapa, IconoTienda } from "@/components/ui/iconos";
 import { Spinner } from "@/components/ui/spinner";
 import { useConsultaApi } from "@/hooks/use-consulta-api";
-import { obtenerEspacios } from "@/lib/api-client";
+import { obtenerEspacios, obtenerOpcionesEspacios } from "@/lib/api-client";
 import type { EstadoEspacio } from "@/types/api";
 import {
   COLORES_ESTADO_ESPACIO,
@@ -18,7 +18,14 @@ import {
   SIMBOLOS_ESTADO_ESPACIO,
 } from "./estilos-espacio";
 import { FichaEspacio } from "./ficha-espacio";
+import {
+  FILTROS_FORMULARIO_VACIOS,
+  type FiltrosFormulario,
+  filtrosParaApi,
+  hayFiltrosActivos,
+} from "./filtros-espacios";
 import { MapaEspacios } from "./mapa-espacios";
+import { PanelFiltros } from "./panel-filtros";
 import { TablaEspacios } from "./tabla-espacios";
 
 type Vista = "mapa" | "tabla";
@@ -39,17 +46,38 @@ export function EspaciosComerciante() {
   const [vista, setVista] = useState<Vista>("mapa");
   const [incluirNoDisponibles, setIncluirNoDisponibles] = useState(false);
   const [seleccionadoId, setSeleccionadoId] = useState<string | null>(null);
-
-  const { datos, cargando, error, recargar } = useConsultaApi(
-    () => obtenerEspacios({ incluirNoDisponibles }),
-    [incluirNoDisponibles],
+  const [filtros, setFiltros] = useState<FiltrosFormulario>(
+    FILTROS_FORMULARIO_VACIOS,
   );
+
+  const filtrosApi = useMemo(
+    () => filtrosParaApi(filtros, incluirNoDisponibles),
+    [filtros, incluirNoDisponibles],
+  );
+  const { datos, cargando, error, recargar } = useConsultaApi(
+    () => obtenerEspacios(filtrosApi),
+    [filtrosApi],
+  );
+  const {
+    datos: opciones,
+    cargando: cargandoOpciones,
+  } = useConsultaApi(obtenerOpcionesEspacios, []);
 
   const seleccionar = useCallback((id: string) => {
     setSeleccionadoId(id);
   }, []);
 
   const cerrarFicha = useCallback(() => {
+    setSeleccionadoId(null);
+  }, []);
+
+  const aplicarFiltros = useCallback((nuevos: FiltrosFormulario) => {
+    setFiltros(nuevos);
+    setSeleccionadoId(null);
+  }, []);
+
+  const limpiarFiltros = useCallback(() => {
+    setFiltros(FILTROS_FORMULARIO_VACIOS);
     setSeleccionadoId(null);
   }, []);
 
@@ -63,6 +91,7 @@ export function EspaciosComerciante() {
 
   const sinResultados = datos !== null && datos.datos.length === 0;
   const mostrarCargaInicial = cargando && datos === null;
+  const filtrosActivos = hayFiltrosActivos(filtros);
 
   return (
     <section className="flex flex-col gap-5">
@@ -97,6 +126,16 @@ export function EspaciosComerciante() {
           ) : null}
         </div>
       </header>
+
+      <PanelFiltros
+        key={`${filtros.sector}|${filtros.actividad}|${filtros.fecha}|${filtros.horaInicio}|${filtros.horaFin}`}
+        filtros={filtros}
+        opciones={opciones}
+        cargandoOpciones={cargandoOpciones}
+        totalResultados={datos?.total ?? null}
+        onAplicar={aplicarFiltros}
+        onLimpiar={limpiarFiltros}
+      />
 
       <div className="flex flex-col gap-3 rounded-xl border border-borde bg-superficie p-3 sm:p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -202,19 +241,33 @@ export function EspaciosComerciante() {
         <div className="rounded-xl border border-borde bg-superficie">
           <EstadoVacio
             titulo={
-              incluirNoDisponibles
-                ? "No hay espacios registrados"
-                : "No hay espacios disponibles"
+              filtrosActivos
+                ? "No hay espacios disponibles con esos criterios"
+                : incluirNoDisponibles
+                  ? "No hay espacios registrados"
+                  : "No hay espacios disponibles"
             }
             descripcion={
-              incluirNoDisponibles
-                ? "Todavía no se han registrado espacios en el catálogo municipal."
-                : "No hay espacios disponibles con la fecha actual. Activa «Mostrar no disponibles» para consultar los bloqueados u ocupados."
+              filtrosActivos
+                ? "Prueba con otra fecha u horario, cambia el sector o la actividad, o limpia los filtros para ampliar la búsqueda."
+                : incluirNoDisponibles
+                  ? "Todavía no se han registrado espacios en el catálogo municipal."
+                  : "No hay espacios disponibles con la fecha actual. Activa «Mostrar no disponibles» para consultar los bloqueados u ocupados."
             }
             accion={
-              <Boton variante="contorno" tamano="sm" onClick={recargar}>
-                Reintentar
-              </Boton>
+              filtrosActivos ? (
+                <Boton
+                  variante="contorno"
+                  tamano="sm"
+                  onClick={limpiarFiltros}
+                >
+                  Limpiar filtros
+                </Boton>
+              ) : (
+                <Boton variante="contorno" tamano="sm" onClick={recargar}>
+                  Reintentar
+                </Boton>
+              )
             }
           />
         </div>

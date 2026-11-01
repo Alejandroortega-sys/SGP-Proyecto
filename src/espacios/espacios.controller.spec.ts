@@ -4,7 +4,7 @@ import { ROLES_KEY } from '../auth/decorators/roles.decorator';
 import { EspaciosController } from './espacios.controller';
 import { EspaciosService } from './espacios.service';
 
-type MetodoEspacios = 'listar' | 'detalle';
+type MetodoEspacios = 'listar' | 'opciones' | 'detalle';
 
 function metadatosDelMetodo(clave: string, metodo: MetodoEspacios): unknown {
   const descriptor = Object.getOwnPropertyDescriptor(
@@ -16,6 +16,7 @@ function metadatosDelMetodo(clave: string, metodo: MetodoEspacios): unknown {
 
 interface EspaciosServiceMock {
   listar: jest.Mock;
+  opciones: jest.Mock;
   detalle: jest.Mock;
 }
 
@@ -25,6 +26,7 @@ function crearServiceMock(): {
 } {
   const mock: EspaciosServiceMock = {
     listar: jest.fn(),
+    opciones: jest.fn(),
     detalle: jest.fn(),
   };
   return { service: mock as unknown as EspaciosService, mock };
@@ -35,7 +37,7 @@ describe('EspaciosController', () => {
     expect(Reflect.getMetadata(ROLES_KEY, EspaciosController)).toEqual([
       'comerciante',
     ]);
-    for (const metodo of ['listar', 'detalle'] as const) {
+    for (const metodo of ['listar', 'opciones', 'detalle'] as const) {
       expect(metadatosDelMetodo(IS_PUBLIC_KEY, metodo)).toBeUndefined();
     }
   });
@@ -45,10 +47,24 @@ describe('EspaciosController', () => {
     const controller = new EspaciosController(service);
     const dto = { incluirNoDisponibles: true, fecha: '2026-10-31' };
 
-    mock.listar.mockResolvedValue({ datos: [], total: 0, disponibles: 0, noDisponibles: 0 });
+    mock.listar.mockResolvedValue({
+      datos: [],
+      total: 0,
+      disponibles: 0,
+      noDisponibles: 0,
+    });
     await controller.listar(dto);
 
     expect(mock.listar).toHaveBeenCalledWith(dto);
+  });
+
+  it('delega las opciones de filtros', async () => {
+    const { service, mock } = crearServiceMock();
+    const controller = new EspaciosController(service);
+    const opciones = { sectores: ['Centro'], actividades: ['Artesanías'] };
+
+    mock.opciones.mockResolvedValue(opciones);
+    await expect(controller.opciones()).resolves.toEqual(opciones);
   });
 
   it('delega la ficha con el id y la fecha', async () => {

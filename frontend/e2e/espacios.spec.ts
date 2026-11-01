@@ -288,4 +288,108 @@ test.describe("Espacios disponibles del comerciante", () => {
         .getByText("Espacio móvil Calle 30 - A", { exact: true }),
     ).toBeVisible();
   });
+
+  test("filtra por sector y actividad y actualiza el conteo", async ({
+    page,
+  }) => {
+    await entrarAEspacios(page);
+    const panel = page.getByTestId("panel-filtros-escritorio");
+
+    await panel.getByLabel("Sector").selectOption("Centro");
+    await panel
+      .getByLabel("Actividad")
+      .selectOption("Venta de alimentos y frutas");
+    await panel.getByRole("button", { name: "Aplicar filtros" }).click();
+
+    await expect(
+      page.getByText("2 espacios encontrados", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText("2 disponibles", { exact: true })).toBeVisible();
+
+    await page.getByRole("button", { name: "Tabla" }).click();
+    const tabla = page.getByRole("table");
+    await expect(
+      tabla.getByText("Espacio móvil Calle 30 - A", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      tabla.getByText("Espacio móvil Calle 30 - B", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      tabla.getByText("Kiosco Parque La Guadua", { exact: true }),
+    ).toHaveCount(0);
+  });
+
+  test("consulta disponibilidad por fecha y horario", async ({ page }) => {
+    await entrarAEspacios(page);
+    const panel = page.getByTestId("panel-filtros-escritorio");
+
+    await panel.getByLabel("Fecha").fill("2026-11-10");
+    await panel.getByLabel("Hora inicio").fill("10:00");
+    await panel.getByLabel("Hora fin").fill("12:00");
+    await panel.getByRole("button", { name: "Aplicar filtros" }).click();
+
+    await expect(
+      page.getByText("2 espacios encontrados", { exact: true }),
+    ).toBeVisible();
+
+    await page.getByRole("button", { name: "Tabla" }).click();
+    const tabla = page.getByRole("table");
+    await expect(
+      tabla.getByText("Espacio móvil Calle 30 - B", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      tabla.getByText("Kiosco Parque La Guadua", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      tabla.getByText("Espacio móvil Calle 30 - A", { exact: true }),
+    ).toHaveCount(0);
+  });
+
+  test("muestra el estado sin resultados y permite limpiar filtros", async ({
+    page,
+  }) => {
+    await entrarAEspacios(page);
+    const panel = page.getByTestId("panel-filtros-escritorio");
+
+    await panel.getByLabel("Sector").selectOption("Centro");
+    await panel.getByLabel("Actividad").selectOption("Artesanías");
+    await panel.getByRole("button", { name: "Aplicar filtros" }).click();
+
+    await expect(
+      page.getByText("No hay espacios disponibles con esos criterios"),
+    ).toBeVisible();
+    await expect(page.getByText("Limpiar filtros").first()).toBeVisible();
+
+    await page.getByRole("button", { name: "Limpiar filtros" }).first().click();
+
+    await expect(
+      page.getByText("No hay espacios disponibles con esos criterios"),
+    ).toBeHidden();
+    await expect(page.getByText("3 disponibles", { exact: true })).toBeVisible();
+  });
+
+  test("abre el panel de filtros en móvil sin desbordamiento", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 360, height: 740 });
+    await entrarAEspacios(page);
+
+    await page
+      .getByRole("button", { name: "Abrir panel de filtros" })
+      .click();
+
+    const panel = page.getByTestId("panel-filtros-movil");
+    await expect(panel).toBeVisible();
+    await panel.getByLabel("Sector").selectOption("Centro");
+    await panel.getByRole("button", { name: "Aplicar filtros" }).click();
+
+    await expect(page.getByText("2 resultados", { exact: true })).toBeVisible();
+
+    const desbordamiento = await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth,
+    );
+    expect(desbordamiento).toBeLessThanOrEqual(1);
+  });
 });

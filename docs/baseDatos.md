@@ -2,7 +2,7 @@
 
 **Proyecto:** Plataforma Web de Gestión del Espacio Público, Ferias Agroecológicas y Comercio Formal/Informal de Tuluá (Equipo 6)
 **Motor:** PostgreSQL 18 + PostGIS 3.6 · **Codificación:** UTF8 · **Convención:** `snake_case`, español
-**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba) · `03_sesiones.sql` (tabla de sesiones) · `04_espacios_hu09.sql` (migración de la ficha de espacios)
+**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba) · `03_sesiones.sql` (tabla de sesiones) · `04_espacios_hu09.sql` (migración de la ficha de espacios) · `05_filtros_hu10.sql` (índices de filtros y disponibilidad)
 **Base de desarrollo verificada:** `sgp_tulua`
 
 ---
@@ -13,7 +13,7 @@
 # 1) Crear la base de datos
 psql -U postgres -d postgres -c 'CREATE DATABASE "sgp_tulua";'
 
-# 2) Crear la estructura (30 tablas, 18 ENUM, 3 secuencias, 30 índices,
+# 2) Crear la estructura (30 tablas, 18 ENUM, 3 secuencias, 33 índices,
 #    6 funciones, 10 triggers y 4 vistas materializadas)
 psql -U postgres -d "sgp_tulua" -f 01_creacion_bd.sql
 
@@ -25,6 +25,9 @@ psql -U postgres -d "sgp_tulua" -f 03_sesiones.sql
 
 # 5) HU-09: agregar tipo, sector, dimensiones y horario a espacios_temporales:
 psql -U postgres -d "sgp_tulua" -f 04_espacios_hu09.sql
+
+# 6) HU-10: índices para filtros por sector/actividad y disponibilidad:
+psql -U postgres -d "sgp_tulua" -f 05_filtros_hu10.sql
 
 # Para repetir desde cero:
 psql -U postgres -d postgres -c 'DROP DATABASE "sgp_tulua" WITH (FORCE);'
@@ -552,7 +555,7 @@ Las cuatro pruebas negativas se ejecutan dentro de `02_seed_datos_prueba.sql` y 
 
 ## 16. Índices
 
-- **B-tree:** usuarios(rol, estado), tokens(usuario, tipo), sesiones(usuario, revocada_en), sesiones(refresh_token_anterior_hash), modulos(estado, titular), espacios(zona, estado), bloqueos(espacio+fechas), parametros(clave, vigente_desc), solicitudes(comerciante, estado, espacio+fecha), documentos(solicitud), ferias(zona), evaluaciones(solicitud), permisos(titular, estado), eventos(permiso, creado_en), verificaciones(creado_en), cobros(estado), notificaciones(usuario, leida), auditoria(tabla+registro, fecha).
+- **B-tree:** usuarios(rol, estado), tokens(usuario, tipo), sesiones(usuario, revocada_en), sesiones(refresh_token_anterior_hash), modulos(estado, titular), espacios(zona, estado, sector, actividad), bloqueos(espacio+fechas), parametros(clave, vigente_desc), solicitudes(comerciante, estado, espacio+fecha, espacio+estado+fechas), documentos(solicitud), ferias(zona), evaluaciones(solicitud), permisos(titular, estado, espacio+estado+fechas), eventos(permiso, creado_en), verificaciones(creado_en), cobros(estado), notificaciones(usuario, leida), auditoria(tabla+registro, fecha).
 - **GIST espaciales:** `zonas(geometria)`, `modulos(ubicacion)`, `espacios_temporales(ubicacion)`, `evaluaciones_factibilidad(ubicacion)`.
 - **Únicos (para REFRESH CONCURRENTLY):** uno por vista materializada.
 

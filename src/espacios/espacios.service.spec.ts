@@ -244,4 +244,136 @@ describe('EspaciosService', () => {
     expect(consulta).toContain('BETWEEN fecha_inicio AND fecha_fin');
     expect(consulta).toContain('2026-10-31');
   });
+
+  it('envía los filtros de sector y actividad a la consulta SQL', async () => {
+    const { prisma, mock } = crearPrisma();
+    const servicio = new EspaciosService(prisma);
+
+    await servicio.listar({
+      sector: 'Centro',
+      actividad: 'Venta de alimentos y frutas',
+    });
+
+    const consulta = JSON.stringify(mock.$queryRaw.mock.calls[0]);
+    expect(consulta).toContain('e.sector');
+    expect(consulta).toContain('e.actividad_permitida');
+    expect(consulta).toContain('Centro');
+    expect(consulta).toContain('Venta de alimentos y frutas');
+  });
+
+  it('excluye los espacios cuyo horario no cubre el rango solicitado', async () => {
+    const { prisma } = crearPrisma();
+    const servicio = new EspaciosService(prisma);
+
+    const respuesta = await servicio.listar({
+      fecha: '2026-11-10',
+      horaInicio: '18:00',
+      horaFin: '20:00',
+    });
+
+    expect(respuesta.datos).toHaveLength(0);
+    expect(respuesta.total).toBe(0);
+  });
+
+  it('mantiene disponibles los espacios que cubren el horario y no tienen cruces', async () => {
+    const { prisma } = crearPrisma();
+    const servicio = new EspaciosService(prisma);
+
+    const respuesta = await servicio.listar({
+      fecha: '2026-11-10',
+      horaInicio: '10:00',
+      horaFin: '12:00',
+    });
+
+    expect(respuesta.datos.map((espacio) => espacio.id)).toEqual([
+      '1',
+      '2',
+      '4',
+    ]);
+    expect(respuesta.disponibles).toBe(3);
+  });
+
+  it('marca ocupado un espacio cuando el permiso se cruza con el horario', async () => {
+    const { prisma } = crearPrisma([
+      fila({
+        permiso_numero: 'PER-2026-00001',
+        permiso_inicio: '2026-11-01',
+        permiso_fin: '2026-11-30',
+        permiso_hora_inicio: '06:00',
+        permiso_hora_fin: '14:00',
+      }),
+    ]);
+    const servicio = new EspaciosService(prisma);
+
+    const respuesta = await servicio.listar({
+      fecha: '2026-11-10',
+      horaInicio: '10:00',
+      horaFin: '12:00',
+    });
+
+    expect(respuesta.datos).toHaveLength(0);
+    expect(respuesta.noDisponibles).toBe(1);
+  });
+
+  it('deja disponible un espacio si el permiso no se cruza con el horario', async () => {
+    const { prisma } = crearPrisma([
+      fila({
+        permiso_numero: 'PER-2026-00001',
+        permiso_inicio: '2026-11-01',
+        permiso_fin: '2026-11-30',
+        permiso_hora_inicio: '06:00',
+        permiso_hora_fin: '10:00',
+      }),
+    ]);
+    const servicio = new EspaciosService(prisma);
+
+    const respuesta = await servicio.listar({
+      fecha: '2026-11-10',
+      horaInicio: '10:00',
+      horaFin: '12:00',
+    });
+
+    expect(respuesta.datos).toHaveLength(1);
+    expect(respuesta.datos[0]).toMatchObject({
+      id: '1',
+      disponible: true,
+    });
+  });
+
+  it('valida el rango horario y exige fecha cuando se filtra por hora', async () => {
+    const { prisma } = crearPrisma();
+    const servicio = new EspaciosService(prisma);
+
+    await expect(
+      servicio.listar({ fecha: '2026-11-10', horaInicio: '10:00' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      servicio.listar({ horaInicio: '10:00', horaFin: '12:00' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      servicio.listar({
+        fecha: '2026-11-10',
+        horaInicio: '12:00',
+        horaFin: '10:00',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('devuelve las opciones de sector y actividad', async () => {
+    const { prisma, mock } = crearPrisma();
+    mock.$queryRaw
+      .mockResolvedValueOnce([{ valor: 'Centro' }, { valor: 'Plaza Boyacá' }])
+      .mockResolvedValueOnce([
+        { valor: 'Artesanías' },
+        { valor: 'Comidas rápidas' },
+      ]);
+    const servicio = new EspaciosService(prisma);
+
+    const opciones = await servicio.opciones();
+
+    expect(opciones).toEqual({
+      sectores: ['Centro', 'Plaza Boyacá'],
+      actividades: ['Artesanías', 'Comidas rápidas'],
+    });
+  });
 });
