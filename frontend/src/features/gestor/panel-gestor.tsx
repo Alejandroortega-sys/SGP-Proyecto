@@ -182,8 +182,14 @@ export function PanelGestor() {
       <Tarjeta>
         <TarjetaCuerpo className="flex flex-wrap gap-3">
           <Link
-            href="/gestor/usuarios"
+            href="/gestor/zonas"
             className="rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
+          >
+            Gestionar zonas
+          </Link>
+          <Link
+            href="/gestor/usuarios"
+            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
           >
             Gestionar usuarios
           </Link>

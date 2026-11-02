@@ -46,6 +46,9 @@ registro, activación, recuperación y primer acceso). Ahora incluye:
 | Ruta | Endpoints |
 |---|---|
 | `/gestor/panel` | `GET /panel` |
+| `/gestor/zonas` | `GET /zonas`, `PATCH /zonas/:id/estado` |
+| `/gestor/zonas/nueva` | `POST /zonas`, `GET /productos`, `GET /zonas/geojson` |
+| `/gestor/zonas/[id]/editar` | `GET /zonas/:id`, `PATCH /zonas/:id`, `GET /productos`, `GET /zonas/geojson` |
 | `/gestor/perfil` | `GET/PATCH /gestor/perfil`, `PATCH /gestor/perfil/password` |
 | `/gestor/usuarios` | `GET /gestor/usuarios` |
 | `/gestor/usuarios/[id]` | `GET /gestor/usuarios/:id`, `PATCH /gestor/usuarios/:id/estado`, `PATCH /usuarios/:id/comerciante`, `POST /gestor/gestores/:id/reenviar-invitacion` |
@@ -54,6 +57,11 @@ registro, activación, recuperación y primer acceso). Ahora incluye:
 | `/gestor/organizaciones/[id]` | `GET /gestor/organizaciones/:id`, `PATCH /gestor/organizaciones/:id/estado` |
 | `/gestor/gestores/nuevo` | `POST /gestor/gestores` |
 | `/gestor/auditoria` | `GET /gestor/auditoria` (solo administrador) |
+
+> Las rutas de zonas corresponden a HU-11 y se agregaron después del Sprint 1.
+> Incluyen dibujo de polígonos con Leaflet, clasificación, restricciones,
+> validación de autointersecciones/solapes y modo lectura para el revisor.
+> Ver `docs/Uso_zonas.md` §14.
 
 ### Transversal
 
@@ -206,6 +214,11 @@ frontend: eslint                          → sin errores
 frontend: next build                      → 27 rutas generadas
 frontend: vitest run                      → 3 archivos, 15 pruebas aprobadas
 frontend: playwright test                 → 26 pruebas aprobadas (1.2 min)
+
+> Con la incorporación de HU-11 el frontend pasa a **32 rutas**, **9 archivos
+> Vitest / 59 pruebas** y **50 pruebas Playwright**. Las 4 pruebas de zonas
+> pasan; la suite completa conserva 7 fallos preexistentes de `espacios.spec.ts`
+> por la vigencia del permiso del seed al 2026-11-01.
 backend:  jest --runInBand                → 20 suites, 190 pruebas aprobadas
 backend:  jest e2e --runInBand            → 6 suites, 35 pruebas aprobadas
 ```

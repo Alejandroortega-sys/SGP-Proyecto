@@ -612,6 +612,94 @@ export interface ZonaFeatureCollection {
   features: ZonaFeature[];
 }
 
+/** Polígono GeoJSON en WGS84, con coordenadas [longitud, latitud]. */
+export interface GeometriaPoligono {
+  type: "Polygon";
+  coordinates: number[][][];
+}
+
+/** Fila del listado de zonas (sin geometría). */
+export interface ZonaListado {
+  id: string;
+  nombre: string;
+  tipo: TipoZona;
+  horarioInicio: string | null;
+  horarioFin: string | null;
+  aforoMaximo: number | null;
+  activa: boolean;
+  totalEspacios: number;
+  totalModulos: number;
+  creadoEn: string;
+  actualizadoEn: string;
+}
+
+export interface ListarZonasResponse {
+  datos: ZonaListado[];
+  paginacion: Paginacion;
+}
+
+export interface FiltrosZonas {
+  tipo?: TipoZona;
+  activo?: boolean;
+  busqueda?: string;
+  pagina?: number;
+  limite?: number;
+}
+
+/** Producto asociado a una zona. */
+export interface ProductoPermitido {
+  id: string;
+  nombre: string;
+  activo: boolean;
+}
+
+/** Detalle completo de una zona. */
+export interface ZonaDetalle {
+  id: string;
+  nombre: string;
+  tipo: TipoZona;
+  horarioInicio: string | null;
+  horarioFin: string | null;
+  aforoMaximo: number | null;
+  activa: boolean;
+  creadoPor: string | null;
+  creadoEn: string;
+  actualizadoEn: string;
+  geometria: GeometriaPoligono;
+  productosPermitidos: ProductoPermitido[];
+}
+
+/** Cuerpo de creación y edición de una zona. */
+export interface SolicitudZona {
+  nombre: string;
+  tipo: TipoZona;
+  geometria: GeometriaPoligono;
+  horarioInicio?: string | null;
+  horarioFin?: string | null;
+  aforoMaximo?: number | null;
+  productosPermitidos?: string[];
+}
+
+/** Respuesta de PATCH /zonas/:id/estado. */
+export interface RespuestaEstadoZona {
+  id: string;
+  nombre: string;
+  activa: boolean;
+  actualizadoEn: string;
+  mensaje: string;
+}
+
+/** Producto del catálogo maestro. */
+export interface Producto {
+  id: string;
+  nombre: string;
+  activo: boolean;
+}
+
+export interface ListarProductosResponse {
+  datos: Producto[];
+}
+
 /* ------------------------------------------------------------------ */
 /* Espacios temporales (HU-09)                                         */
 /* ------------------------------------------------------------------ */

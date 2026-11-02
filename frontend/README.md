@@ -75,7 +75,8 @@ src/
 │   ├── inicio/                 # Resumen de comerciante y organizador
 │   ├── perfil/                 # Perfil editable + cambio de contraseña
 │   ├── organizador/            # Onboarding y edición de la organización
-│   ├── gestor/                 # Panel, listados, detalles, auditoría
+│   ├── gestor/                 # Panel, listados, detalles, auditoría y zonas
+zonas/                  # Listado, editor y clasificación de zonas
 │   └── notificaciones/         # Bandeja de notificaciones
 ├── hooks/
 │   ├── use-sesion.ts           # Restaura la sesión con GET /auth/me
@@ -111,9 +112,24 @@ src/
 
 **Organizador:** `/organizador/inicio` · `/organizador/perfil` · `/organizador/mi-organizacion`
 
-**Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
+**Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/zonas` · `/gestor/zonas/nueva` · `/gestor/zonas/[id]/editar` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
 
 **Transversal:** `/notificaciones`
+
+### Módulo de zonas (HU-11)
+
+- `/gestor/zonas`: listado con filtros, paginación, conteos y baja lógica.
+- `/gestor/zonas/nueva`: editor para dibujar el polígono sobre Leaflet,
+  clasificarlo y definir horario, aforo y productos.
+- `/gestor/zonas/[id]/editar`: edición con vista previa; el revisor lo abre en
+  modo lectura.
+- El navegador detecta autointersecciones y solapes antes de enviar; PostGIS
+  vuelve a validar y el `422` se muestra con su mensaje.
+- Las pruebas Playwright usan la API y la base de datos reales y limpian por SQL
+  las zonas creadas con prefijo `E2E Zonas`.
+
+El detalle funcional y de pruebas está en [`docs/Uso_zonas.md`](../docs/Uso_zonas.md)
+y [`docs/implementaciones_Sprint2.md`](../docs/implementaciones_Sprint2.md).
 
 Los módulos de mapa, solicitudes, ferias, permisos QR, cobros y dashboard (Sprints 2 a 6) se muestran como "Próximamente" y no consumen endpoints inexistentes. El detalle del avance y los pendientes está en [`docs/avance_frontend.md`](../docs/avance_frontend.md).
 
@@ -125,7 +141,7 @@ Los módulos de mapa, solicitudes, ferias, permisos QR, cobros y dashboard (Spri
 pnpm lint      # ESLint sin errores
 pnpm test      # Vitest: funciones de rutas, formato y validaciones
 pnpm test:e2e  # Playwright: flujos reales de todos los módulos
-pnpm build     # build verde (27 rutas)
+pnpm build     # build verde (32 rutas)
 ```
 
 Las pruebas e2e usan **Microsoft Edge** (`channel: "msedge"`) y levantan la API y el

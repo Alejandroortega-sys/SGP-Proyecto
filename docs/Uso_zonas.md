@@ -2,6 +2,7 @@
 
 **Proyecto:** Plataforma Web de Gestión del Espacio Público, Ferias Agroecológicas y Comercio Formal/Informal de Tuluá (Equipo 6)
 **Módulo NestJS:** `src/zonas/` · **Ruta base:** `/zonas` · **Tablas:** `zonas`, `zona_productos`
+**Frontend:** `/gestor/zonas` · **Componentes:** `frontend/src/features/zonas/`
 **Dependencias de BD:** PostGIS 3.6, `fn_validar_zona`, `fn_auditoria`, `trg_zonas_marca`
 
 ---
@@ -495,3 +496,152 @@ Resultado esperado:
 - Lint sin errores.
 - Build de NestJS correcto.
 - `GET /zonas/geojson` público y por debajo de 2 s con los datos del seed.
+
+---
+
+## 14. Interfaz del gestor — Delimitar y clasificar (HU-11)
+
+La interfaz reutiliza el módulo `/zonas` existente. **No se modificó el backend
+ni el esquema de base de datos**: el navegador ayuda con validaciones inmediatas,
+pero PostGIS sigue siendo la autoridad final de topología y solapes.
+
+### Rutas
+
+| Ruta | Acceso | Función |
+| --- | --- | --- |
+| `/gestor/zonas` | Gestor revisor y administrador | Listado, filtros, paginación y baja lógica |
+| `/gestor/zonas/nueva` | Solo administrador | Editor para dibujar y clasificar una zona nueva |
+| `/gestor/zonas/[id]/editar` | Administrador escribe; revisor consulta | Edición, vista previa y lectura del detalle |
+
+### Listado
+
+- Filtros por `tipo`, `activo` y búsqueda por nombre.
+- Paginación de 20 registros.
+- Tabla en escritorio y tarjetas en móvil.
+- Columnas: zona, tipo, horario, aforo, espacios, módulos, estado y acciones.
+- El administrador ve «Crear zona», «Editar», «Activar» y «Desactivar».
+- El revisor ve el listado y el enlace «Ver» en modo lectura.
+- La desactivación pide confirmación y usa `PATCH /zonas/:id/estado`; no borra
+  la zona ni sus datos históricos.
+
+### Editor de polígonos
+
+- Mapa Leaflet cargado solo en el cliente con `next/dynamic` y `ssr: false`.
+- Centro inicial en Tuluá, zoom 15.
+- Las zonas activas se muestran como contexto, usando `GET /zonas/geojson`.
+- Herramientas:
+  - clic para agregar un vértice;
+  - arrastrar un vértice para moverlo;
+  - clic sobre un vértice para eliminarlo;
+  - **Deshacer**, **Borrar**, **Cerrar polígono** y **Reabrir forma**.
+- En edición se muestra la forma guardada con línea discontinua y la forma
+  nueva encima, como vista previa del cambio.
+- La zona en conflicto se resalta en rojo y se identifica por nombre.
+
+### Validaciones del navegador
+
+Antes de enviar se comprueba:
+
+- mínimo tres vértices y área mayor que cero;
+- autointersección: cruces entre aristas no adyacentes, vértices repetidos o
+  un vértice que toca otra arista;
+- solape con zonas activas: cruce de aristas, contención o solape parcial;
+- los **bordes compartidos entre zonas adyacentes sí se permiten**, igual que
+  `ST_Relate(..., '2********')` en PostGIS;
+- la zona que se está editando se excluye de la comparación.
+
+Mensajes principales:
+
+- «Dibuja al menos tres vértices para formar un polígono.»
+- «El polígono se cruza a sí mismo. Corrige los vértices marcados.»
+- «El polígono no encierra un área válida.»
+- «La zona se solapa con «Nombre». Las geometrías no pueden superponerse.»
+
+Si PostGIS rechaza la operación, el editor muestra el mensaje `422` del backend
+tal cual, sin ocultarlo.
+
+### Formulario de clasificación y restricciones
+
+- **Nombre:** 3 a 150 caracteres.
+- **Tipo:** permitida, restringida o alta congestión, con descripción.
+- **Horario:** hora de inicio y fin opcionales; deben enviarse juntas y el fin
+  debe ser posterior al inicio.
+- **Aforo:** entero mayor que cero o vacío.
+- **Productos permitidos:** selección múltiple desde `GET /productos`.
+  Solo se ofrecen productos activos.
+
+En edición:
+
+- Solo se envían los campos que cambiaron.
+- Borrar el horario envía `null` en ambos campos.
+- Borrar el aforo envía `null`.
+- La lista de productos solo se reemplaza si el usuario la modifica.
+- Si una zona ya tenía productos inactivos, se muestran con una advertencia:
+  al modificar la lista esas asociaciones se eliminan, porque el backend solo
+  acepta productos activos.
+
+### Publicación inmediata
+
+- Al crear una zona, el editor redirige a la edición con el mensaje de éxito.
+- La zona nace activa por el valor por defecto de la base de datos.
+- `GET /zonas/geojson` no almacena caché en el cliente, por lo que el mapa
+  ciudadano y su ficha muestran la zona y sus restricciones en la siguiente
+  consulta.
+- La baja lógica excluye la zona del GeoJSON público.
+
+### Archivos del frontend
+
+| Archivo | Contenido |
+| --- | --- |
+| `frontend/src/features/zonas/lista-zonas.tsx` | Listado, filtros, paginación y baja lógica |
+| `frontend/src/features/zonas/editor-zona.tsx` | Orquestación de creación/edición y permisos |
+| `frontend/src/features/zonas/mapa-editor-zona.tsx` | Dibujo, vértices y vista previa en Leaflet |
+| `frontend/src/features/zonas/mapa-editor-zona-carga.tsx` | Carga cliente con `next/dynamic` |
+| `frontend/src/features/zonas/formulario-zona.tsx` | Clasificación, horario, aforo y productos |
+| `frontend/src/features/zonas/geometria-zona.ts` | Conversión GeoJSON y validación topológica |
+| `frontend/src/features/zonas/validaciones-zona.ts` | Reglas del formulario y cuerpos de la API |
+| `frontend/src/features/zonas/*.test.ts` | Pruebas Vitest de geometría y validaciones |
+| `frontend/src/app/(gestor)/gestor/zonas/**` | Rutas del listado y editor |
+| `frontend/e2e/zonas.spec.ts` | Pruebas Playwright contra API y BD real |
+| `frontend/e2e/limpieza-zonas.ts` | Limpieza SQL de las zonas de prueba |
+
+### Pruebas de la interfaz
+
+```powershell
+cd frontend
+pnpm test
+pnpm lint
+pnpm build
+pnpm test:e2e e2e/zonas.spec.ts
+```
+
+Las pruebas Playwright cubren:
+
+- creación de una zona válida dibujando sobre el mapa;
+- clasificación, horario, aforo y productos;
+- edición con vista previa;
+- desactivación con confirmación y desaparición del GeoJSON público;
+- rechazo de autointersecciones y solapes en el editor;
+- rechazo `422` de la API real para geometrías autointersectadas y solapadas;
+- acceso de solo lectura del revisor.
+
+La prueba crea zonas cuyo nombre empieza por `E2E Zonas`; al final las elimina
+por SQL junto con sus filas de auditoría, sin tocar las zonas del seed.
+
+### Cómo probar manualmente
+
+1. Iniciar backend y frontend:
+
+   ```powershell
+   pnpm start:dev
+   cd frontend
+   pnpm dev
+   ```
+
+2. Entrar como administrador (`admin@tulua.gov.co` / `Admin1234`).
+3. Abrir `http://localhost:3001/gestor/zonas`.
+4. Crear una zona en un área libre, completar el formulario y guardar.
+5. Abrir `http://localhost:3001/mapa` y comprobar el polígono y su ficha.
+6. Volver al listado, editar la zona y desactivarla.
+7. Entrar como revisor (`revisor@tulua.gov.co` / `Admin1234`) y comprobar que
+   solo puede consultar.

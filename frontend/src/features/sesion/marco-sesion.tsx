@@ -39,6 +39,7 @@ const ENLACES: EnlaceSesion[] = [
     roles: ["organizador"],
   },
   { href: "/gestor/panel", texto: "Panel", roles: ["gestor"] },
+  { href: "/gestor/zonas", texto: "Zonas", roles: ["gestor"] },
   { href: "/gestor/usuarios", texto: "Usuarios", roles: ["gestor"] },
   { href: "/gestor/comerciantes", texto: "Comerciantes", roles: ["gestor"] },
   {
@@ -133,8 +134,8 @@ export function MarcoSesion({ children }: { children: ReactNode }) {
                   aria-current={activo ? "page" : undefined}
                   className={
                     activo
-                      ? "rounded-lg bg-primario-suave px-3 py-2 text-sm font-semibold text-primario"
-                      : "rounded-lg px-3 py-2 text-sm font-medium text-texto hover:bg-slate-100 hover:text-titulo"
+                      ? "whitespace-nowrap rounded-lg bg-primario-suave px-2.5 py-2 text-sm font-semibold text-primario"
+                      : "whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-texto hover:bg-slate-100 hover:text-titulo"
                   }
                 >
                   {enlace.texto}

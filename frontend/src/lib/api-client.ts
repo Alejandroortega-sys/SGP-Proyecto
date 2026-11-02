@@ -9,11 +9,14 @@ import type {
   FiltrosNotificaciones,
   FiltrosOrganizaciones,
   FiltrosUsuarios,
+  FiltrosZonas,
   GestorCreado,
   InvitacionReenviada,
   ListarAuditoriaResponse,
   ListarEspaciosResponse,
   ListarNotificacionesResponse,
+  ListarProductosResponse,
+  ListarZonasResponse,
   Notificacion,
   OpcionesEspacios,
   Organizacion,
@@ -25,6 +28,7 @@ import type {
   RespuestaActivacion,
   RespuestaCambioEstadoOrganizacion,
   RespuestaCambioEstadoUsuario,
+  RespuestaEstadoZona,
   RespuestaLogin,
   RespuestaMensaje,
   RespuestaRegistroComerciante,
@@ -43,9 +47,11 @@ import type {
   SolicitudRegistroComerciante,
   SolicitudRegistroOrganizador,
   SolicitudRestablecer,
+  SolicitudZona,
   UsuarioDetalle,
   UsuarioListado,
   UsuarioSesion,
+  ZonaDetalle,
   ZonaFeatureCollection,
 } from "@/types/api";
 import { guardarSesion, limpiarSesion, obtenerAccessToken, obtenerRefreshToken } from "./sesion";
@@ -563,6 +569,58 @@ export function obtenerZonasGeoJson(
     conParametros("/zonas/geojson", { zoom }),
     { auth: false },
   );
+}
+
+/** Lista las zonas con filtros y paginación, sin geometría. */
+export function listarZonas(
+  filtros: FiltrosZonas = {},
+): Promise<ListarZonasResponse> {
+  return peticion<ListarZonasResponse>(
+    conParametros("/zonas", {
+      tipo: filtros.tipo,
+      activo: filtros.activo,
+      busqueda: filtros.busqueda,
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
+}
+
+/** Obtiene el detalle de una zona con su polígono y productos permitidos. */
+export function obtenerZona(id: string): Promise<ZonaDetalle> {
+  return peticion<ZonaDetalle>(`/zonas/${id}`);
+}
+
+/** Crea una zona normativa. */
+export function crearZona(datos: SolicitudZona): Promise<ZonaDetalle> {
+  return peticion<ZonaDetalle>("/zonas", { method: "POST", cuerpo: datos });
+}
+
+/** Edita los campos enviados de una zona. */
+export function actualizarZona(
+  id: string,
+  datos: Partial<SolicitudZona>,
+): Promise<ZonaDetalle> {
+  return peticion<ZonaDetalle>(`/zonas/${id}`, {
+    method: "PATCH",
+    cuerpo: datos,
+  });
+}
+
+/** Activa o desactiva una zona (baja lógica). */
+export function cambiarEstadoZona(
+  id: string,
+  activa: boolean,
+): Promise<RespuestaEstadoZona> {
+  return peticion<RespuestaEstadoZona>(`/zonas/${id}/estado`, {
+    method: "PATCH",
+    cuerpo: { activa },
+  });
+}
+
+/** Lista el catálogo de productos visible para el gestor. */
+export function listarProductos(): Promise<ListarProductosResponse> {
+  return peticion<ListarProductosResponse>("/productos");
 }
 
 /* ------------------------------------------------------------------ */

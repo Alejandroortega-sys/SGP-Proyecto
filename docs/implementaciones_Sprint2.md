@@ -16,15 +16,15 @@
 | **HU-08 — Mapa público de zonas** | **Implementada de extremo a extremo** |
 | **HU-09 — Espacios disponibles y ficha** | **Implementada de extremo a extremo** |
 | **HU-10 — Buscar y filtrar espacios** | **Implementada** (filtros, disponibilidad por fecha/hora, panel y sin resultados; búsqueda de calles/barrios fuera de alcance) |
-| HU-11 — Delimitar y clasificar zonas | Backend completo; falta la interfaz de edición |
-| HU-12 — Editar, desactivar y auditar zonas | Backend de edición/desactivación y auditoría; falta historial por zona y UI |
-| HU-13, HU-14, HU-15 | Pendientes |
+| **HU-11 — Delimitar y clasificar zonas** | **Completo** | **Editor, clasificación, restricciones y validaciones** | **Implementada de extremo a extremo** |
+| HU-12 — Editar, desactivar y auditar zonas | Backend de edición/desactivación y auditoría | Edición y desactivación en UI; falta historial por zona | Parcial |
+| HU-13, HU-14, HU-15 | Pendientes | Pendientes | Pendientes |
 
-**Estado actual del Sprint 2:** el Geo-Portal público funciona con Leaflet, zonas coloreadas, leyenda, capas, popup, geolocalización y API GeoJSON con simplificación por zoom. El comerciante ya puede consultar los espacios disponibles en tabla o mapa, ver su ficha y distinguir los estados bloqueado, ocupado y en mantenimiento.
+**Estado actual del Sprint 2:** el Geo-Portal público funciona con Leaflet, zonas coloreadas, leyenda, capas, popup, geolocalización y API GeoJSON con simplificación por zoom. El comerciante ya puede consultar los espacios disponibles en tabla o mapa, ver su ficha y distinguir los estados bloqueado, ocupado y en mantenimiento. El gestor administrador ya puede dibujar zonas, clasificarlas, definir sus restricciones, editarlas y desactivarlas; el revisor accede en modo lectura.
 
 ---
 
-## 2. Lo implementado en el Sprint 2: HU-08, HU-09 y HU-10
+## 2. Lo implementado en el Sprint 2: HU-08, HU-09, HU-10 y HU-11
 
 ### 2.1 Ruta pública y mapa
 
@@ -187,6 +187,60 @@ El seed ahora tiene 6 espacios: 3 disponibles, 1 bloqueado (25–31 oct 2026), 1
 - E2E backend: combinación de filtros, fecha/hora, validaciones y opciones.
 - Playwright: filtros combinados, fecha/hora, sin resultados, limpieza y panel móvil.
 
+### 2.11 HU-11 — Interfaz de administración de zonas
+
+El backend `/zonas` ya existía; esta entrega completa la interfaz sin modificar
+el esquema ni la API.
+
+#### Rutas
+
+- `/gestor/zonas`: listado, filtros, paginación y baja lógica.
+- `/gestor/zonas/nueva`: editor de creación.
+- `/gestor/zonas/[id]/editar`: edición y vista de solo lectura.
+
+#### Listado
+
+- Filtros por tipo, estado activo y búsqueda por nombre.
+- Tabla en escritorio y tarjetas en móvil.
+- Conteos de espacios y módulos por zona.
+- El administrador puede crear, editar, activar y desactivar.
+- El revisor solo consulta; la baja se confirma en un modal y es lógica.
+
+#### Editor de polígonos
+
+- Leaflet cargado solo en cliente con `next/dynamic` y `ssr: false`.
+- Dibujo por clics, vértices arrastrables, eliminación de vértices, deshacer,
+  borrar, cerrar y reabrir la forma.
+- Las zonas activas se muestran como contexto y la zona en conflicto se
+  resalta en rojo.
+- En edición se muestra la forma guardada en línea discontinua y la nueva
+  encima, como vista previa.
+
+#### Validaciones
+
+- El navegador detecta mínimo de vértices, área nula, autointersecciones y
+  solapes con zonas activas.
+- Los bordes compartidos entre zonas adyacentes se permiten.
+- La zona editada se excluye de la comparación.
+- PostGIS sigue siendo la autoridad final: un `422` del backend se muestra con
+  el mensaje del trigger.
+- Errores `400`, `403`, `404`, `422` y `503` se presentan en la interfaz.
+
+#### Formulario
+
+- Nombre, tipo, horario, aforo y productos permitidos.
+- Los productos se cargan con `GET /productos` y solo se ofrecen activos.
+- En edición se envían solo los campos modificados.
+- Limpiar horario o aforo envía `null`; cambiar productos reemplaza la lista.
+- Los productos inactivos ya asociados se muestran con advertencia.
+
+#### Pruebas
+
+- Vitest: geometría, solapes, bordes compartidos, validaciones y cuerpos de la API.
+- Playwright: creación, edición, baja lógica, rechazo de autointersecciones y
+  solapes, API real contra PostGIS y modo lectura del revisor.
+- Las zonas de prueba se eliminan por SQL al terminar, junto con su auditoría.
+
 ---
 
 ## 3. Archivos implementados o modificados
@@ -245,14 +299,32 @@ El seed ahora tiene 6 espacios: 3 disponibles, 1 bloqueado (25–31 oct 2026), 1
 | `frontend/src/features/espacios/filtros-espacios.ts` | Validación y helpers de filtros |
 | `frontend/src/features/espacios/*.test.ts` | Pruebas Vitest de agrupación, formatos y filtros |
 | `frontend/e2e/espacios.spec.ts` | 11 pruebas Playwright de espacios |
+| `frontend/src/app/(gestor)/gestor/zonas/page.tsx` | Listado de zonas |
+| `frontend/src/app/(gestor)/gestor/zonas/nueva/page.tsx` | Ruta de creación |
+| `frontend/src/app/(gestor)/gestor/zonas/[id]/editar/page.tsx` | Ruta de edición |
+| `frontend/src/features/zonas/lista-zonas.tsx` | Listado, filtros, paginación y baja lógica |
+| `frontend/src/features/zonas/editor-zona.tsx` | Creación/edición, permisos y mensajes |
+| `frontend/src/features/zonas/mapa-editor-zona.tsx` | Dibujo y vista previa con Leaflet |
+| `frontend/src/features/zonas/mapa-editor-zona-carga.tsx` | Carga cliente de Leaflet |
+| `frontend/src/features/zonas/formulario-zona.tsx` | Clasificación y restricciones |
+| `frontend/src/features/zonas/geometria-zona.ts` | Conversión GeoJSON y validación topológica |
+| `frontend/src/features/zonas/validaciones-zona.ts` | Reglas del formulario y cuerpos de la API |
+| `frontend/src/features/zonas/*.test.ts` | Pruebas Vitest de geometría y validaciones |
+| `frontend/src/features/sesion/marco-sesion.tsx` | Enlace «Zonas» |
+| `frontend/src/features/gestor/panel-gestor.tsx` | Acceso rápido «Gestionar zonas» |
+| `frontend/src/types/api.ts` | Tipos de zonas, productos y respuestas |
+| `frontend/src/lib/api-client.ts` | Cliente de zonas y productos |
+| `frontend/src/app/globals.css` | Estilos de vértices y conflicto de zona |
+| `frontend/e2e/zonas.spec.ts` | 4 pruebas Playwright de zonas |
+| `frontend/e2e/limpieza-zonas.ts` | Limpieza SQL de zonas de prueba |
 | `frontend/package.json` y `frontend/pnpm-lock.yaml` | `leaflet` y `@types/leaflet` |
 
 ### Documentación
 
 | Archivo | Cambio |
 |---|---|
-| `docs/Uso_zonas.md` | Parámetro `zoom`, tabla de simplificación y ejemplo |
-| `README.md` | Estado del Sprint 2 y rutas del frontend |
+| `docs/Uso_zonas.md` | Parámetro `zoom`, interfaz de HU-11, validaciones y pruebas |
+| `frontend/README.md` | Rutas de zonas y comandos de verificación |
 | `docs/implementaciones_Sprint2.md` | Este documento |
 
 ---
@@ -263,13 +335,21 @@ El seed ahora tiene 6 espacios: 3 disponibles, 1 bloqueado (25–31 oct 2026), 1
 |---|---|
 | Backend unitarias | **29 suites, 307 pruebas aprobadas** |
 | Backend e2e | **9 suites, 91 pruebas aprobadas** |
-| Frontend Vitest | **7 archivos, 40 pruebas aprobadas** |
-| Frontend Playwright | **46 pruebas aprobadas**, incluidas 9 del mapa y 11 de espacios |
+| Backend zonas (unitarias) | **3 suites, 39 pruebas aprobadas** |
+| Frontend Vitest | **9 archivos, 59 pruebas aprobadas** |
+| Frontend Playwright | **50 pruebas ejecutadas: 43 aprobadas y 7 fallos preexistentes en `espacios.spec.ts`**; las 4 pruebas de zonas pasan |
 | Backend lint | Sin errores |
 | Backend build | Correcto |
 | Frontend `tsc --noEmit` | Sin errores |
 | Frontend lint | Sin errores |
-| Frontend build | Correcto (28 rutas) |
+| Frontend build | Correcto (32 rutas) |
+
+> **Nota sobre los 7 fallos de `espacios.spec.ts`:** no están relacionados con HU-11.
+> El seed tiene un permiso vigente del `2026-11-01` al `2026-11-30` para el
+> espacio 1; al ejecutar la suite el `2026-11-01`, el espacio aparece ocupado y
+> quedan 2 disponibles, mientras las pruebas esperan 3. Es un supuesto de fecha
+> preexistente en esas pruebas. Las pruebas de zonas contra la API y la BD real
+> pasan completas.
 
 Comandos usados:
 
@@ -334,8 +414,8 @@ Resultado: `FeatureCollection` con las 4 zonas activas del seed.
 | **HU-08** Mapa público de zonas | GeoJSON público con zoom | Mapa Leaflet completo | **Implementada** |
 | **HU-09** Espacios disponibles y ficha | Listado y ficha con estado efectivo | Tabla, mapa, agrupación y ficha responsive | **Implementada** |
 | **HU-10** Buscar y filtrar | Filtros y disponibilidad por fecha/hora | Panel de filtros, conteo y sin resultados | **Implementada** (sin buscador de calles/barrios) |
-| **HU-11** Delimitar y clasificar zonas | Crear, clasificar, restricciones y validación | Nada | Backend completo; falta editor |
-| **HU-12** Editar, desactivar y auditar | Editar, desactivar y auditoría por trigger | Nada | Parcial; falta historial por zona y UI |
+| **HU-11** Delimitar y clasificar zonas | Crear, clasificar, restricciones y validación | Editor de polígonos, formulario, listado y validaciones | **Implementada de extremo a extremo** |
+| **HU-12** Editar, desactivar y auditar | Editar, desactivar y auditoría por trigger | Edición, vista previa y baja lógica | Parcial; falta historial por zona |
 | **HU-13** Censar módulos y puestos | Nada | Nada | Pendiente |
 | **HU-14** Importar GeoJSON/CSV | Nada | Nada | Pendiente |
 | **HU-15** Espacios temporales y bloqueos | Nada | Nada | Pendiente |
@@ -348,19 +428,13 @@ Resultado: `FeatureCollection` con las 4 zonas activas del seed.
 
 > **HU-10 ya está implementada** (ver §2.10), salvo el buscador de calles/barrios, que se excluyó por decisión del alcance.
 
-### HU-11 — Interfaz de administración de zonas
+> **HU-11 ya está implementada de extremo a extremo** (ver §2.11). Queda fuera de esta lista de pendientes.
 
-- Editor de polígonos sobre el mapa.
-- Formulario de tipo, horario, aforo y productos.
-- Refresco inmediato del mapa y de la ficha.
-- El backend ya rechaza geometrías inválidas y solapadas.
-
-### HU-12 — Historial y desactivación
+### HU-12 — Historial de cambios
 
 - Endpoint y UI de historial por zona.
-- Vista previa del cambio de forma antes de guardar.
-- Confirmación de desactivación.
 - Auditoría de cambios en `zona_productos` (hoy solo se audita la fila de `zonas`).
+- La edición con vista previa y la confirmación de desactivación ya están implementadas en el editor de HU-11.
 
 ### HU-13 — Censo de módulos
 
@@ -453,6 +527,20 @@ No se requiere iniciar sesión para consultar el mapa.
    - Sector «Centro» y actividad «Artesanías» → estado sin resultados y botón para limpiar filtros.
    - En móvil, abrir «Filtros», aplicar un sector y comprobar el conteo.
 
+8. Iniciar sesión como administrador (`admin@tulua.gov.co` / `Admin1234`) y abrir
+   `http://localhost:3001/gestor/zonas`.
+
+9. Verificar HU-11:
+   - Crear una zona en un área libre: dibujar al menos tres vértices, cerrar el
+     polígono y comprobar el mensaje de geometría válida.
+   - Completar nombre, tipo, horario, aforo y productos; guardar.
+   - Abrir `/mapa` y comprobar que la zona aparece con su ficha.
+   - Intentar dibujar un polígono que se cruce a sí mismo: el editor lo rechaza.
+   - Intentar dibujar sobre una zona activa: el editor nombra la zona en conflicto.
+   - Editar la zona, guardar y desactivarla con confirmación.
+   - Entrar como revisor (`revisor@tulua.gov.co` / `Admin1234`) y comprobar el
+     modo lectura.
+
 ---
 
 ## 9. Conclusión
@@ -463,4 +551,6 @@ La **HU-09** quedó implementada de extremo a extremo: endpoints de espacios y f
 
 La **HU-10** quedó implementada: filtros combinables por sector y actividad, disponibilidad por fecha y horario, conteo de resultados, panel de filtros responsive y estado sin resultados. El buscador de calles/barrios se excluyó por decisión del alcance.
 
-El Sprint 2 sigue **incompleto**: faltan HU-13, HU-14 y HU-15, además de la interfaz de administración de zonas (HU-11) y el historial por zona (HU-12). El checklist de «Sprint terminado» de `Sprint2_Funcinalidades.md` todavía no se cumple.
+La **HU-11** quedó implementada de extremo a extremo: listado administrativo, editor de polígonos sobre Leaflet, clasificación, restricciones, validación inmediata de autointersecciones y solapes, rechazo `422` de PostGIS y modo lectura para el revisor. La edición y la baja lógica de HU-12 también quedaron disponibles en la interfaz.
+
+El Sprint 2 sigue **incompleto**: faltan HU-13, HU-14 y HU-15, además del historial de cambios por zona de HU-12. El checklist de «Sprint terminado» de `Sprint2_Funcinalidades.md` todavía no se cumple.

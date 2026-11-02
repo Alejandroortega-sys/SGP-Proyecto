@@ -184,10 +184,10 @@ Si falta capacidad, se recorta en este orden: HU-14, luego HU-12 y HU-10. Las hi
 
 ## 7. El sprint está «Done» cuando
 
-- [ ] Cualquier persona puede explorar el mapa de zonas de Tuluá desde el celular, sin iniciar sesión, y ve el detalle de cada zona.
-- [ ] El comerciante puede ver los espacios disponibles, abrir su ficha y filtrarlos por sector, actividad y fecha.
-- [ ] El gestor puede dibujar, clasificar, editar y desactivar zonas, y ver su historial de cambios.
-- [ ] El sistema impide guardar zonas inválidas o solapadas y explica el motivo.
+- [x] Cualquier persona puede explorar el mapa de zonas de Tuluá desde el celular, sin iniciar sesión, y ve el detalle de cada zona.
+- [x] El comerciante puede ver los espacios disponibles, abrir su ficha y filtrarlos por sector, actividad y fecha.
+- [ ] El gestor puede dibujar, clasificar, editar y desactivar zonas, y ver su historial de cambios. *(Dibujo, clasificación, edición y desactivación implementados; falta el historial por zona de HU-12).*
+- [x] El sistema impide guardar zonas inválidas o solapadas y explica el motivo.
 - [ ] El gestor puede censar módulos con foto y recibe la advertencia al ubicar uno en zona restringida.
 - [ ] El gestor puede crear espacios temporales y bloquearlos por fechas, y los bloqueos se respetan en la consulta.
 - [ ] El mapa y las consultas responden en menos de 2 segundos.
