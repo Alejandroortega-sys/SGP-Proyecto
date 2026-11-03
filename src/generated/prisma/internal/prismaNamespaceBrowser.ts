@@ -81,7 +81,8 @@ export const ModelName = {
   verificaciones_qr: 'verificaciones_qr',
   zona_productos: 'zona_productos',
   zonas: 'zonas',
-  sesiones: 'sesiones'
+  sesiones: 'sesiones',
+  zona_versiones: 'zona_versiones'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -508,6 +509,25 @@ export const SesionesScalarFieldEnum = {
 export type SesionesScalarFieldEnum = (typeof SesionesScalarFieldEnum)[keyof typeof SesionesScalarFieldEnum]
 
 
+export const Zona_versionesScalarFieldEnum = {
+  id: 'id',
+  zona_id: 'zona_id',
+  version: 'version',
+  accion: 'accion',
+  nombre: 'nombre',
+  tipo: 'tipo',
+  horario_inicio: 'horario_inicio',
+  horario_fin: 'horario_fin',
+  aforo_maximo: 'aforo_maximo',
+  activa: 'activa',
+  productos: 'productos',
+  actor_id: 'actor_id',
+  creado_en: 'creado_en'
+} as const
+
+export type Zona_versionesScalarFieldEnum = (typeof Zona_versionesScalarFieldEnum)[keyof typeof Zona_versionesScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -522,6 +542,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

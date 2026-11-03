@@ -12,12 +12,12 @@
 | Área | Estado |
 |---|---|
 | Sprint 1 (HU-01 a HU-07) | Backend completo (36 endpoints) y frontend implementado |
-| Base de datos | Esquema completo de los 6 sprints ya creado (30 tablas, enums, triggers, `EXCLUDE`, vistas) |
+| Base de datos | Esquema completo de los 6 sprints ya creado (30 tablas base + `zona_versiones` de HU-12, enums, triggers, `EXCLUDE`, vistas) |
 | **HU-08 — Mapa público de zonas** | **Implementada de extremo a extremo** |
 | **HU-09 — Espacios disponibles y ficha** | **Implementada de extremo a extremo** |
 | **HU-10 — Buscar y filtrar espacios** | **Implementada** (filtros, disponibilidad por fecha/hora, panel y sin resultados; búsqueda de calles/barrios fuera de alcance) |
 | **HU-11 — Delimitar y clasificar zonas** | **Completo** | **Editor, clasificación, restricciones y validaciones** | **Implementada de extremo a extremo** |
-| HU-12 — Editar, desactivar y auditar zonas | Backend de edición/desactivación y auditoría | Edición y desactivación en UI; falta historial por zona | Parcial |
+| HU-12 — Editar, desactivar y auditar zonas | Backend de edición/desactivación, versionado e historial | Edición, desactivación, línea de tiempo y comparación de geometrías | **Completa** |
 | HU-13, HU-14, HU-15 | Pendientes | Pendientes | Pendientes |
 
 **Estado actual del Sprint 2:** el Geo-Portal público funciona con Leaflet, zonas coloreadas, leyenda, capas, popup, geolocalización y API GeoJSON con simplificación por zoom. El comerciante ya puede consultar los espacios disponibles en tabla o mapa, ver su ficha y distinguir los estados bloqueado, ocupado y en mantenimiento. El gestor administrador ya puede dibujar zonas, clasificarlas, definir sus restricciones, editarlas y desactivarlas; el revisor accede en modo lectura.
@@ -415,7 +415,7 @@ Resultado: `FeatureCollection` con las 4 zonas activas del seed.
 | **HU-09** Espacios disponibles y ficha | Listado y ficha con estado efectivo | Tabla, mapa, agrupación y ficha responsive | **Implementada** |
 | **HU-10** Buscar y filtrar | Filtros y disponibilidad por fecha/hora | Panel de filtros, conteo y sin resultados | **Implementada** (sin buscador de calles/barrios) |
 | **HU-11** Delimitar y clasificar zonas | Crear, clasificar, restricciones y validación | Editor de polígonos, formulario, listado y validaciones | **Implementada de extremo a extremo** |
-| **HU-12** Editar, desactivar y auditar | Editar, desactivar y auditoría por trigger | Edición, vista previa y baja lógica | Parcial; falta historial por zona |
+| **HU-12** Editar, desactivar y auditar | Editar, desactivar, versionado e historial | Edición, vista previa, baja lógica, línea de tiempo y mapa comparativo | **Implementada** |
 | **HU-13** Censar módulos y puestos | Nada | Nada | Pendiente |
 | **HU-14** Importar GeoJSON/CSV | Nada | Nada | Pendiente |
 | **HU-15** Espacios temporales y bloqueos | Nada | Nada | Pendiente |
@@ -432,9 +432,11 @@ Resultado: `FeatureCollection` con las 4 zonas activas del seed.
 
 ### HU-12 — Historial de cambios
 
-- Endpoint y UI de historial por zona.
-- Auditoría de cambios en `zona_productos` (hoy solo se audita la fila de `zonas`).
-- La edición con vista previa y la confirmación de desactivación ya están implementadas en el editor de HU-11.
+**Implementada.** Se agregó `zona_versiones`, la función
+`fn_registrar_version_zona`, el endpoint `GET /zonas/:id/historial`, la línea de
+tiempo y el mapa comparativo de versiones. Los cambios de `zona_productos`
+quedan cubiertos por el snapshot JSONB de cada versión. La edición con vista
+previa y la confirmación de desactivación siguen disponibles en el editor.
 
 ### HU-13 — Censo de módulos
 
@@ -477,7 +479,7 @@ Resultado: `FeatureCollection` con las 4 zonas activas del seed.
 
 1. **Almacenamiento de fotos:** disco local vs S3. Falta definir `UPLOAD_MAX_BYTES`.
 2. **Cambios de esquema:** evaluar `sector` en `zonas` y `modulos`; las columnas de la ficha de `espacios_temporales` ya se agregaron en HU-09.
-3. **Historial de zonas:** endpoint dedicado `GET /zonas/:id/historial` vs reutilizar `GET /gestor/auditoria` con `tabla=zonas&registroId=...`.
+3. **Historial de zonas:** resuelto con `GET /zonas/:id/historial` y la tabla `zona_versiones`; `auditoria` se conserva como registro genérico de bajo nivel.
 4. **Buscador de calles y barrios:** Nominatim, capa propia de barrios o datos del municipio.
 5. **Auditoría de espacios, módulos y bloqueos:** triggers nuevos en la base o registro manual desde el backend.
 
@@ -551,6 +553,8 @@ La **HU-09** quedó implementada de extremo a extremo: endpoints de espacios y f
 
 La **HU-10** quedó implementada: filtros combinables por sector y actividad, disponibilidad por fecha y horario, conteo de resultados, panel de filtros responsive y estado sin resultados. El buscador de calles/barrios se excluyó por decisión del alcance.
 
-La **HU-11** quedó implementada de extremo a extremo: listado administrativo, editor de polígonos sobre Leaflet, clasificación, restricciones, validación inmediata de autointersecciones y solapes, rechazo `422` de PostGIS y modo lectura para el revisor. La edición y la baja lógica de HU-12 también quedaron disponibles en la interfaz.
+La **HU-11** quedó implementada de extremo a extremo: listado administrativo, editor de polígonos sobre Leaflet, clasificación, restricciones, validación inmediata de autointersecciones y solapes, rechazo `422` de PostGIS y modo lectura para el revisor.
 
-El Sprint 2 sigue **incompleto**: faltan HU-13, HU-14 y HU-15, además del historial de cambios por zona de HU-12. El checklist de «Sprint terminado» de `Sprint2_Funcinalidades.md` todavía no se cumple.
+La **HU-12** quedó implementada: edición de la geometría con vista previa, desactivación lógica, versionado inmutable de geometrías y restricciones, endpoint de historial, línea de tiempo con actor y fecha, y mapa de comparación entre versiones. Las solicitudes históricas no se eliminan ni se modifican al desactivar una zona.
+
+El Sprint 2 sigue **incompleto**: faltan HU-13, HU-14 y HU-15. El checklist de «Sprint terminado» de `Sprint2_Funcinalidades.md` todavía no se cumple por esas historias.

@@ -119,7 +119,7 @@ async function dibujarPoligono(
   }
 
   await expect(
-    page.getByText(new RegExp(`${coordenadas.length} vértices`)),
+    page.getByText(new RegExp(`${coordenadas.length} vértices`)).first(),
   ).toBeVisible();
   await page.getByRole("button", { name: "Cerrar polígono" }).click();
 }
@@ -273,6 +273,15 @@ test.describe("Zonas del gestor municipal (HU-11)", () => {
     // Edición con vista previa y guardado.
     await page.goto(`/gestor/zonas/${id}/editar`);
     await cajaDelMapa(page);
+
+    // Edición de vértices con vista previa: se elimina uno de los cuatro.
+    const vertices = page.locator(".sgp-vertice-zona");
+    await expect(vertices).toHaveCount(4);
+    await vertices.first().click();
+    await expect(
+      page.getByText(/3 vértices/).first(),
+    ).toBeVisible();
+
     await campo(page, "Nombre de la zona").fill(nombreEditado);
     await campo(page, "Tipo de zona").selectOption("restringida");
     await campo(page, "Aforo máximo").fill("30");
@@ -293,6 +302,53 @@ test.describe("Zonas del gestor municipal (HU-11)", () => {
       horarioInicio: "08:00",
       horarioFin: "17:00",
     });
+
+    // Historial de la zona: creación + edición con actor y cambios.
+    const historialApi = await request.get(
+      `${API_URL}/zonas/${id}/historial`,
+      cabecerasApi(token),
+    );
+    expect(historialApi.ok()).toBeTruthy();
+    const historial = (await historialApi.json()) as {
+      datos: Array<{
+        version: number;
+        accion: string;
+        actor: { correo: string } | null;
+        cambios: Array<{ campo: string }>;
+      }>;
+    };
+    expect(historial.datos.map((version) => version.accion)).toEqual([
+      "edicion",
+      "creacion",
+    ]);
+    expect(historial.datos[0].actor?.correo).toBe(
+      CREDENCIALES.administrador.correo,
+    );
+    expect(
+      historial.datos[0].cambios.map((cambio) => cambio.campo),
+    ).toEqual(
+      expect.arrayContaining([
+        "nombre",
+        "tipo",
+        "aforoMaximo",
+        "geometria",
+      ]),
+    );
+
+    await page.goto(`/gestor/zonas/${id}/historial`);
+    await expect(
+      page.getByRole("heading", { name: /Historial de/ }),
+    ).toBeVisible();
+    await expect(page.getByText("v2", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Zona editada", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(CREDENCIALES.administrador.correo).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByLabel("Mapa de comparación de versiones de la zona"),
+    ).toBeVisible();
 
     // Baja lógica con confirmación.
     await page.goto("/gestor/zonas");
@@ -326,6 +382,16 @@ test.describe("Zonas del gestor municipal (HU-11)", () => {
         (feature) => feature.properties.nombre === nombreEditado,
       ),
     ).toBe(false);
+
+    // La desactivación también queda versionada y el histórico sigue visible.
+    await page.goto(`/gestor/zonas/${id}/historial`);
+    await expect(
+      page.getByText("Zona desactivada", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText("v3", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Estado", { exact: true }).first(),
+    ).toBeVisible();
   });
 
   test("la API real rechaza geometrías válidas, autointersectadas y solapadas", async ({
@@ -446,6 +512,14 @@ test.describe("Zonas del gestor municipal (HU-11)", () => {
     ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Guardar cambios" }),
+    ).toHaveCount(0);
+
+    await page.goto("/gestor/zonas/1/historial");
+    await expect(
+      page.getByRole("heading", { name: /Historial de/ }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Editar zona" }),
     ).toHaveCount(0);
   });
 });

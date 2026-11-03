@@ -427,7 +427,8 @@ export const ModelName = {
   verificaciones_qr: 'verificaciones_qr',
   zona_productos: 'zona_productos',
   zonas: 'zonas',
-  sesiones: 'sesiones'
+  sesiones: 'sesiones',
+  zona_versiones: 'zona_versiones'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -443,7 +444,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "alertas_saturacion" | "auditoria" | "cobros" | "comerciantes" | "espacio_bloqueos" | "espacios_temporales" | "evaluacion_reglas" | "evaluaciones_factibilidad" | "excepciones_factibilidad" | "feria_productos" | "feria_vendedores" | "ferias" | "gestores" | "modulos" | "notificaciones" | "organizadores" | "parametros_motor" | "permiso_eventos" | "permisos" | "productos" | "solicitud_documentos" | "solicitud_productos" | "solicitudes" | "spatial_ref_sys" | "tarifas" | "tokens_seguridad" | "usuarios" | "verificaciones_qr" | "zona_productos" | "zonas" | "sesiones"
+    modelProps: "alertas_saturacion" | "auditoria" | "cobros" | "comerciantes" | "espacio_bloqueos" | "espacios_temporales" | "evaluacion_reglas" | "evaluaciones_factibilidad" | "excepciones_factibilidad" | "feria_productos" | "feria_vendedores" | "ferias" | "gestores" | "modulos" | "notificaciones" | "organizadores" | "parametros_motor" | "permiso_eventos" | "permisos" | "productos" | "solicitud_documentos" | "solicitud_productos" | "solicitudes" | "spatial_ref_sys" | "tarifas" | "tokens_seguridad" | "usuarios" | "verificaciones_qr" | "zona_productos" | "zonas" | "sesiones" | "zona_versiones"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2677,6 +2678,64 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    zona_versiones: {
+      payload: Prisma.$zona_versionesPayload<ExtArgs>
+      fields: Prisma.zona_versionesFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.zona_versionesFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$zona_versionesPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.zona_versionesFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$zona_versionesPayload>
+        }
+        findFirst: {
+          args: Prisma.zona_versionesFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$zona_versionesPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.zona_versionesFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$zona_versionesPayload>
+        }
+        findMany: {
+          args: Prisma.zona_versionesFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$zona_versionesPayload>[]
+        }
+        delete: {
+          args: Prisma.zona_versionesDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$zona_versionesPayload>
+        }
+        update: {
+          args: Prisma.zona_versionesUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$zona_versionesPayload>
+        }
+        deleteMany: {
+          args: Prisma.zona_versionesDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.zona_versionesUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.zona_versionesUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$zona_versionesPayload>[]
+        }
+        aggregate: {
+          args: Prisma.Zona_versionesAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateZona_versiones>
+        }
+        groupBy: {
+          args: Prisma.zona_versionesGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Zona_versionesGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.zona_versionesCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Zona_versionesCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3124,6 +3183,25 @@ export const SesionesScalarFieldEnum = {
 export type SesionesScalarFieldEnum = (typeof SesionesScalarFieldEnum)[keyof typeof SesionesScalarFieldEnum]
 
 
+export const Zona_versionesScalarFieldEnum = {
+  id: 'id',
+  zona_id: 'zona_id',
+  version: 'version',
+  accion: 'accion',
+  nombre: 'nombre',
+  tipo: 'tipo',
+  horario_inicio: 'horario_inicio',
+  horario_fin: 'horario_fin',
+  aforo_maximo: 'aforo_maximo',
+  activa: 'activa',
+  productos: 'productos',
+  actor_id: 'actor_id',
+  creado_en: 'creado_en'
+} as const
+
+export type Zona_versionesScalarFieldEnum = (typeof Zona_versionesScalarFieldEnum)[keyof typeof Zona_versionesScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -3138,6 +3216,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -3273,13 +3358,14 @@ export type ListEnumcategoria_comercioFieldRefInput<$PrismaModel> = FieldRefInpu
  * Reference to a field of type 'tipo_espacio'
  */
 export type Enumtipo_espacioFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'tipo_espacio'>
+    
 
 
 /**
  * Reference to a field of type 'tipo_espacio[]'
  */
 export type ListEnumtipo_espacioFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'tipo_espacio[]'>
-
+    
 
 
 /**
@@ -3694,6 +3780,7 @@ export type GlobalOmitConfig = {
   zona_productos?: Prisma.zona_productosOmit
   zonas?: Prisma.zonasOmit
   sesiones?: Prisma.sesionesOmit
+  zona_versiones?: Prisma.zona_versionesOmit
 }
 
 /* Types for Logging */

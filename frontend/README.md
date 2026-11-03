@@ -112,7 +112,7 @@ zonas/                  # Listado, editor y clasificación de zonas
 
 **Organizador:** `/organizador/inicio` · `/organizador/perfil` · `/organizador/mi-organizacion`
 
-**Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/zonas` · `/gestor/zonas/nueva` · `/gestor/zonas/[id]/editar` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
+**Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/zonas` · `/gestor/zonas/nueva` · `/gestor/zonas/[id]/editar` · `/gestor/zonas/[id]/historial` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
 
 **Transversal:** `/notificaciones`
 
@@ -121,8 +121,10 @@ zonas/                  # Listado, editor y clasificación de zonas
 - `/gestor/zonas`: listado con filtros, paginación, conteos y baja lógica.
 - `/gestor/zonas/nueva`: editor para dibujar el polígono sobre Leaflet,
   clasificarlo y definir horario, aforo y productos.
-- `/gestor/zonas/[id]/editar`: edición con vista previa; el revisor lo abre en
-  modo lectura.
+- `/gestor/zonas/[id]/editar`: edición con vista previa, deshacer completo y
+  restablecimiento de la forma; el revisor lo abre en modo lectura.
+- `/gestor/zonas/[id]/historial`: línea de tiempo de versiones con actor,
+  fecha, cambios y mapa comparativo.
 - El navegador detecta autointersecciones y solapes antes de enviar; PostGIS
   vuelve a validar y el `422` se muestra con su mensaje.
 - Las pruebas Playwright usan la API y la base de datos reales y limpian por SQL

@@ -1,9 +1,9 @@
 # Módulo de Zonas — Uso y funcionamiento
 
 **Proyecto:** Plataforma Web de Gestión del Espacio Público, Ferias Agroecológicas y Comercio Formal/Informal de Tuluá (Equipo 6)
-**Módulo NestJS:** `src/zonas/` · **Ruta base:** `/zonas` · **Tablas:** `zonas`, `zona_productos`
+**Módulo NestJS:** `src/zonas/` · **Ruta base:** `/zonas` · **Tablas:** `zonas`, `zona_productos`, `zona_versiones`
 **Frontend:** `/gestor/zonas` · **Componentes:** `frontend/src/features/zonas/`
-**Dependencias de BD:** PostGIS 3.6, `fn_validar_zona`, `fn_auditoria`, `trg_zonas_marca`
+**Dependencias de BD:** PostGIS 3.6, `fn_validar_zona`, `fn_auditoria`, `fn_registrar_version_zona`, `trg_zonas_marca`
 
 ---
 
@@ -18,6 +18,7 @@ Este módulo administra las **zonas normativas** del espacio público y expone s
 | `PATCH` | `/zonas/:id/estado` | Gestor **administrador**       | Activa o desactiva la zona                        |
 | `GET`   | `/zonas`            | Gestor revisor y administrador | Lista zonas con filtros y conteos, sin geometría  |
 | `GET`   | `/zonas/:id`        | Gestor revisor y administrador | Detalle con geometría GeoJSON y productos         |
+| `GET`   | `/zonas/:id/historial` | Gestor revisor y administrador | Historial versionado de la zona                 |
 | `GET`   | `/zonas/geojson`    | **Público**                    | `FeatureCollection` de zonas activas para el mapa |
 
 > **Orden de rutas:** `GET /zonas/geojson` está declarado antes de `GET /zonas/:id`. Si se invierte el orden, Nest interpreta `geojson` como un `id` y responde `400`.
@@ -47,6 +48,21 @@ Este módulo administra las **zonas normativas** del espacio público y expone s
 | `zona_id`     | `BIGINT` FK `zonas`     | PK compuesta, `ON DELETE CASCADE` |
 | `producto_id` | `BIGINT` FK `productos` | PK compuesta                      |
 
+### `zona_versiones` — historial inmutable (HU-12)
+
+| Campo | Tipo | Regla |
+| --- | --- | --- |
+| `id` | `BIGINT IDENTITY` | PK |
+| `zona_id` | `BIGINT` FK `zonas` | `ON DELETE CASCADE` |
+| `version` | `INTEGER` | Consecutivo por zona; la primera es `1` |
+| `accion` | `VARCHAR(20)` | `creacion`, `edicion`, `activacion` o `desactivacion` |
+| `nombre`, `tipo`, `geometria`, `horario_inicio`, `horario_fin`, `aforo_maximo`, `activa` | — | Snapshot completo del estado |
+| `productos` | `JSONB` | Snapshot `[{id, nombre, activo}]` |
+| `actor_id` | `BIGINT` FK `usuarios` | Gestor que realizó el cambio |
+| `creado_en` | `TIMESTAMPTZ` | Fecha del cambio |
+
+Restricciones: `UNIQUE (zona_id, version)`, acción válida, aforo positivo, geometría válida y `productos` como arreglo JSONB.
+
 ### Reglas que aplica la base de datos
 
 - `trg_zonas_validar` → `fn_validar_zona`:
@@ -55,6 +71,7 @@ Este módulo administra las **zonas normativas** del espacio público y expone s
   - Ambos casos lanzan `RAISE EXCEPTION` (`P0001`), que el filtro global traduce a **422**.
 - `trg_zonas_auditoria` → `fn_auditoria`: registra `INSERT`, `UPDATE` y `DELETE` en `auditoria`, usando `app.actor_id`.
 - `trg_zonas_marca`: actualiza `actualizado_en` en cada `UPDATE`.
+- `fn_registrar_version_zona(zona_id, accion, actor_id)`: bloquea la zona, calcula el siguiente número de versión e inserta el snapshot completo, incluidos los productos. La llama el backend dentro de la misma transacción del cambio.
 
 El backend **no reimplementa** la validación topológica ni los solapes: solo valida la estructura GeoJSON antes de enviarla a PostGIS.
 
@@ -72,6 +89,7 @@ Authorization: Bearer <accessToken>
 | ------------------------- | -------- | --------------- | --------- |
 | `GET /zonas`              | `gestor` | —               | No        |
 | `GET /zonas/:id`          | `gestor` | —               | No        |
+| `GET /zonas/:id/historial`| `gestor` | —               | No        |
 | `POST /zonas`             | `gestor` | `administrador` | No        |
 | `PATCH /zonas/:id`        | `gestor` | `administrador` | No        |
 | `PATCH /zonas/:id/estado` | `gestor` | `administrador` | No        |
@@ -196,6 +214,8 @@ Reglas:
 - `aforoMaximo: null` elimina el límite propio de la zona.
 - `activa` **no** se cambia aquí; existe `PATCH /zonas/:id/estado`.
 - La operación se ejecuta en una transacción con `app.actor_id` fijado.
+- Cada edición efectiva crea una versión `edicion` en `zona_versiones` con el
+  snapshot completo, incluidos los productos permitidos.
 - Si la zona no existe → `404`.
 
 Respuesta `200`: igual al detalle de `GET /zonas/:id`.
@@ -211,9 +231,11 @@ Respuesta `200`: igual al detalle de `GET /zonas/:id`.
 ```
 
 - `activa` es obligatorio y booleano.
-- La operación es **idempotente**: si la zona ya está en ese estado, responde `200`.
-- La desactivación es lógica: no se elimina la zona ni sus espacios.
-- Queda auditada por `fn_auditoria`.
+- La operación es **idempotente**: si la zona ya está en ese estado, responde `200` y **no** crea una versión nueva.
+- La desactivación es lógica: no se elimina la zona ni sus espacios, solicitudes, permisos o ferias históricas.
+- Cada activación o desactivación real crea una versión con acción `activacion` o `desactivacion`.
+- Queda auditada por `fn_auditoria` y versionada en `zona_versiones`.
+- Una zona inactiva sigue disponible en `GET /zonas/:id` y `GET /zonas/:id/historial`; solo deja de aparecer en `GET /zonas/geojson`.
 
 Respuesta `200`:
 
@@ -431,9 +453,17 @@ await prisma.$transaction(async (tx) => {
 | `src/zonas/zonas.service.ts`                    | Consultas SQL, transacciones, auditoría y mapeo       |
 | `src/zonas/dto/zonas.dto.ts`                    | DTOs de entrada, listado, detalle y GeoJSON           |
 | `src/zonas/geometria-zoom.ts`                   | Tolerancia y decimales de simplificación por zoom     |
+| `src/zonas/historial.ts`                        | Diff de versiones y normalización de productos        |
+| `src/zonas/dto/historial.dto.ts`                | DTOs del endpoint de historial                        |
+| `src/zonas/historial.spec.ts`                   | Pruebas del diff y de los snapshots                   |
 | `src/zonas/zonas.controller.spec.ts`            | Pruebas de roles, metadatos y delegación              |
-| `src/zonas/zonas.service.spec.ts`               | Pruebas de creación, edición, filtros y GeoJSON       |
-| `test/zonas.e2e-spec.ts`                        | Pruebas e2e de acceso, validación, rutas y rate limit |
+| `src/zonas/zonas.service.spec.ts`               | Pruebas de creación, edición, versiones, filtros y GeoJSON |
+| `test/zonas.e2e-spec.ts`                        | Pruebas e2e de acceso, validación, rutas, versiones y rate limit |
+| `dataBase/06_zonas_hu12.sql`                    | Tabla `zona_versiones`, función y baseline            |
+| `frontend/src/features/zonas/historial-zona.tsx` | Línea de tiempo y estados del historial              |
+| `frontend/src/features/zonas/mapa-historial-zona.tsx` | Comparación de geometrías en Leaflet             |
+| `frontend/src/features/zonas/formato-historial-zona.ts` | Formato de cambios y acciones                   |
+| `frontend/src/app/(gestor)/gestor/zonas/[id]/historial/page.tsx` | Ruta del historial               |
 | `src/common/geo.ts`                             | `poligonoASql`, `sqlGeoJson`, `leerGeoJson`           |
 | `src/common/filters/prisma-exception.filter.ts` | Traduce `P0001` a `422`                               |
 
@@ -512,6 +542,7 @@ pero PostGIS sigue siendo la autoridad final de topología y solapes.
 | `/gestor/zonas` | Gestor revisor y administrador | Listado, filtros, paginación y baja lógica |
 | `/gestor/zonas/nueva` | Solo administrador | Editor para dibujar y clasificar una zona nueva |
 | `/gestor/zonas/[id]/editar` | Administrador escribe; revisor consulta | Edición, vista previa y lectura del detalle |
+| `/gestor/zonas/[id]/historial` | Gestor revisor y administrador | Línea de tiempo y comparación de versiones |
 
 ### Listado
 
@@ -645,3 +676,128 @@ por SQL junto con sus filas de auditoría, sin tocar las zonas del seed.
 6. Volver al listado, editar la zona y desactivarla.
 7. Entrar como revisor (`revisor@tulua.gov.co` / `Admin1234`) y comprobar que
    solo puede consultar.
+
+---
+
+## 15. Historial versionado y línea de tiempo (HU-12)
+
+### 15.1 Endpoint — `GET /zonas/:id/historial`
+
+**Acceso:** gestor revisor y administrador. No requiere perfil administrador.
+
+| Parámetro | Tipo | Default | Regla |
+| --- | --- | --- | --- |
+| `pagina` | entero | `1` | `>= 1` |
+| `limite` | entero | `20` | `1–100` |
+
+Respuesta `200` (resumida):
+
+```json
+{
+  "zona": { "id": "1", "nombre": "Centro - Calle 30", "activa": true },
+  "datos": [
+    {
+      "version": 2,
+      "accion": "edicion",
+      "creadoEn": "2026-09-20T10:00:00.000Z",
+      "actor": {
+        "id": "1",
+        "nombre": "Laura",
+        "apellido": "Martínez",
+        "correo": "admin@tulua.gov.co"
+      },
+      "cambios": [
+        {
+          "campo": "aforoMaximo",
+          "etiqueta": "Aforo máximo",
+          "anterior": 40,
+          "nuevo": 30
+        },
+        {
+          "campo": "geometria",
+          "etiqueta": "Geometría",
+          "anterior": { "vertices": 4, "areaM2": 142000 },
+          "nuevo": { "vertices": 5, "areaM2": 151500 }
+        }
+      ],
+      "estado": {
+        "nombre": "Centro - Calle 30",
+        "tipo": "permitida",
+        "horarioInicio": "06:00",
+        "horarioFin": "18:00",
+        "aforoMaximo": 30,
+        "activa": true,
+        "geometria": { "type": "Polygon", "coordinates": [] },
+        "productosPermitidos": [
+          { "id": "1", "nombre": "Frutas frescas", "activo": true }
+        ],
+        "resumenGeometria": { "vertices": 5, "areaM2": 151500 }
+      }
+    }
+  ],
+  "paginacion": { "pagina": 1, "limite": 20, "total": 2, "totalPaginas": 1 }
+}
+```
+
+Reglas:
+
+- Las versiones se devuelven de la más reciente a la más antigua.
+- Cada versión es un snapshot completo; no se pierde el estado anterior.
+- Los cambios se calculan contra la versión inmediatamente anterior, incluida la
+  fila extra que se consulta fuera de la página.
+- La acción `creacion` devuelve `cambios: []`; la interfaz muestra «Zona creada».
+- `estado.geometria` permite pintar la versión; `resumenGeometria` usa
+  `ST_NPoints` y `ST_Area(geometria::geography)`.
+- `400` id/paginación inválidos · `401` sin token · `403` rol no gestor ·
+  `404` zona inexistente · `503` BD no disponible.
+- No se agrega rate limit: es un endpoint autenticado. El GeoJSON público
+  conserva sus 60 peticiones por minuto.
+
+### 15.2 Cuándo se crea una versión
+
+| Operación | Acción | Cuándo |
+| --- | --- | --- |
+| `POST /zonas` | `creacion` | Después de insertar la zona y sus productos |
+| `PATCH /zonas/:id` | `edicion` | Después de actualizar atributos y/o productos |
+| `PATCH /zonas/:id/estado` | `activacion` / `desactivacion` | Solo si el estado cambia realmente |
+
+Si una edición solo cambia `productosPermitidos`, el servicio toca
+`zonas.actualizado_en` para que la fecha de la zona y la versión sean coherentes.
+
+### 15.3 Interfaz
+
+- Ruta `/gestor/zonas/[id]/historial`, disponible para administrador y revisor.
+- Enlace «Historial» en el listado y «Ver historial» en el editor.
+- Línea de tiempo vertical con:
+  - número de versión (`v1`, `v2`, …), acción, fecha y actor;
+  - cambios legibles: nombre, tipo, horario, aforo, productos, estado y
+    geometría;
+  - botón «Ver geometría» para seleccionar la versión en el mapa.
+- Mapa de comparación de solo lectura:
+  - línea sólida: versión seleccionada;
+  - línea discontinua gris: versión anterior;
+  - encuadre automático y leyenda.
+- El revisor ve el historial, pero no el botón «Editar zona».
+- Estados de carga, vacío, error y paginación; responsive a 360 px.
+
+### 15.4 Editor de vértices
+
+Se conserva el editor de HU-11 y se agrega:
+
+- deshacer completo de agregar, mover, eliminar, borrar, cerrar y reabrir;
+- resumen de área actual y área guardada en m² y número de vértices;
+- botón «Restablecer forma» para volver a la geometría guardada;
+- la vista previa de la forma original en línea discontinua se mantiene.
+
+### 15.5 Pruebas
+
+- `src/zonas/historial.spec.ts`: diff de nombre, tipo, horario, aforo, estado,
+  productos y geometría; normalización de JSONB.
+- `src/zonas/zonas.service.spec.ts`: creación, edición, edición solo de
+  productos, activación/desactivación, idempotencia y paginación del historial.
+- `test/zonas.e2e-spec.ts`: roles, 400/404, versiones, actor, cambios, zona
+  inactiva y conservación de asociaciones históricas.
+- `frontend/src/features/zonas/formato-historial-zona.test.ts` y
+  `geometria-zona.test.ts`: formato de cambios y área aproximada.
+- `frontend/e2e/zonas.spec.ts`: edición de vértices, guardado, línea de tiempo,
+  mapa de comparación, desactivación y modo lectura del revisor.

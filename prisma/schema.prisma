@@ -462,6 +462,7 @@ model usuarios {
   permiso_eventos                                    permiso_eventos[]
   sesiones                                           sesiones[]
   tokens_seguridad                                   tokens_seguridad[]
+  zona_versiones                                     zona_versiones[]
   zonas                                              zonas[]
 
   @@index([estado], map: "idx_usuarios_estado")
@@ -509,6 +510,7 @@ model zonas {
   parametros_motor    parametros_motor[]
   tarifas             tarifas[]
   zona_productos      zona_productos[]
+  zona_versiones      zona_versiones[]
   usuarios            usuarios?               @relation(fields: [creado_por], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([geometria], map: "idx_zonas_geom", type: Gist)
@@ -528,6 +530,31 @@ model sesiones {
 
   @@index([refresh_token_anterior_hash], map: "idx_sesiones_anterior")
   @@index([usuario_id, revocada_en], map: "idx_sesiones_usuario")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model zona_versiones {
+  id             BigInt                  @id @default(autoincrement())
+  zona_id        BigInt
+  version        Int
+  accion         String                  @db.VarChar(20)
+  nombre         String                  @db.VarChar(150)
+  tipo           tipo_zona
+  geometria      Unsupported("geometry")
+  horario_inicio DateTime?               @db.Time(6)
+  horario_fin    DateTime?               @db.Time(6)
+  aforo_maximo   Int?
+  activa         Boolean
+  productos      Json                    @default("[]")
+  actor_id       BigInt?
+  creado_en      DateTime                @default(now()) @db.Timestamptz(6)
+  usuarios       usuarios?               @relation(fields: [actor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  zonas          zonas                   @relation(fields: [zona_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([zona_id, version], map: "zona_versiones_zona_version_key")
+  @@index([creado_en(sort: Desc)], map: "idx_zona_versiones_fecha")
+  @@index([zona_id, version(sort: Desc)], map: "idx_zona_versiones_zona")
 }
 
 enum categoria_comercio {

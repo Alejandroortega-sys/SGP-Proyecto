@@ -160,7 +160,7 @@ pnpm build     # debe compilar las 10 rutas
 | Sprint | Alcance | Estado |
 |---|---|---|
 | **1** | Autenticación y gestión de usuarios (HU-01 a HU-07) | Backend **completo** (36 endpoints); frontend implementado (ver `docs/avance_frontend.md`) |
-| **2** | Geo-Portal y zonas (HU-08 a HU-15) | **HU-08, HU-09 y HU-10 implementadas** (mapa público; espacios con tabla, mapa, agrupación, ficha responsive y filtros por sector, actividad, fecha y horario). Backend de zonas completo; faltan HU-13, HU-14, HU-15 y la UI de HU-11/HU-12. La búsqueda de calles/barrios de HU-10 quedó fuera de alcance |
+| **2** | Geo-Portal y zonas (HU-08 a HU-15) | **HU-08, HU-09, HU-10, HU-11 y HU-12 implementadas** (mapa público; espacios con tabla, mapa, agrupación, ficha responsive y filtros; editor de zonas, baja lógica, versionado e historial con línea de tiempo y comparación de geometrías). Faltan HU-13, HU-14 y HU-15. La búsqueda de calles/barrios de HU-10 quedó fuera de alcance |
 | **3** | Solicitudes y asignación de espacio | Pendiente |
 | **4** | Simulador de factibilidad y densidad | Pendiente |
 | **5** | Permisos con QR y cobros simulados | Pendiente |
@@ -179,7 +179,7 @@ Incluye: design system mobile-first (360 px, WCAG AA), estados de carga/vacío/e
 ### Frontend: qué falta
 
 - Módulos de los Sprints 3 a 6: solicitudes, ferias, permisos QR, cobros y dashboard analítico.
-- Del Sprint 2: censo de módulos (HU-13), importación (HU-14), espacios temporales y bloqueos (HU-15), y la interfaz de administración de zonas (HU-11/HU-12). El buscador de calles/barrios de HU-10 quedó fuera de alcance.
+- Del Sprint 2: censo de módulos (HU-13), importación (HU-14) y espacios temporales y bloqueos (HU-15). El buscador de calles/barrios de HU-10 quedó fuera de alcance.
 
 ---
 

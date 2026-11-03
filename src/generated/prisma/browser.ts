@@ -184,3 +184,9 @@ export type zonas = Prisma.zonasModel
  * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
  */
 export type sesiones = Prisma.sesionesModel
+/**
+ * Model zona_versiones
+ * This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+ * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+ */
+export type zona_versiones = Prisma.zona_versionesModel

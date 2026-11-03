@@ -10,11 +10,13 @@ import {
   estiloZona,
 } from "@/features/mapa/estilos-zona";
 import type { TipoZona } from "@/types/api";
-import type {
-  ConflictoSolape,
-  Punto,
-  PoligonoZona,
+import {
+  areaAproximadaM2,
+  type ConflictoSolape,
+  type Punto,
+  type PoligonoZona,
 } from "./geometria-zona";
+import { formatearArea } from "./formato-historial-zona";
 
 const ZOOM_INICIAL = 15;
 const ZOOM_MINIMO = 11;
@@ -29,6 +31,9 @@ export interface MapaEditorZonaProps {
   conflicto: ConflictoSolape | null;
   esEdicion: boolean;
   soloLectura: boolean;
+  areaOriginal: number | null;
+  puedeRestablecer: boolean;
+  puedeDeshacer: boolean;
   onAgregarPunto: (punto: Punto) => void;
   onMoverPunto: (indice: number, punto: Punto) => void;
   onQuitarPunto: (indice: number) => void;
@@ -36,6 +41,7 @@ export interface MapaEditorZonaProps {
   onBorrar: () => void;
   onCerrar: () => void;
   onReabrir: () => void;
+  onRestablecer: () => void;
 }
 
 interface AccionesEditor {
@@ -59,6 +65,9 @@ export function MapaEditorZona({
   conflicto,
   esEdicion,
   soloLectura,
+  areaOriginal,
+  puedeRestablecer,
+  puedeDeshacer,
   onAgregarPunto,
   onMoverPunto,
   onQuitarPunto,
@@ -66,6 +75,7 @@ export function MapaEditorZona({
   onBorrar,
   onCerrar,
   onReabrir,
+  onRestablecer,
 }: MapaEditorZonaProps) {
   const contenedorRef = useRef<HTMLDivElement | null>(null);
   const mapaRef = useRef<L.Map | null>(null);
@@ -284,6 +294,8 @@ export function MapaEditorZona({
     vistaAjustadaRef.current = true;
   }, [esEdicion, puntos]);
 
+  const areaActual = areaAproximadaM2(puntos);
+
   return (
     <div className="sgp-mapa relative overflow-hidden rounded-xl border border-borde bg-slate-200">
       <div
@@ -308,7 +320,10 @@ export function MapaEditorZona({
           >
             {puntos.length} vértice{puntos.length === 1 ? "" : "s"} ·{" "}
             {cerrado ? "polígono cerrado" : "polígono abierto"} ·{" "}
-            {ETIQUETAS_TIPO[tipo]}
+            {ETIQUETAS_TIPO[tipo]} · {formatearArea(areaActual)}
+            {areaOriginal !== null
+              ? ` · antes ${formatearArea(areaOriginal)}`
+              : ""}
           </p>
         </div>
       </div>
@@ -318,7 +333,7 @@ export function MapaEditorZona({
           variante="contorno"
           tamano="sm"
           onClick={onDeshacer}
-          disabled={soloLectura || puntos.length === 0}
+          disabled={soloLectura || !puedeDeshacer}
           className="bg-superficie/95 shadow-sm backdrop-blur"
         >
           Deshacer
@@ -332,6 +347,17 @@ export function MapaEditorZona({
         >
           Borrar
         </Boton>
+        {esEdicion ? (
+          <Boton
+            variante="contorno"
+            tamano="sm"
+            onClick={onRestablecer}
+            disabled={soloLectura || !puedeRestablecer}
+            className="bg-superficie/95 shadow-sm backdrop-blur"
+          >
+            Restablecer forma
+          </Boton>
+        ) : null}
         {cerrado ? (
           <Boton
             variante="contorno"

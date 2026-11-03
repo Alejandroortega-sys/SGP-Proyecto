@@ -390,6 +390,12 @@ function AccionesZona({
       >
         {esAdministrador ? "Editar" : "Ver"}
       </Link>
+      <Link
+        href={`/gestor/zonas/${zona.id}/historial`}
+        className="inline-flex min-h-9 items-center rounded-lg border border-borde px-3 py-1.5 text-sm font-semibold text-texto hover:bg-slate-100"
+      >
+        Historial
+      </Link>
       {esAdministrador ? (
         <Boton
           variante={zona.activa ? "peligro" : "contorno"}

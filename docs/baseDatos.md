@@ -2,7 +2,7 @@
 
 **Proyecto:** Plataforma Web de Gestión del Espacio Público, Ferias Agroecológicas y Comercio Formal/Informal de Tuluá (Equipo 6)
 **Motor:** PostgreSQL 18 + PostGIS 3.6 · **Codificación:** UTF8 · **Convención:** `snake_case`, español
-**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba) · `03_sesiones.sql` (tabla de sesiones) · `04_espacios_hu09.sql` (migración de la ficha de espacios) · `05_filtros_hu10.sql` (índices de filtros y disponibilidad)
+**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba) · `03_sesiones.sql` (tabla de sesiones) · `04_espacios_hu09.sql` (migración de la ficha de espacios) · `05_filtros_hu10.sql` (índices de filtros y disponibilidad) · `06_zonas_hu12.sql` (historial versionado de zonas)
 **Base de desarrollo verificada:** `sgp_tulua`
 
 ---
@@ -13,8 +13,9 @@
 # 1) Crear la base de datos
 psql -U postgres -d postgres -c 'CREATE DATABASE "sgp_tulua";'
 
-# 2) Crear la estructura (30 tablas, 18 ENUM, 3 secuencias, 33 índices,
-#    6 funciones, 10 triggers y 4 vistas materializadas)
+# 2) Crear la estructura base (30 tablas, 18 ENUM, 3 secuencias, 33 índices,
+#    6 funciones, 10 triggers y 4 vistas materializadas). La migración 06
+#    agrega la tabla zona_versiones y la función fn_registrar_version_zona.
 psql -U postgres -d "sgp_tulua" -f 01_creacion_bd.sql
 
 # 3) Cargar datos de prueba (incluye 4 pruebas automáticas de reglas de negocio)
@@ -28,6 +29,9 @@ psql -U postgres -d "sgp_tulua" -f 04_espacios_hu09.sql
 
 # 6) HU-10: índices para filtros por sector/actividad y disponibilidad:
 psql -U postgres -d "sgp_tulua" -f 05_filtros_hu10.sql
+
+# 7) HU-12: historial versionado de zonas:
+psql -U postgres -d "sgp_tulua" -f 06_zonas_hu12.sql
 
 # Para repetir desde cero:
 psql -U postgres -d postgres -c 'DROP DATABASE "sgp_tulua" WITH (FORCE);'
@@ -228,6 +232,29 @@ Trigger `fn_validar_zona`: rechaza geometrías inválidas y **solapes** con zona
 |---|---|---|
 | zona_id | BIGINT | PK compuesta, FK→zonas(id) ON DELETE CASCADE |
 | producto_id | BIGINT | PK compuesta, FK→productos(id) |
+
+### `zona_versiones` — Historial inmutable de zonas (HU-12)
+| Campo | Tipo | Restricciones |
+|---|---|---|
+| id | BIGINT | PK, IDENTITY |
+| zona_id | BIGINT | NOT NULL, FK→zonas(id) ON DELETE CASCADE |
+| version | INTEGER | NOT NULL, consecutivo por zona, UNIQUE con `zona_id` |
+| accion | VARCHAR(20) | `creacion`, `edicion`, `activacion`, `desactivacion` |
+| nombre | VARCHAR(150) | Snapshot del nombre |
+| tipo | tipo_zona | Snapshot de la clasificación |
+| geometria | geometry(Polygon,4326) | Snapshot validado |
+| horario_inicio / horario_fin | TIME | Snapshot de las restricciones |
+| aforo_maximo | INTEGER | Snapshot; NULL o > 0 |
+| activa | BOOLEAN | Snapshot del estado |
+| productos | JSONB | Snapshot `[{id, nombre, activo}]` |
+| actor_id | BIGINT | FK→usuarios(id) |
+| creado_en | TIMESTAMPTZ | DEFAULT now() |
+
+La función `fn_registrar_version_zona(zona_id, accion, actor_id)` bloquea la
+fila de la zona, calcula el siguiente número de versión e inserta el snapshot
+completo, incluidos los productos. El backend la invoca dentro de la misma
+transacción del cambio. La migración `06_zonas_hu12.sql` crea además la versión
+inicial de las zonas existentes.
 
 ### `modulos` — Censo de puestos formales/informales (HU-13)
 | Campo | Tipo | Restricciones |
@@ -506,6 +533,7 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 | `fn_marca_actualizacion()` | trigger | Actualiza `actualizado_en` en cada UPDATE (usuarios, comerciantes, zonas, solicitudes, sesiones). |
 | `fn_auditoria()` | trigger | Vuelca cada cambio (INSERT/UPDATE/DELETE) de `usuarios`, `zonas` y `parametros_motor` a `auditoria` con valores antes/después en JSONB. |
 | `fn_validar_zona()` | trigger (BEFORE) | HU-11/12: rechaza geometrías inválidas (`ST_IsValid`) y solapes con zonas activas (`ST_Relate '2********'`); permite bordes compartidos. |
+| `fn_registrar_version_zona(zona_id, accion, actor_id)` | plpgsql | HU-12: registra un snapshot inmutable de la zona y sus productos; devuelve el número de versión. |
 | `fn_permiso_trazabilidad()` | trigger (AFTER) | HU-35/37: registra `emitido` al insertar y un evento por cada cambio de estado; **exige motivo** (`app.motivo`) para `suspendido`/`revocado`, si no lanza excepción. |
 | `fn_evaluar_factibilidad(ubicacion, producto_id)` | plpgsql STABLE | **Motor de reglas (HU-25)**: devuelve una fila por regla (`distancia_minima`, `producto_permitido`, `aforo_cuadrante`) con `cumple` y `detalle`. La distancia se calcula en metros con cast `geography`; el aforo y los productos se validan contra la zona que contiene el punto usando los parámetros vigentes de `parametros_motor`. |
 | `fn_buscar_alternativas(ubicacion, producto_id, radio_m)` | sql STABLE | HU-30: espacios `disponibles` dentro del radio (default 500 m) que cumplen **todas** las reglas del motor, ordenados por distancia. |
@@ -568,6 +596,7 @@ Las cuatro pruebas negativas se ejecutan dentro de `02_seed_datos_prueba.sql` y 
 | Usuarios (8) | 2 gestores (admin / revisor), 4 comerciantes (uno pendiente de activación), 2 organizadores (uno pendiente de validación) |
 | Contraseñas (argon2id) | `admin@tulua.gov.co` y `revisor@tulua.gov.co` → `Admin1234` · comerciantes → `Comerciante123` · organizadores → `Organizador123` |
 | Zonas (4) | Centro–Calle 30 (permitida, aforo 40), Plaza Boyacá (alta congestión, aforo 15), Entorno Hospital (restringida, aforo 5), Parque La Guadua (permitida, aforo 25) — polígonos alrededor del centro de Tuluá |
+| Versiones de zona (4) | La migración `06_zonas_hu12.sql` registra la versión 1 (`creacion`) de cada zona del seed con su geometría y productos |
 | Productos (6) | Frutas frescas, Verduras, Artesanías, Comidas rápidas, Ropa y calzado, Plantas ornamentales |
 | Módulos (6) | 2 con titular registrado, 4 con titular por nombre; mezcla formal/informal |
 | Espacios (6) | 3 disponibles, 1 bloqueado con bloqueo 25–31 oct 2026, 1 asignado y 1 en mantenimiento; con tipo, sector, dimensiones y horario (HU-09) |

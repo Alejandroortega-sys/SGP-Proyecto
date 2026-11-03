@@ -21,7 +21,13 @@ const ADMIN: UsuarioAutenticado = {
 };
 
 type MetodoZonas =
-  'geojson' | 'listar' | 'detalle' | 'crear' | 'cambiarEstado' | 'actualizar';
+  | 'geojson'
+  | 'listar'
+  | 'detalle'
+  | 'historial'
+  | 'crear'
+  | 'cambiarEstado'
+  | 'actualizar';
 
 function metadatosDelMetodo(clave: string, metodo: MetodoZonas): unknown {
   const descriptor = Object.getOwnPropertyDescriptor(
@@ -34,6 +40,7 @@ function metadatosDelMetodo(clave: string, metodo: MetodoZonas): unknown {
 interface ZonasServiceMock {
   listar: jest.Mock;
   detalle: jest.Mock;
+  historial: jest.Mock;
   crear: jest.Mock;
   actualizar: jest.Mock;
   cambiarEstado: jest.Mock;
@@ -47,6 +54,7 @@ function crearServiceMock(): {
   const mock: ZonasServiceMock = {
     listar: jest.fn(),
     detalle: jest.fn(),
+    historial: jest.fn(),
     crear: jest.fn(),
     actualizar: jest.fn(),
     cambiarEstado: jest.fn(),
@@ -66,6 +74,11 @@ describe('ZonasController', () => {
     expect(metadatosDelMetodo(ROLES_KEY, 'detalle')).toEqual(['gestor']);
   });
 
+  it('permite el historial a los dos perfiles de gestor', () => {
+    expect(metadatosDelMetodo(ROLES_KEY, 'historial')).toEqual(['gestor']);
+    expect(metadatosDelMetodo(PERFIL_GESTOR_KEY, 'historial')).toBeUndefined();
+  });
+
   it('restringe las escrituras al gestor administrador', () => {
     for (const metodo of ['crear', 'actualizar', 'cambiarEstado'] as const) {
       expect(metadatosDelMetodo(ROLES_KEY, metodo)).toEqual(['gestor']);
@@ -80,16 +93,19 @@ describe('ZonasController', () => {
     expect(VENTANA_ZONAS_GEOJSON_MS).toBe(60_000);
   });
 
-  it('delega el listado y el detalle', async () => {
+  it('delega el listado, el detalle y el historial', async () => {
     const { service, mock } = crearServiceMock();
     const controller = new ZonasController(service);
     const query = { pagina: 1, limite: 20 };
+    const historial = { pagina: 2, limite: 10 };
 
     await controller.listar(query);
     await controller.detalle('1');
+    await controller.historial('1', historial);
 
     expect(mock.listar).toHaveBeenCalledWith(query);
     expect(mock.detalle).toHaveBeenCalledWith('1');
+    expect(mock.historial).toHaveBeenCalledWith('1', historial);
   });
 
   it('pasa el gestor autenticado a las escrituras', async () => {

@@ -19,7 +19,7 @@ La aplicación web (PWA responsive) tiene **cuatro roles**:
 
 **Módulos funcionales:** (1) autenticación y cuentas con roles, (2) geo-portal GIS con zonas y catálogo de espacios, (3) trámites de solicitud/asignación digital, (4) motor de factibilidad (densidad y reglas urbanas, sin IoT), (5) permisos digitales con QR, verificación ciudadana y dashboard analítico.
 
-**El esquema real de la BD ya existe:** `01_creacion_bd.sql` (30 tablas, 17 enums, triggers, funciones, restricciones EXCLUDE y 4 vistas materializadas) es la máxima autoridad del dominio. La tabla `sesiones` se creó con `03_sesiones.sql`.
+**El esquema real de la BD ya existe:** `01_creacion_bd.sql` (30 tablas, 17 enums, triggers, funciones, restricciones EXCLUDE y 4 vistas materializadas) es la máxima autoridad del dominio. La tabla `sesiones` se creó con `03_sesiones.sql` y `zona_versiones` con `06_zonas_hu12.sql` (31 tablas de negocio).
 
 **Exclusiones del alcance (jamás las implementes ni las "resuelvas" sin aprobación):**
 - Sin sensores/hardware/IoT: toda la simulación de flujo y ocupación es algorítmica sobre datos de BD.
@@ -116,7 +116,7 @@ Nombres **reales** de la BD: español, `snake_case`, plural, tipos `geometry(Pol
 | Módulo NestJS | Tablas reales | Notas |
 |---|---|---|
 | `auth` / `usuarios` | `usuarios`, `comerciantes`, `organizadores`, `gestores`, `tokens_seguridad`, `sesiones` | Usuario 1:1 **por rol** con CHECK; correo (`citext`) y documento únicos; refresh tokens y logout persistente en `sesiones` |
-| `zonas` (GIS) | `zonas`, `zona_productos`, `productos`, `parametros_motor` | Polígonos con validación topológica; parámetros versionados por fila |
+| `zonas` (GIS) | `zonas`, `zona_productos`, `zona_versiones`, `productos`, `parametros_motor` | Polígonos con validación topológica; historial inmutable por versión (HU-12); parámetros versionados por fila |
 | `censo` / `espacios` | `modulos`, `espacios_temporales`, `espacio_bloqueos` | Puntos geográficos; bloques de fechas sin solaparse |
 | `tramites` | `solicitudes`, `solicitud_productos`, `solicitud_documentos` | Ciclo del trámite; corrección de documentos vía `reemplaza_a` |
 | `ferias` | `ferias`, `feria_productos`, `feria_vendedores` | Fecha+zona **sin cruces** (restricción de exclusión EXCLUDE) |

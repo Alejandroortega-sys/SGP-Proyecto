@@ -128,7 +128,15 @@ describe('ZonasService', () => {
 
       expect(tx.$executeRaw).toHaveBeenCalledTimes(1);
       expect(tx.$executeRaw.mock.calls[0][1]).toBe('2');
-      expect(tx.$queryRaw).toHaveBeenCalledTimes(1);
+      expect(tx.$queryRaw).toHaveBeenCalledTimes(2);
+      const [sqlVersion, zonaVersion, accionVersion, actorVersion] = tx
+        .$queryRaw.mock.calls[1] as [TemplateStringsArray, ...unknown[]];
+      expect(sqlVersion.join('?')).toContain('fn_registrar_version_zona');
+      expect([zonaVersion, accionVersion, actorVersion]).toEqual([
+        1n,
+        'creacion',
+        2n,
+      ]);
       expect(tx.zona_productos.createMany).toHaveBeenCalledWith({
         data: [
           { zona_id: 1n, producto_id: 1n },
@@ -359,6 +367,39 @@ describe('ZonasService', () => {
 
       expect(resultado.nombre).toBe('Centro renovado');
       expect(tx.zona_productos.deleteMany).not.toHaveBeenCalled();
+      expect(tx.$queryRaw).toHaveBeenCalledTimes(2);
+      const [sqlVersion, zonaVersion, accionVersion, actorVersion] = tx
+        .$queryRaw.mock.calls[1] as [TemplateStringsArray, ...unknown[]];
+      expect(sqlVersion.join('?')).toContain('fn_registrar_version_zona');
+      expect([zonaVersion, accionVersion, actorVersion]).toEqual([
+        1n,
+        'edicion',
+        2n,
+      ]);
+    });
+
+    it('toca la zona y registra versión cuando solo cambian los productos', async () => {
+      const { prisma, mock, tx } = crearPrisma();
+      mock.productos.findMany.mockResolvedValue([
+        { id: 1n, nombre: 'Frutas frescas', activo: true },
+      ]);
+      tx.$queryRaw
+        .mockResolvedValueOnce([FILA_DETALLE])
+        .mockResolvedValueOnce([{ fn_registrar_version_zona: 2 }]);
+
+      const service = new ZonasService(prisma);
+      await service.actualizar('1', '2', { productosPermitidos: ['1'] });
+
+      const [sqlZona, zonaId] = tx.$queryRaw.mock.calls[0] as [
+        TemplateStringsArray,
+        bigint,
+      ];
+      expect(sqlZona.join('?')).toContain('SET actualizado_en = now()');
+      expect(zonaId).toBe(1n);
+      expect(tx.zona_productos.deleteMany).toHaveBeenCalledWith({
+        where: { zona_id: 1n },
+      });
+      expect(tx.$queryRaw).toHaveBeenCalledTimes(2);
     });
 
     it('reemplaza la lista de productos cuando se envía', async () => {
@@ -407,9 +448,54 @@ describe('ZonasService', () => {
   });
 
   describe('cambiarEstado', () => {
-    it('actualiza el estado y devuelve el mensaje', async () => {
+    it('actualiza el estado, registra la versión y devuelve el mensaje', async () => {
       const { prisma, tx } = crearPrisma();
-      tx.$queryRaw.mockResolvedValue([
+      tx.$queryRaw
+        .mockResolvedValueOnce([
+          {
+            id: 1n,
+            nombre: 'Centro - Calle 30',
+            activa: true,
+            actualizado_en: FECHA,
+          },
+        ])
+        .mockResolvedValueOnce([
+          {
+            id: 1n,
+            nombre: 'Centro - Calle 30',
+            activa: false,
+            actualizado_en: FECHA,
+          },
+        ])
+        .mockResolvedValueOnce([{ fn_registrar_version_zona: 2 }]);
+
+      const service = new ZonasService(prisma);
+      const resultado = await service.cambiarEstado('1', '2', {
+        activa: false,
+      });
+
+      expect(tx.$executeRaw).toHaveBeenCalledTimes(1);
+      expect(tx.$queryRaw).toHaveBeenCalledTimes(3);
+      const [sqlVersion, zonaVersion, accionVersion, actorVersion] = tx
+        .$queryRaw.mock.calls[2] as [TemplateStringsArray, ...unknown[]];
+      expect(sqlVersion.join('?')).toContain('fn_registrar_version_zona');
+      expect([zonaVersion, accionVersion, actorVersion]).toEqual([
+        1n,
+        'desactivacion',
+        2n,
+      ]);
+      expect(resultado).toEqual({
+        id: '1',
+        nombre: 'Centro - Calle 30',
+        activa: false,
+        actualizadoEn: FECHA,
+        mensaje: 'Zona desactivada.',
+      });
+    });
+
+    it('no registra una versión si el estado ya es el solicitado', async () => {
+      const { prisma, tx } = crearPrisma();
+      tx.$queryRaw.mockResolvedValueOnce([
         {
           id: 1n,
           nombre: 'Centro - Calle 30',
@@ -423,14 +509,8 @@ describe('ZonasService', () => {
         activa: false,
       });
 
-      expect(tx.$executeRaw).toHaveBeenCalledTimes(1);
-      expect(resultado).toEqual({
-        id: '1',
-        nombre: 'Centro - Calle 30',
-        activa: false,
-        actualizadoEn: FECHA,
-        mensaje: 'Zona desactivada.',
-      });
+      expect(tx.$queryRaw).toHaveBeenCalledTimes(1);
+      expect(resultado.mensaje).toBe('Zona desactivada.');
     });
 
     it('responde 404 si la zona no existe', async () => {
@@ -442,6 +522,116 @@ describe('ZonasService', () => {
       await expect(
         service.cambiarEstado('99', '2', { activa: true }),
       ).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('historial', () => {
+    const VERSION_1 = {
+      id: 1n,
+      version: 1,
+      accion: 'creacion',
+      nombre: 'Centro - Calle 30',
+      tipo: 'permitida' as const,
+      horario_inicio: '06:00',
+      horario_fin: '18:00',
+      aforo_maximo: 40,
+      activa: true,
+      geometria: POLIGONO,
+      productos: [
+        { id: '1', nombre: 'Frutas frescas', activo: true },
+        { id: '2', nombre: 'Verduras', activo: true },
+      ],
+      vertices: 4,
+      area_m2: 1000,
+      actor_id: 2n,
+      actor_nombre: 'Laura',
+      actor_apellido: 'Martínez',
+      actor_correo: 'admin@tulua.gov.co',
+      creado_en: FECHA,
+    };
+
+    const VERSION_2 = {
+      ...VERSION_1,
+      id: 2n,
+      version: 2,
+      accion: 'edicion',
+      nombre: 'Centro renovado',
+      aforo_maximo: 30,
+      productos: [{ id: '1', nombre: 'Frutas frescas', activo: true }],
+      vertices: 5,
+      area_m2: 1500,
+    };
+
+    it('devuelve versiones, actor, cambios y paginación', async () => {
+      const { prisma, mock } = crearPrisma();
+      mock.$queryRaw
+        .mockResolvedValueOnce([
+          { id: 1n, nombre: 'Centro renovado', activa: true },
+        ])
+        .mockResolvedValueOnce([VERSION_2, VERSION_1])
+        .mockResolvedValueOnce([{ total: 2 }]);
+
+      const service = new ZonasService(prisma);
+      const resultado = await service.historial('1', {
+        pagina: 1,
+        limite: 20,
+      });
+
+      expect(resultado.zona).toEqual({
+        id: '1',
+        nombre: 'Centro renovado',
+        activa: true,
+      });
+      expect(resultado.paginacion).toEqual({
+        pagina: 1,
+        limite: 20,
+        total: 2,
+        totalPaginas: 1,
+      });
+      expect(resultado.datos).toHaveLength(2);
+      expect(resultado.datos[0]).toMatchObject({
+        version: 2,
+        accion: 'edicion',
+        actor: {
+          id: '2',
+          nombre: 'Laura',
+          apellido: 'Martínez',
+          correo: 'admin@tulua.gov.co',
+        },
+      });
+      expect(
+        resultado.datos[0].cambios.map((cambio) => cambio.campo),
+      ).toEqual(
+        expect.arrayContaining(['nombre', 'aforoMaximo', 'productosPermitidos']),
+      );
+      expect(resultado.datos[0].estado.resumenGeometria).toEqual({
+        vertices: 5,
+        areaM2: 1500,
+      });
+      expect(resultado.datos[1].cambios).toEqual([]);
+    });
+
+    it('responde 404 si la zona no existe', async () => {
+      const { prisma, mock } = crearPrisma();
+      mock.$queryRaw
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([{ total: 0 }]);
+
+      const service = new ZonasService(prisma);
+
+      await expect(service.historial('99', {})).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it('rechaza identificadores no numéricos', async () => {
+      const { prisma } = crearPrisma();
+      const service = new ZonasService(prisma);
+
+      await expect(service.historial('abc', {})).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
     });
   });
 

@@ -41,6 +41,23 @@ interface ZonaProductoPrueba {
   producto_id: bigint;
 }
 
+interface VersionZonaPrueba {
+  id: bigint;
+  zona_id: bigint;
+  version: number;
+  accion: 'creacion' | 'edicion' | 'activacion' | 'desactivacion';
+  nombre: string;
+  tipo: tipo_zona;
+  horario_inicio: string | null;
+  horario_fin: string | null;
+  aforo_maximo: number | null;
+  activa: boolean;
+  geometria: unknown;
+  productos: Array<{ id: string; nombre: string; activo: boolean }>;
+  actor_id: bigint | null;
+  creado_en: Date;
+}
+
 interface SqlLike {
   sql: string;
   values: unknown[];
@@ -137,6 +154,7 @@ const ZONAS_INICIALES: ZonaPrueba[] = [
 
 let zonas: ZonaPrueba[] = [];
 let zonaProductos: ZonaProductoPrueba[] = [];
+let versiones: VersionZonaPrueba[] = [];
 
 function filaGuard(usuario: UsuarioPrueba) {
   return {
@@ -212,6 +230,30 @@ function filaGeoJson(zona: ZonaPrueba) {
     aforo_maximo: zona.aforo_maximo,
     geometria: zona.geometria,
     productos,
+  };
+}
+
+function filaVersion(version: VersionZonaPrueba) {
+  const actor = USUARIOS.find((usuario) => usuario.id === version.actor_id);
+  return {
+    id: version.id,
+    version: version.version,
+    accion: version.accion,
+    nombre: version.nombre,
+    tipo: version.tipo,
+    horario_inicio: version.horario_inicio,
+    horario_fin: version.horario_fin,
+    aforo_maximo: version.aforo_maximo,
+    activa: version.activa,
+    geometria: version.geometria,
+    productos: version.productos,
+    vertices: 4,
+    area_m2: 1000,
+    actor_id: version.actor_id,
+    actor_nombre: actor?.nombre ?? null,
+    actor_apellido: actor?.apellido ?? null,
+    actor_correo: actor?.correo ?? null,
+    creado_en: version.creado_en,
   };
 }
 
@@ -326,6 +368,7 @@ describe('Zonas (e2e)', () => {
       { zona_id: 2n, producto_id: 1n },
       { zona_id: 2n, producto_id: 3n },
     ];
+    versiones = [];
 
     prisma.usuarios.findUnique.mockImplementation(
       ({ where }: { where: { id?: bigint; correo?: string } }) => {
@@ -382,6 +425,78 @@ describe('Zonas (e2e)', () => {
     prisma.$queryRaw.mockImplementation(
       (strings: TemplateStringsArray, ...valores: unknown[]) => {
         const sql = strings.join('?');
+
+        if (sql.includes('fn_registrar_version_zona')) {
+          const zonaId = valores[0] as bigint;
+          const accion = valores[1] as VersionZonaPrueba['accion'];
+          const actorId = valores[2] as bigint;
+          const zona = zonas.find((candidata) => candidata.id === zonaId);
+          if (!zona) return Promise.resolve([]);
+
+          const productos = zonaProductos
+            .filter((asociacion) => asociacion.zona_id === zonaId)
+            .map((asociacion) =>
+              PRODUCTOS.find(
+                (producto) => producto.id === asociacion.producto_id,
+              ),
+            )
+            .filter(
+              (producto): producto is ProductoPrueba => producto !== undefined,
+            )
+            .map((producto) => ({
+              id: producto.id.toString(),
+              nombre: producto.nombre,
+              activo: producto.activo,
+            }))
+            .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+
+          const version = {
+            id: BigInt(versiones.length + 1),
+            zona_id: zonaId,
+            version:
+              versiones.filter((actual) => actual.zona_id === zonaId).length +
+              1,
+            accion,
+            nombre: zona.nombre,
+            tipo: zona.tipo,
+            horario_inicio: zona.horario_inicio,
+            horario_fin: zona.horario_fin,
+            aforo_maximo: zona.aforo_maximo,
+            activa: zona.activa,
+            geometria: zona.geometria,
+            productos,
+            actor_id: actorId,
+            creado_en: FECHA,
+          };
+          versiones = [...versiones, version];
+          return Promise.resolve([{ fn_registrar_version_zona: version.version }]);
+        }
+
+        if (
+          sql.includes('FROM zona_versiones') &&
+          sql.includes('COUNT(*)')
+        ) {
+          const zonaId = valores[0] as bigint;
+          return Promise.resolve([
+            {
+              total: versiones.filter((version) => version.zona_id === zonaId)
+                .length,
+            },
+          ]);
+        }
+
+        if (sql.includes('FROM zona_versiones v')) {
+          const zonaId = valores[0] as bigint;
+          const limite = valores[1] as number;
+          const offset = valores[2] as number;
+          return Promise.resolve(
+            versiones
+              .filter((version) => version.zona_id === zonaId)
+              .sort((a, b) => b.version - a.version)
+              .slice(offset, offset + limite)
+              .map(filaVersion),
+          );
+        }
 
         if (sql.includes('INSERT INTO zonas')) {
           const nuevoId = BigInt(
@@ -750,6 +865,131 @@ describe('Zonas (e2e)', () => {
         mensaje: 'Zona desactivada.',
       });
       expect(zonas[0].activa).toBe(false);
+    });
+  });
+
+  describe('GET /zonas/:id/historial', () => {
+    it('exige autenticación, rol gestor e identificadores válidos', async () => {
+      await request(app.getHttpServer()).get('/zonas/1/historial').expect(401);
+
+      await request(app.getHttpServer())
+        .get('/zonas/1/historial')
+        .set('Authorization', `Bearer ${tokenComerciante}`)
+        .expect(403);
+
+      await request(app.getHttpServer())
+        .get('/zonas/abc/historial')
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .expect(400);
+
+      await request(app.getHttpServer())
+        .get('/zonas/999/historial')
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .expect(404);
+    });
+
+    it('registra creación, edición y desactivación sin perder el histórico', async () => {
+      const cuerpo = {
+        nombre: 'Parque La Guadua',
+        tipo: 'permitida',
+        geometria: POLIGONO,
+        horarioInicio: '08:00',
+        horarioFin: '16:00',
+        aforoMaximo: 25,
+        productosPermitidos: ['1', '2'],
+      };
+
+      const creada = await request(app.getHttpServer())
+        .post('/zonas')
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .send(cuerpo)
+        .expect(201);
+      const id = creada.body.id as string;
+
+      // La versión 1 se crea junto con la zona.
+      const historialCreado = await request(app.getHttpServer())
+        .get(`/zonas/${id}/historial`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .expect(200);
+      expect(historialCreado.body.datos).toHaveLength(1);
+      expect(historialCreado.body.datos[0]).toMatchObject({
+        version: 1,
+        accion: 'creacion',
+        actor: { id: '1', correo: 'admin@tulua.gov.co' },
+        cambios: [],
+      });
+
+      // Se simula el cambio en el almacén y se edita por la API real del test.
+      zonas[3].nombre = 'Parque renovado';
+      zonas[3].aforo_maximo = 30;
+      await request(app.getHttpServer())
+        .patch(`/zonas/${id}`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .send({
+          nombre: 'Parque renovado',
+          aforoMaximo: 30,
+          productosPermitidos: ['1'],
+        })
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .patch(`/zonas/${id}/estado`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .send({ activa: false })
+        .expect(200);
+
+      const historial = await request(app.getHttpServer())
+        .get(`/zonas/${id}/historial?pagina=1&limite=20`)
+        .set('Authorization', `Bearer ${tokenRevisor}`)
+        .expect(200);
+
+      expect(historial.body.zona).toMatchObject({
+        id,
+        nombre: 'Parque renovado',
+        activa: false,
+      });
+      expect(historial.body.datos).toHaveLength(3);
+      expect(
+        historial.body.datos.map((version: { version: number }) => version.version),
+      ).toEqual([3, 2, 1]);
+      expect(historial.body.datos[0]).toMatchObject({
+        accion: 'desactivacion',
+        actor: { id: '1' },
+      });
+      expect(
+        historial.body.datos[0].cambios.map(
+          (cambio: { campo: string }) => cambio.campo,
+        ),
+      ).toContain('activa');
+      expect(
+        historial.body.datos[1].cambios.map(
+          (cambio: { campo: string }) => cambio.campo,
+        ),
+      ).toEqual(
+        expect.arrayContaining(['nombre', 'aforoMaximo', 'productosPermitidos']),
+      );
+
+      // La zona inactiva sigue disponible para consulta y su historial no se pierde.
+      const detalle = await request(app.getHttpServer())
+        .get(`/zonas/${id}`)
+        .set('Authorization', `Bearer ${tokenAdmin}`)
+        .expect(200);
+      expect(detalle.body.activa).toBe(false);
+
+      const geojson = await request(app.getHttpServer())
+        .get('/zonas/geojson')
+        .expect(200);
+      expect(
+        geojson.body.features.some(
+          (feature: { properties: { id: string } }) =>
+            feature.properties.id === id,
+        ),
+      ).toBe(false);
+
+      // Las asociaciones históricas de productos no se borran al desactivar.
+      expect(
+        zonaProductos.filter((asociacion) => asociacion.zona_id === 4n),
+      ).toHaveLength(1);
     });
   });
 

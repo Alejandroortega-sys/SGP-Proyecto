@@ -123,6 +123,34 @@ export function areaPoligono(puntos: readonly Punto[]): number {
   return Math.abs(suma) / 2;
 }
 
+/**
+ * Área aproximada en metros cuadrados. Proyecta cada grado a metros usando la
+ * latitud media del polígono; es suficiente para mostrar el tamaño de una zona
+ * urbana y no sustituye el cálculo oficial de PostGIS.
+ */
+export function areaAproximadaM2(puntos: readonly Punto[]): number {
+  const anillo = normalizarPuntos(puntos);
+  if (anillo.length < 3) return 0;
+
+  const latitudMedia =
+    anillo.reduce((suma, [, lat]) => suma + lat, 0) / anillo.length;
+  const metrosLatitud = 110_574;
+  const metrosLongitud =
+    111_320 * Math.cos((latitudMedia * Math.PI) / 180);
+
+  let suma = 0;
+  for (let i = 0; i < anillo.length; i += 1) {
+    const [lng1, lat1] = anillo[i];
+    const [lng2, lat2] = anillo[(i + 1) % anillo.length];
+    const x1 = lng1 * metrosLongitud;
+    const y1 = lat1 * metrosLatitud;
+    const x2 = lng2 * metrosLongitud;
+    const y2 = lat2 * metrosLatitud;
+    suma += x1 * y2 - x2 * y1;
+  }
+  return Math.abs(suma) / 2;
+}
+
 function orientacion(a: Punto, b: Punto, c: Punto): number {
   return (
     (b[0] - a[0]) * (c[1] - a[1]) -

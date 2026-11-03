@@ -49,6 +49,7 @@ registro, activación, recuperación y primer acceso). Ahora incluye:
 | `/gestor/zonas` | `GET /zonas`, `PATCH /zonas/:id/estado` |
 | `/gestor/zonas/nueva` | `POST /zonas`, `GET /productos`, `GET /zonas/geojson` |
 | `/gestor/zonas/[id]/editar` | `GET /zonas/:id`, `PATCH /zonas/:id`, `GET /productos`, `GET /zonas/geojson` |
+| `/gestor/zonas/[id]/historial` | `GET /zonas/:id/historial` (HU-12) |
 | `/gestor/perfil` | `GET/PATCH /gestor/perfil`, `PATCH /gestor/perfil/password` |
 | `/gestor/usuarios` | `GET /gestor/usuarios` |
 | `/gestor/usuarios/[id]` | `GET /gestor/usuarios/:id`, `PATCH /gestor/usuarios/:id/estado`, `PATCH /usuarios/:id/comerciante`, `POST /gestor/gestores/:id/reenviar-invitacion` |

@@ -689,6 +689,67 @@ export interface RespuestaEstadoZona {
   mensaje: string;
 }
 
+export type AccionVersionZona =
+  | "creacion"
+  | "edicion"
+  | "activacion"
+  | "desactivacion";
+
+export interface ActorVersionZona {
+  id: string;
+  nombre: string;
+  apellido?: string | null;
+  correo: string;
+}
+
+export interface ResumenGeometriaVersion {
+  vertices: number;
+  areaM2: number | null;
+}
+
+export interface CambioZonaVersion {
+  campo: string;
+  etiqueta: string;
+  anterior: unknown;
+  nuevo: unknown;
+}
+
+export interface EstadoVersionZona {
+  nombre: string;
+  tipo: TipoZona;
+  horarioInicio: string | null;
+  horarioFin: string | null;
+  aforoMaximo: number | null;
+  activa: boolean;
+  geometria: GeometriaPoligono;
+  productosPermitidos: ProductoPermitido[];
+  resumenGeometria: ResumenGeometriaVersion;
+}
+
+export interface ZonaVersion {
+  version: number;
+  accion: AccionVersionZona;
+  creadoEn: string;
+  actor: ActorVersionZona | null;
+  cambios: CambioZonaVersion[];
+  estado: EstadoVersionZona;
+}
+
+export interface ZonaHistorial {
+  zona: {
+    id: string;
+    nombre: string;
+    activa: boolean;
+  };
+  datos: ZonaVersion[];
+  paginacion: Paginacion;
+}
+
+export interface FiltrosHistorialZona {
+  pagina?: number;
+  limite?: number;
+}
+
 /** Producto del catálogo maestro. */
 export interface Producto {
   id: string;

@@ -26,6 +26,18 @@ import {
   ZonaFeatureCollectionDto,
   ZonaListadoItemDto,
 } from './dto/zonas.dto';
+import {
+  HistorialZonaQueryDto,
+  ZonaHistorialResponseDto,
+  ZonaVersionItemDto,
+} from './dto/historial.dto';
+import {
+  ACCIONES_VERSION_ZONA,
+  calcularCambiosZona,
+  parsearProductosVersion,
+  type AccionVersionZona,
+  type SnapshotZona,
+} from './historial';
 import { opcionesGeometriaZoom } from './geometria-zoom';
 
 /** Columnas comunes del detalle de una zona. */
@@ -87,6 +99,33 @@ interface FilaEstadoZona {
   nombre: string;
   activa: boolean;
   actualizado_en: Date;
+}
+
+interface FilaResumenHistorialZona {
+  id: bigint | string;
+  nombre: string;
+  activa: boolean;
+}
+
+interface FilaVersionZona {
+  id: bigint | string;
+  version: number;
+  accion: string;
+  nombre: string;
+  tipo: tipo_zona;
+  horario_inicio: string | null;
+  horario_fin: string | null;
+  aforo_maximo: number | null;
+  activa: boolean;
+  geometria: unknown;
+  productos: unknown;
+  vertices: number;
+  area_m2: number | string | null;
+  actor_id: bigint | string | null;
+  actor_nombre: string | null;
+  actor_apellido: string | null;
+  actor_correo: string | null;
+  creado_en: Date;
 }
 
 /**
@@ -234,6 +273,7 @@ export class ZonasService {
 
       const zonaId = parseIdBigint(fila.id.toString());
       await this.reemplazarProductos(tx, zonaId, productos);
+      await this.registrarVersion(tx, zonaId, actorId, 'creacion');
       return this.aDetalle(fila, productos);
     });
   }
@@ -306,10 +346,13 @@ export class ZonasService {
         `;
         fila = filas[0];
       } else {
+        // Solo cambiaron los productos: se toca la zona para que el trigger
+        // actualice `actualizado_en` y la versión tenga una fecha coherente.
         const filas = await tx.$queryRaw<FilaZonaDetalle[]>`
-          SELECT ${CAMPOS_DETALLE}
-          FROM zonas
+          UPDATE zonas
+          SET actualizado_en = now()
           WHERE id = ${zonaId}
+          RETURNING ${CAMPOS_DETALLE}
         `;
         fila = filas[0];
       }
@@ -321,6 +364,8 @@ export class ZonasService {
       if (productos !== undefined) {
         await this.reemplazarProductos(tx, zonaId, productos);
       }
+
+      await this.registrarVersion(tx, zonaId, actorId, 'edicion');
 
       const productosFinales =
         productos ?? (await this.obtenerProductos(tx, zonaId));
@@ -343,6 +388,29 @@ export class ZonasService {
     return this.prisma.$transaction(async (tx) => {
       await fijarActorAuditoria(tx, actorId);
 
+      const actuales = await tx.$queryRaw<FilaEstadoZona[]>`
+        SELECT id, nombre, activa, actualizado_en
+        FROM zonas
+        WHERE id = ${zonaId}
+        FOR UPDATE
+      `;
+      const actual = actuales[0];
+      if (!actual) {
+        throw new NotFoundException('La zona solicitada no existe');
+      }
+
+      // Idempotencia real: si el estado no cambia, no se crea una versión ni
+      // se registra un cambio de auditoría inexistente.
+      if (actual.activa === dto.activa) {
+        return {
+          id: actual.id.toString(),
+          nombre: actual.nombre,
+          activa: actual.activa,
+          actualizadoEn: actual.actualizado_en,
+          mensaje: actual.activa ? 'Zona activada.' : 'Zona desactivada.',
+        };
+      }
+
       const filas = await tx.$queryRaw<FilaEstadoZona[]>`
         UPDATE zonas
         SET activa = ${dto.activa}
@@ -355,6 +423,13 @@ export class ZonasService {
         throw new NotFoundException('La zona solicitada no existe');
       }
 
+      await this.registrarVersion(
+        tx,
+        zonaId,
+        actorId,
+        fila.activa ? 'activacion' : 'desactivacion',
+      );
+
       return {
         id: fila.id.toString(),
         nombre: fila.nombre,
@@ -363,6 +438,96 @@ export class ZonasService {
         mensaje: fila.activa ? 'Zona activada.' : 'Zona desactivada.',
       };
     });
+  }
+
+  /**
+   * Historial paginado de versiones de una zona.
+   *
+   * Cada versión es un snapshot completo (geometría, clasificación,
+   * restricciones, productos, estado y actor). Los cambios se calculan
+   * comparando con la versión inmediatamente anterior; por eso se consulta una
+   * fila extra fuera de la página.
+   */
+  async historial(
+    id: string,
+    dto: HistorialZonaQueryDto = {},
+  ): Promise<ZonaHistorialResponseDto> {
+    const zonaId = parseIdBigint(id);
+    const pagina = dto.pagina ?? 1;
+    const limite = dto.limite ?? 20;
+    const offset = (pagina - 1) * limite;
+    const siguiente = limite + 1;
+
+    const [zonas, filas, totalFilas] = await Promise.all([
+      this.prisma.$queryRaw<FilaResumenHistorialZona[]>`
+        SELECT id, nombre, activa
+        FROM zonas
+        WHERE id = ${zonaId}
+      `,
+      this.prisma.$queryRaw<FilaVersionZona[]>`
+        SELECT
+          v.id,
+          v.version,
+          v.accion,
+          v.nombre,
+          v.tipo,
+          to_char(v.horario_inicio, 'HH24:MI') AS horario_inicio,
+          to_char(v.horario_fin, 'HH24:MI') AS horario_fin,
+          v.aforo_maximo,
+          v.activa,
+          ST_AsGeoJSON(v.geometria)::jsonb AS geometria,
+          v.productos,
+          ST_NPoints(v.geometria)::int AS vertices,
+          ST_Area(v.geometria::geography)::float8 AS area_m2,
+          v.actor_id,
+          u.nombre AS actor_nombre,
+          u.apellido AS actor_apellido,
+          u.correo AS actor_correo,
+          v.creado_en
+        FROM zona_versiones v
+        LEFT JOIN usuarios u ON u.id = v.actor_id
+        WHERE v.zona_id = ${zonaId}
+        ORDER BY v.version DESC
+        LIMIT ${siguiente} OFFSET ${offset}
+      `,
+      this.prisma.$queryRaw<{ total: number }[]>`
+        SELECT COUNT(*)::int AS total
+        FROM zona_versiones
+        WHERE zona_id = ${zonaId}
+      `,
+    ]);
+
+    const zona = zonas[0];
+    if (!zona) {
+      throw new NotFoundException('La zona solicitada no existe');
+    }
+
+    const total = totalFilas[0]?.total ?? 0;
+    const datos: ZonaVersionItemDto[] = filas
+      .slice(0, limite)
+      .map((fila, indice) => {
+        const actual = this.aSnapshotVersion(fila);
+        const filaAnterior = filas[indice + 1];
+        const anterior = filaAnterior
+          ? this.aSnapshotVersion(filaAnterior)
+          : null;
+        return this.aVersionZona(fila, actual, anterior);
+      });
+
+    return {
+      zona: {
+        id: zona.id.toString(),
+        nombre: zona.nombre,
+        activa: zona.activa,
+      },
+      datos,
+      paginacion: {
+        pagina,
+        limite,
+        total,
+        totalPaginas: total === 0 ? 0 : Math.ceil(total / limite),
+      },
+    };
   }
 
   /**
@@ -430,6 +595,90 @@ export class ZonasService {
         };
       }),
     };
+  }
+
+  /** Registra una versión inmutable dentro de la transacción del cambio. */
+  private async registrarVersion(
+    tx: Prisma.TransactionClient,
+    zonaId: bigint,
+    actorId: bigint,
+    accion: AccionVersionZona,
+  ): Promise<void> {
+    await tx.$queryRaw`
+      SELECT fn_registrar_version_zona(${zonaId}, ${accion}, ${actorId})
+    `;
+  }
+
+  /** Convierte una fila de `zona_versiones` en un snapshot tipado. */
+  private aSnapshotVersion(fila: FilaVersionZona): SnapshotZona {
+    const geometria = leerGeoJson(fila.geometria, 'Polygon');
+    if (!geometria || geometria.type !== 'Polygon') {
+      throw new Error(
+        `La versión ${fila.version} de la zona ${fila.id.toString()} no tiene un polígono válido`,
+      );
+    }
+
+    return {
+      version: fila.version,
+      accion: this.aAccionVersion(fila.accion),
+      nombre: fila.nombre,
+      tipo: fila.tipo,
+      horarioInicio: fila.horario_inicio,
+      horarioFin: fila.horario_fin,
+      aforoMaximo: fila.aforo_maximo,
+      activa: fila.activa,
+      geometria,
+      productosPermitidos: parsearProductosVersion(fila.productos),
+      resumenGeometria: {
+        vertices: fila.vertices,
+        areaM2:
+          fila.area_m2 === null || fila.area_m2 === undefined
+            ? null
+            : Number(fila.area_m2),
+      },
+    };
+  }
+
+  /** Convierte una fila y su versión anterior al DTO del historial. */
+  private aVersionZona(
+    fila: FilaVersionZona,
+    actual: SnapshotZona,
+    anterior: SnapshotZona | null,
+  ): ZonaVersionItemDto {
+    return {
+      version: actual.version,
+      accion: actual.accion,
+      creadoEn: fila.creado_en,
+      actor:
+        fila.actor_id === null
+          ? null
+          : {
+              id: fila.actor_id.toString(),
+              nombre: fila.actor_nombre ?? 'Gestor',
+              apellido: fila.actor_apellido,
+              correo: fila.actor_correo ?? '',
+            },
+      cambios: calcularCambiosZona(anterior, actual),
+      estado: {
+        nombre: actual.nombre,
+        tipo: actual.tipo,
+        horarioInicio: actual.horarioInicio,
+        horarioFin: actual.horarioFin,
+        aforoMaximo: actual.aforoMaximo,
+        activa: actual.activa,
+        geometria: actual.geometria,
+        productosPermitidos: actual.productosPermitidos,
+        resumenGeometria: actual.resumenGeometria,
+      },
+    };
+  }
+
+  /** Valida y normaliza la acción almacenada en una versión. */
+  private aAccionVersion(valor: string): AccionVersionZona {
+    if (ACCIONES_VERSION_ZONA.includes(valor as AccionVersionZona)) {
+      return valor as AccionVersionZona;
+    }
+    throw new Error(`Acción de versión de zona desconocida: ${valor}`);
   }
 
   /** Valida que los horarios vengan juntos y en orden. */

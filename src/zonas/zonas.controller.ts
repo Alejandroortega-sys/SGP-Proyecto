@@ -42,6 +42,10 @@ import {
   ZonaEstadoResponseDto,
   ZonaFeatureCollectionDto,
 } from './dto/zonas.dto';
+import {
+  HistorialZonaQueryDto,
+  ZonaHistorialResponseDto,
+} from './dto/historial.dto';
 import { ZonasService } from './zonas.service';
 
 /** Límite del GeoJSON público: peticiones por minuto y por IP. */
@@ -154,6 +158,41 @@ export class ZonasController {
   @Get(':id')
   detalle(@Param('id') id: string): Promise<ZonaDetalleDto> {
     return this.zonas.detalle(id);
+  }
+
+  /**
+   * Devuelve el historial versionado de una zona.
+   */
+  @ApiOperation({
+    summary: 'Historial de cambios de una zona',
+    description:
+      'Devuelve las versiones inmutables de la zona, de la más reciente a ' +
+      'la más antigua. Cada versión incluye la geometría, la clasificación, ' +
+      'las restricciones, los productos permitidos, el actor y la fecha. ' +
+      'Disponible para gestores revisores y administradores.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Identificador de la zona',
+    example: '1',
+  })
+  @ApiOkResponse({ type: ZonaHistorialResponseDto })
+  @ApiBadRequestResponse({
+    description: 'Identificador o parámetros de paginación inválidos',
+  })
+  @ApiNotFoundResponse({ description: 'La zona no existe' })
+  @ApiUnauthorizedResponse({
+    description: 'Falta el token de acceso o es inválido/expirado',
+  })
+  @ApiForbiddenResponse({ description: 'El rol del usuario no es gestor' })
+  @ApiBearerAuth()
+  @Roles('gestor')
+  @Get(':id/historial')
+  historial(
+    @Param('id') id: string,
+    @Query() dto: HistorialZonaQueryDto,
+  ): Promise<ZonaHistorialResponseDto> {
+    return this.zonas.historial(id, dto);
   }
 
   /**

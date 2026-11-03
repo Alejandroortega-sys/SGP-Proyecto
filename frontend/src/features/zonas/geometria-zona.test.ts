@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ZonaFeature } from "@/types/api";
 import {
   aGeoJsonPoligono,
+  areaAproximadaM2,
   areaPoligono,
   buscarSolape,
   esAutointersectado,
@@ -74,6 +75,12 @@ describe("geometría de zonas", () => {
     expect(poligono.coordinates[0]).toHaveLength(5);
     expect(poligono.coordinates[0][0]).toEqual([-76.202, 4.08]);
     expect(poligono.coordinates[0][4]).toEqual(poligono.coordinates[0][0]);
+  });
+
+  it("aproxima el área en metros cuadrados para Tuluá", () => {
+    const area = areaAproximadaM2(CUADRADO);
+    expect(area).toBeGreaterThan(130_000);
+    expect(area).toBeLessThan(165_000);
   });
 
   it("calcula el área de un polígono simple", () => {

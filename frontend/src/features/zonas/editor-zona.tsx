@@ -26,6 +26,7 @@ import type {
 } from "@/types/api";
 import { FormularioZona } from "./formulario-zona";
 import {
+  areaAproximadaM2,
   desdeGeoJsonPoligono,
   poligonosDesdeZonas,
   poligonosIguales,
@@ -33,6 +34,7 @@ import {
   type Punto,
   type PoligonoZona,
 } from "./geometria-zona";
+import { formatearArea } from "./formato-historial-zona";
 import { MapaEditorZonaCarga } from "./mapa-editor-zona-carga";
 import {
   construirCuerpoActualizacion,
@@ -75,6 +77,9 @@ export function EditorZona({ id, mensajeInicial }: EditorZonaProps) {
     useState<ValoresZona>(valoresIniciales);
   const [puntos, setPuntos] = useState<Punto[]>([]);
   const [cerrado, setCerrado] = useState(false);
+  const [pilaDeshacer, setPilaDeshacer] = useState<
+    Array<{ puntos: Punto[]; cerrado: boolean }>
+  >([]);
 
   const [errores, setErrores] = useState<ErroresValoresZona>({});
   const [guardando, setGuardando] = useState(false);
@@ -105,12 +110,14 @@ export function EditorZona({ id, mensajeInicial }: EditorZonaProps) {
           setValoresInicialesZona(iniciales);
           setPuntos(desdeGeoJsonPoligono(detalle.geometria));
           setCerrado(true);
+          setPilaDeshacer([]);
         } else {
           setZona(null);
           setValores(valoresIniciales());
           setValoresInicialesZona(valoresIniciales());
           setPuntos([]);
           setCerrado(false);
+          setPilaDeshacer([]);
         }
       })
       .catch((capturado) => {
@@ -165,6 +172,12 @@ export function EditorZona({ id, mensajeInicial }: EditorZonaProps) {
     [zona],
   );
 
+  const areaActual = useMemo(() => areaAproximadaM2(puntos), [puntos]);
+  const areaOriginal = useMemo(
+    () => (zonaOriginal ? areaAproximadaM2(zonaOriginal) : null),
+    [zonaOriginal],
+  );
+
   function limpiarAvisos(): void {
     setExito(null);
     setErrorGuardado(null);
@@ -176,13 +189,22 @@ export function EditorZona({ id, mensajeInicial }: EditorZonaProps) {
     limpiarAvisos();
   }
 
+  function guardarParaDeshacer(): void {
+    setPilaDeshacer((anterior) => [
+      ...anterior,
+      { puntos: [...puntos], cerrado },
+    ]);
+  }
+
   function agregarPunto(punto: Punto): void {
+    guardarParaDeshacer();
     setPuntos((actuales) => [...actuales, punto]);
     setCerrado(false);
     limpiarAvisos();
   }
 
   function moverPunto(indice: number, punto: Punto): void {
+    guardarParaDeshacer();
     setPuntos((actuales) =>
       actuales.map((actual, posicion) =>
         posicion === indice ? punto : actual,
@@ -192,6 +214,7 @@ export function EditorZona({ id, mensajeInicial }: EditorZonaProps) {
   }
 
   function quitarPunto(indice: number): void {
+    guardarParaDeshacer();
     setPuntos((actuales) => {
       const siguientes = actuales.filter((_, posicion) => posicion !== indice);
       if (siguientes.length < 3) setCerrado(false);
@@ -201,12 +224,16 @@ export function EditorZona({ id, mensajeInicial }: EditorZonaProps) {
   }
 
   function deshacer(): void {
-    setPuntos((actuales) => actuales.slice(0, -1));
-    setCerrado(false);
+    const anterior = pilaDeshacer[pilaDeshacer.length - 1];
+    if (!anterior) return;
+    setPilaDeshacer((pila) => pila.slice(0, -1));
+    setPuntos(anterior.puntos);
+    setCerrado(anterior.cerrado);
     limpiarAvisos();
   }
 
   function borrar(): void {
+    guardarParaDeshacer();
     setPuntos([]);
     setCerrado(false);
     limpiarAvisos();
@@ -214,12 +241,22 @@ export function EditorZona({ id, mensajeInicial }: EditorZonaProps) {
 
   function cerrar(): void {
     if (puntos.length < 3) return;
+    guardarParaDeshacer();
     setCerrado(true);
     limpiarAvisos();
   }
 
   function reabrir(): void {
+    guardarParaDeshacer();
     setCerrado(false);
+    limpiarAvisos();
+  }
+
+  function restablecerForma(): void {
+    if (!zona) return;
+    guardarParaDeshacer();
+    setPuntos(desdeGeoJsonPoligono(zona.geometria));
+    setCerrado(true);
     limpiarAvisos();
   }
 
@@ -260,6 +297,7 @@ export function EditorZona({ id, mensajeInicial }: EditorZonaProps) {
       setValoresInicialesZona(nuevosValores);
       setPuntos(desdeGeoJsonPoligono(actualizada.geometria));
       setCerrado(true);
+      setPilaDeshacer([]);
       setExito("Los cambios se guardaron correctamente.");
 
       try {
@@ -399,6 +437,9 @@ export function EditorZona({ id, mensajeInicial }: EditorZonaProps) {
             conflicto={resultadoGeometria.conflicto}
             esEdicion={Boolean(id)}
             soloLectura={soloLectura}
+            areaOriginal={areaOriginal}
+            puedeRestablecer={Boolean(id && zona && geometriaCambiada)}
+            puedeDeshacer={pilaDeshacer.length > 0}
             onAgregarPunto={agregarPunto}
             onMoverPunto={moverPunto}
             onQuitarPunto={quitarPunto}
@@ -406,6 +447,7 @@ export function EditorZona({ id, mensajeInicial }: EditorZonaProps) {
             onBorrar={borrar}
             onCerrar={cerrar}
             onReabrir={reabrir}
+            onRestablecer={restablecerForma}
           />
 
           <Tarjeta>
@@ -428,6 +470,23 @@ export function EditorZona({ id, mensajeInicial }: EditorZonaProps) {
                   </span>
                 </Alerta>
               )}
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-texto">
+                <span>
+                  Área actual:{" "}
+                  <span className="font-semibold text-titulo">
+                    {formatearArea(areaActual)}
+                  </span>{" "}
+                  · {puntos.length} vértice{puntos.length === 1 ? "" : "s"}
+                </span>
+                {areaOriginal !== null ? (
+                  <span>
+                    Área guardada:{" "}
+                    <span className="font-semibold text-titulo">
+                      {formatearArea(areaOriginal)}
+                    </span>
+                  </span>
+                ) : null}
+              </div>
               <p className="text-xs leading-relaxed text-tenue">
                 La validación del navegador es una ayuda inmediata. Al guardar,
                 PostGIS vuelve a comprobar la topología y los solapes; si algo
@@ -513,11 +572,21 @@ function EncabezadoEditor({
             restricciones. Los cambios se publican en el mapa ciudadano.
           </p>
         </div>
-        {!esAdministrador ? (
-          <span className="rounded-full border border-borde bg-fondo px-3 py-1 text-xs font-semibold text-tenue">
-            Modo lectura
-          </span>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          {id ? (
+            <Link
+              href={`/gestor/zonas/${id}/historial`}
+              className="inline-flex min-h-11 items-center rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+            >
+              Ver historial
+            </Link>
+          ) : null}
+          {!esAdministrador ? (
+            <span className="rounded-full border border-borde bg-fondo px-3 py-1 text-xs font-semibold text-tenue">
+              Modo lectura
+            </span>
+          ) : null}
+        </div>
       </div>
     </div>
   );

@@ -271,6 +271,7 @@ export type zonasWhereInput = {
   parametros_motor?: Prisma.Parametros_motorListRelationFilter
   tarifas?: Prisma.TarifasListRelationFilter
   zona_productos?: Prisma.Zona_productosListRelationFilter
+  zona_versiones?: Prisma.Zona_versionesListRelationFilter
   usuarios?: Prisma.XOR<Prisma.UsuariosNullableScalarRelationFilter, Prisma.usuariosWhereInput> | null
 }
 
@@ -291,6 +292,7 @@ export type zonasOrderByWithRelationInput = {
   parametros_motor?: Prisma.parametros_motorOrderByRelationAggregateInput
   tarifas?: Prisma.tarifasOrderByRelationAggregateInput
   zona_productos?: Prisma.zona_productosOrderByRelationAggregateInput
+  zona_versiones?: Prisma.zona_versionesOrderByRelationAggregateInput
   usuarios?: Prisma.usuariosOrderByWithRelationInput
 }
 
@@ -314,6 +316,7 @@ export type zonasWhereUniqueInput = Prisma.AtLeast<{
   parametros_motor?: Prisma.Parametros_motorListRelationFilter
   tarifas?: Prisma.TarifasListRelationFilter
   zona_productos?: Prisma.Zona_productosListRelationFilter
+  zona_versiones?: Prisma.Zona_versionesListRelationFilter
   usuarios?: Prisma.XOR<Prisma.UsuariosNullableScalarRelationFilter, Prisma.usuariosWhereInput> | null
 }, "id">
 
@@ -367,6 +370,7 @@ export type zonasUpdateInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUpdateManyWithoutZonasNestedInput
   usuarios?: Prisma.usuariosUpdateOneWithoutZonasNestedInput
 }
 
@@ -387,6 +391,7 @@ export type zonasUncheckedUpdateInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUncheckedUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUncheckedUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutZonasNestedInput
 }
 
 export type zonasUpdateManyMutationInput = {
@@ -573,6 +578,11 @@ export type Enumtipo_zonaFieldUpdateOperationsInput = {
   set?: $Enums.tipo_zona
 }
 
+export type zonasUpdateOneRequiredWithoutZona_versionesNestedInput = {
+  connect?: Prisma.zonasWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.zonasUpdateToOneWithWhereWithoutZona_versionesInput, Prisma.zonasUpdateWithoutZona_versionesInput>, Prisma.zonasUncheckedUpdateWithoutZona_versionesInput>
+}
+
 export type zonasUpdateToOneWithWhereWithoutAlertas_saturacionInput = {
   where?: Prisma.zonasWhereInput
   data: Prisma.XOR<Prisma.zonasUpdateWithoutAlertas_saturacionInput, Prisma.zonasUncheckedUpdateWithoutAlertas_saturacionInput>
@@ -593,6 +603,7 @@ export type zonasUpdateWithoutAlertas_saturacionInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUpdateManyWithoutZonasNestedInput
   usuarios?: Prisma.usuariosUpdateOneWithoutZonasNestedInput
 }
 
@@ -612,6 +623,7 @@ export type zonasUncheckedUpdateWithoutAlertas_saturacionInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUncheckedUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUncheckedUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutZonasNestedInput
 }
 
 export type zonasUpdateToOneWithWhereWithoutEspacios_temporalesInput = {
@@ -634,6 +646,7 @@ export type zonasUpdateWithoutEspacios_temporalesInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUpdateManyWithoutZonasNestedInput
   usuarios?: Prisma.usuariosUpdateOneWithoutZonasNestedInput
 }
 
@@ -653,6 +666,7 @@ export type zonasUncheckedUpdateWithoutEspacios_temporalesInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUncheckedUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUncheckedUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutZonasNestedInput
 }
 
 export type zonasUpdateToOneWithWhereWithoutFeriasInput = {
@@ -675,6 +689,7 @@ export type zonasUpdateWithoutFeriasInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUpdateManyWithoutZonasNestedInput
   usuarios?: Prisma.usuariosUpdateOneWithoutZonasNestedInput
 }
 
@@ -694,6 +709,7 @@ export type zonasUncheckedUpdateWithoutFeriasInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUncheckedUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUncheckedUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutZonasNestedInput
 }
 
 export type zonasUpdateToOneWithWhereWithoutParametros_motorInput = {
@@ -716,6 +732,7 @@ export type zonasUpdateWithoutParametros_motorInput = {
   ferias?: Prisma.feriasUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUpdateManyWithoutZonasNestedInput
   usuarios?: Prisma.usuariosUpdateOneWithoutZonasNestedInput
 }
 
@@ -735,6 +752,7 @@ export type zonasUncheckedUpdateWithoutParametros_motorInput = {
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUncheckedUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUncheckedUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutZonasNestedInput
 }
 
 export type zonasUpdateToOneWithWhereWithoutTarifasInput = {
@@ -757,6 +775,7 @@ export type zonasUpdateWithoutTarifasInput = {
   ferias?: Prisma.feriasUpdateManyWithoutZonasNestedInput
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUpdateManyWithoutZonasNestedInput
   usuarios?: Prisma.usuariosUpdateOneWithoutZonasNestedInput
 }
 
@@ -776,6 +795,7 @@ export type zonasUncheckedUpdateWithoutTarifasInput = {
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutZonasNestedInput
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUncheckedUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutZonasNestedInput
 }
 
 export type zonasUpdateWithWhereUniqueWithoutUsuariosInput = {
@@ -824,6 +844,7 @@ export type zonasUpdateWithoutZona_productosInput = {
   ferias?: Prisma.feriasUpdateManyWithoutZonasNestedInput
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUpdateManyWithoutZonasNestedInput
   usuarios?: Prisma.usuariosUpdateOneWithoutZonasNestedInput
 }
 
@@ -843,6 +864,50 @@ export type zonasUncheckedUpdateWithoutZona_productosInput = {
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutZonasNestedInput
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUncheckedUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutZonasNestedInput
+}
+
+export type zonasUpdateToOneWithWhereWithoutZona_versionesInput = {
+  where?: Prisma.zonasWhereInput
+  data: Prisma.XOR<Prisma.zonasUpdateWithoutZona_versionesInput, Prisma.zonasUncheckedUpdateWithoutZona_versionesInput>
+}
+
+export type zonasUpdateWithoutZona_versionesInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.Enumtipo_zonaFieldUpdateOperationsInput | $Enums.tipo_zona
+  horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  aforo_maximo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  alertas_saturacion?: Prisma.alertas_saturacionUpdateManyWithoutZonasNestedInput
+  espacios_temporales?: Prisma.espacios_temporalesUpdateManyWithoutZonasNestedInput
+  ferias?: Prisma.feriasUpdateManyWithoutZonasNestedInput
+  parametros_motor?: Prisma.parametros_motorUpdateManyWithoutZonasNestedInput
+  tarifas?: Prisma.tarifasUpdateManyWithoutZonasNestedInput
+  zona_productos?: Prisma.zona_productosUpdateManyWithoutZonasNestedInput
+  usuarios?: Prisma.usuariosUpdateOneWithoutZonasNestedInput
+}
+
+export type zonasUncheckedUpdateWithoutZona_versionesInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.Enumtipo_zonaFieldUpdateOperationsInput | $Enums.tipo_zona
+  horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  aforo_maximo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  alertas_saturacion?: Prisma.alertas_saturacionUncheckedUpdateManyWithoutZonasNestedInput
+  espacios_temporales?: Prisma.espacios_temporalesUncheckedUpdateManyWithoutZonasNestedInput
+  ferias?: Prisma.feriasUncheckedUpdateManyWithoutZonasNestedInput
+  parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutZonasNestedInput
+  tarifas?: Prisma.tarifasUncheckedUpdateManyWithoutZonasNestedInput
+  zona_productos?: Prisma.zona_productosUncheckedUpdateManyWithoutZonasNestedInput
 }
 
 export type zonasUpdateWithoutUsuariosInput = {
@@ -861,6 +926,7 @@ export type zonasUpdateWithoutUsuariosInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUpdateManyWithoutZonasNestedInput
 }
 
 export type zonasUncheckedUpdateWithoutUsuariosInput = {
@@ -879,6 +945,7 @@ export type zonasUncheckedUpdateWithoutUsuariosInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutZonasNestedInput
   tarifas?: Prisma.tarifasUncheckedUpdateManyWithoutZonasNestedInput
   zona_productos?: Prisma.zona_productosUncheckedUpdateManyWithoutZonasNestedInput
+  zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutZonasNestedInput
 }
 
 export type zonasUncheckedUpdateManyWithoutUsuariosInput = {
@@ -905,6 +972,7 @@ export type ZonasCountOutputType = {
   parametros_motor: number
   tarifas: number
   zona_productos: number
+  zona_versiones: number
 }
 
 export type ZonasCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -914,6 +982,7 @@ export type ZonasCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   parametros_motor?: boolean | ZonasCountOutputTypeCountParametros_motorArgs
   tarifas?: boolean | ZonasCountOutputTypeCountTarifasArgs
   zona_productos?: boolean | ZonasCountOutputTypeCountZona_productosArgs
+  zona_versiones?: boolean | ZonasCountOutputTypeCountZona_versionesArgs
 }
 
 /**
@@ -968,6 +1037,13 @@ export type ZonasCountOutputTypeCountZona_productosArgs<ExtArgs extends runtime.
   where?: Prisma.zona_productosWhereInput
 }
 
+/**
+ * ZonasCountOutputType without action
+ */
+export type ZonasCountOutputTypeCountZona_versionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.zona_versionesWhereInput
+}
+
 
 export type zonasSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -986,6 +1062,7 @@ export type zonasSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   parametros_motor?: boolean | Prisma.zonas$parametros_motorArgs<ExtArgs>
   tarifas?: boolean | Prisma.zonas$tarifasArgs<ExtArgs>
   zona_productos?: boolean | Prisma.zonas$zona_productosArgs<ExtArgs>
+  zona_versiones?: boolean | Prisma.zonas$zona_versionesArgs<ExtArgs>
   usuarios?: boolean | Prisma.zonas$usuariosArgs<ExtArgs>
   _count?: boolean | Prisma.ZonasCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["zonas"]>
@@ -1026,6 +1103,7 @@ export type zonasInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   parametros_motor?: boolean | Prisma.zonas$parametros_motorArgs<ExtArgs>
   tarifas?: boolean | Prisma.zonas$tarifasArgs<ExtArgs>
   zona_productos?: boolean | Prisma.zonas$zona_productosArgs<ExtArgs>
+  zona_versiones?: boolean | Prisma.zonas$zona_versionesArgs<ExtArgs>
   usuarios?: boolean | Prisma.zonas$usuariosArgs<ExtArgs>
   _count?: boolean | Prisma.ZonasCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1042,6 +1120,7 @@ export type $zonasPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     parametros_motor: Prisma.$parametros_motorPayload<ExtArgs>[]
     tarifas: Prisma.$tarifasPayload<ExtArgs>[]
     zona_productos: Prisma.$zona_productosPayload<ExtArgs>[]
+    zona_versiones: Prisma.$zona_versionesPayload<ExtArgs>[]
     usuarios: Prisma.$usuariosPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1384,6 +1463,7 @@ export interface Prisma__zonasClient<T, Null = never, ExtArgs extends runtime.Ty
   parametros_motor<T extends Prisma.zonas$parametros_motorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.zonas$parametros_motorArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$parametros_motorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tarifas<T extends Prisma.zonas$tarifasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.zonas$tarifasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$tarifasPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   zona_productos<T extends Prisma.zonas$zona_productosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.zonas$zona_productosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$zona_productosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  zona_versiones<T extends Prisma.zonas$zona_versionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.zonas$zona_versionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$zona_versionesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   usuarios<T extends Prisma.zonas$usuariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.zonas$usuariosArgs<ExtArgs>>): Prisma.Prisma__usuariosClient<runtime.Types.Result.GetResult<Prisma.$usuariosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1880,6 +1960,30 @@ export type zonas$zona_productosArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.Zona_productosScalarFieldEnum | Prisma.Zona_productosScalarFieldEnum[]
+}
+
+/**
+ * zonas.zona_versiones
+ */
+export type zonas$zona_versionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the zona_versiones
+   */
+  select?: Prisma.zona_versionesSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the zona_versiones
+   */
+  omit?: Prisma.zona_versionesOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.zona_versionesInclude<ExtArgs> | null
+  where?: Prisma.zona_versionesWhereInput
+  orderBy?: Prisma.zona_versionesOrderByWithRelationInput | Prisma.zona_versionesOrderByWithRelationInput[]
+  cursor?: Prisma.zona_versionesWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.Zona_versionesScalarFieldEnum | Prisma.Zona_versionesScalarFieldEnum[]
 }
 
 /**

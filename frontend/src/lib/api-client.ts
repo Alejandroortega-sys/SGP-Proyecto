@@ -7,6 +7,7 @@ import type {
   FiltrosComerciantes,
   FiltrosEspacios,
   FiltrosNotificaciones,
+  FiltrosHistorialZona,
   FiltrosOrganizaciones,
   FiltrosUsuarios,
   FiltrosZonas,
@@ -53,6 +54,7 @@ import type {
   UsuarioSesion,
   ZonaDetalle,
   ZonaFeatureCollection,
+  ZonaHistorial,
 } from "@/types/api";
 import { guardarSesion, limpiarSesion, obtenerAccessToken, obtenerRefreshToken } from "./sesion";
 
@@ -589,6 +591,19 @@ export function listarZonas(
 /** Obtiene el detalle de una zona con su polígono y productos permitidos. */
 export function obtenerZona(id: string): Promise<ZonaDetalle> {
   return peticion<ZonaDetalle>(`/zonas/${id}`);
+}
+
+/** Obtiene el historial versionado de una zona. */
+export function obtenerHistorialZona(
+  id: string,
+  filtros: FiltrosHistorialZona = {},
+): Promise<ZonaHistorial> {
+  return peticion<ZonaHistorial>(
+    conParametros(`/zonas/${id}/historial`, {
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
 }
 
 /** Crea una zona normativa. */

@@ -51,6 +51,12 @@ export async function eliminarZonasPrueba(prefijo: string): Promise<void> {
     const ids = rows.map((fila) => fila.id);
 
     if (ids.length > 0) {
+      // Las versiones también se eliminarían por cascada; se borran de forma
+      // explícita para que la limpieza no dependa de la FK.
+      await cliente.query(
+        "DELETE FROM zona_versiones WHERE zona_id = ANY($1::bigint[])",
+        [ids],
+      );
       await cliente.query(
         "DELETE FROM zonas WHERE id = ANY($1::bigint[])",
         [ids],
