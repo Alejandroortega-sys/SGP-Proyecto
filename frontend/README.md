@@ -151,3 +151,12 @@ frontend automáticamente. Requieren la base de datos `sgp_tulua` con el seed ap
 El detalle de cobertura y resultados está en [`docs/avance_frontend.md`](../docs/avance_frontend.md).
 
 Para probar los flujos contra la API real, consulta la sección *"Cómo probar la app"* del README de la raíz (los códigos de activación salen en el log del backend si `MAIL_HOST` está vacío).
+
+## Censo de módulos y puestos (HU-13)
+
+- `/gestor/modulos`: listado con filtros por sector derivado de la zona, categoría, estado y búsqueda; incluye baja lógica y reactivación.
+- `/gestor/modulos/nuevo`: formulario de censo con selección del punto sobre Leaflet, titular registrado o libre, actividad y foto opcional.
+- `/gestor/modulos/[id]`: ficha con foto, zona contenedora, restricciones e historial.
+- `/gestor/modulos/[id]/editar`: edición del censo.
+- El backend valida la foto por MIME, firma binaria y tamaño máximo de 5 MB.
+- Detalle funcional: [`docs/Uso_modulos.md`](../docs/Uso_modulos.md).

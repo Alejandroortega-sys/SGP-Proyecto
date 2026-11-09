@@ -8,6 +8,7 @@ import type {
   FiltrosEspacios,
   FiltrosNotificaciones,
   FiltrosHistorialZona,
+  FiltrosModulos,
   FiltrosOrganizaciones,
   FiltrosUsuarios,
   FiltrosZonas,
@@ -15,11 +16,15 @@ import type {
   InvitacionReenviada,
   ListarAuditoriaResponse,
   ListarEspaciosResponse,
+  ListarModulosResponse,
   ListarNotificacionesResponse,
   ListarProductosResponse,
   ListarZonasResponse,
+  ModuloDetalle,
+  ModuloHistorial,
   Notificacion,
   OpcionesEspacios,
+  OpcionesModulos,
   Organizacion,
   OrganizacionGestor,
   Paginacion,
@@ -29,11 +34,13 @@ import type {
   RespuestaActivacion,
   RespuestaCambioEstadoOrganizacion,
   RespuestaCambioEstadoUsuario,
+  RespuestaEstadoModulo,
   RespuestaEstadoZona,
   RespuestaLogin,
   RespuestaMensaje,
   RespuestaRegistroComerciante,
   RespuestaRegistroOrganizador,
+  RespuestaZonaContenedora,
   SolicitudActivacion,
   SolicitudActualizarPerfil,
   SolicitudActualizarPerfilGestor,
@@ -42,6 +49,7 @@ import type {
   SolicitudCorregirComerciante,
   SolicitudCrearGestor,
   SolicitudLogin,
+  SolicitudModulo,
   SolicitudOrganizacion,
   SolicitudPrimerAcceso,
   SolicitudRecuperacion,
@@ -86,6 +94,7 @@ export class ApiError extends Error {
 interface OpcionesPeticion {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
   cuerpo?: unknown;
+  formulario?: FormData;
   auth?: boolean;
 }
 
@@ -163,12 +172,14 @@ async function peticion<T>(
   opciones: OpcionesPeticion = {},
   reintento = false,
 ): Promise<T> {
-  const { method = "GET", cuerpo, auth = true } = opciones;
+  const { method = "GET", cuerpo, formulario, auth = true } = opciones;
   const token = obtenerAccessToken();
   const habiaSesion = token !== null || obtenerRefreshToken() !== null;
 
   const cabeceras: Record<string, string> = { Accept: "application/json" };
-  if (cuerpo !== undefined) cabeceras["Content-Type"] = "application/json";
+  if (formulario === undefined && cuerpo !== undefined) {
+    cabeceras["Content-Type"] = "application/json";
+  }
   if (auth && token) cabeceras.Authorization = `Bearer ${token}`;
 
   let respuesta: Response;
@@ -176,7 +187,9 @@ async function peticion<T>(
     respuesta = await fetch(`${URL_BASE}${ruta}`, {
       method,
       headers: cabeceras,
-      body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
+      body:
+        formulario ??
+        (cuerpo === undefined ? undefined : JSON.stringify(cuerpo)),
       cache: "no-store",
     });
   } catch {
@@ -675,4 +688,131 @@ export function obtenerEspacio(
   return peticion<EspacioDetalle>(
     conParametros(`/espacios/${id}`, { fecha }),
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* Censo de módulos y puestos (HU-13)                                  */
+/* ------------------------------------------------------------------ */
+
+/** Convierte una URL relativa del backend en URL absoluta para `<img>`. */
+export function urlArchivo(ruta: string | null | undefined): string | null {
+  if (!ruta) return null;
+  if (/^https?:\/\//i.test(ruta)) return ruta;
+  return `${URL_BASE}${ruta.startsWith("/") ? "" : "/"}${ruta}`;
+}
+
+function agregarCamposModulo(
+  formulario: FormData,
+  datos: Partial<SolicitudModulo>,
+): void {
+  if (datos.categoria !== undefined) {
+    formulario.append("categoria", datos.categoria);
+  }
+  if (datos.actividad !== undefined) {
+    formulario.append("actividad", datos.actividad);
+  }
+  if (datos.ubicacion !== undefined) {
+    formulario.append("ubicacion", JSON.stringify(datos.ubicacion));
+  }
+  if (datos.titularId !== undefined) {
+    formulario.append("titularId", datos.titularId);
+  }
+  if (datos.titularNombre !== undefined) {
+    formulario.append("titularNombre", datos.titularNombre);
+  }
+  if (datos.aceptaAdvertencia !== undefined) {
+    formulario.append(
+      "aceptaAdvertencia",
+      datos.aceptaAdvertencia ? "true" : "false",
+    );
+  }
+}
+
+/** Lista el censo con filtros por categoría, sector, estado y búsqueda. */
+export function listarModulos(
+  filtros: FiltrosModulos = {},
+): Promise<ListarModulosResponse> {
+  return peticion<ListarModulosResponse>(
+    conParametros("/modulos", {
+      categoria: filtros.categoria,
+      sector: filtros.sector,
+      estado: filtros.estado,
+      busqueda: filtros.busqueda,
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
+}
+
+/** Obtiene las zonas activas y categorías para los filtros. */
+export function obtenerOpcionesModulos(): Promise<OpcionesModulos> {
+  return peticion<OpcionesModulos>("/modulos/opciones");
+}
+
+/** Consulta la zona contenedora y las advertencias de un punto. */
+export function consultarZonaContenedora(
+  lat: number,
+  lng: number,
+): Promise<RespuestaZonaContenedora> {
+  return peticion<RespuestaZonaContenedora>(
+    conParametros("/modulos/zona-contenedora", { lat, lng }),
+  );
+}
+
+/** Ficha completa de un módulo. */
+export function obtenerModulo(id: string): Promise<ModuloDetalle> {
+  return peticion<ModuloDetalle>(`/modulos/${id}`);
+}
+
+/** Historial de auditoría de un módulo. */
+export function obtenerHistorialModulo(
+  id: string,
+  filtros: { pagina?: number; limite?: number } = {},
+): Promise<ModuloHistorial> {
+  return peticion<ModuloHistorial>(
+    conParametros(`/modulos/${id}/historial`, {
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
+}
+
+/** Censa un módulo con foto opcional. */
+export function crearModulo(
+  datos: SolicitudModulo,
+  foto?: File | null,
+): Promise<ModuloDetalle> {
+  const formulario = new FormData();
+  agregarCamposModulo(formulario, datos);
+  if (foto) formulario.append("foto", foto);
+  return peticion<ModuloDetalle>("/modulos", {
+    method: "POST",
+    formulario,
+  });
+}
+
+/** Edita los campos enviados de un módulo, con foto opcional. */
+export function actualizarModulo(
+  id: string,
+  datos: Partial<SolicitudModulo>,
+  foto?: File | null,
+): Promise<ModuloDetalle> {
+  const formulario = new FormData();
+  agregarCamposModulo(formulario, datos);
+  if (foto) formulario.append("foto", foto);
+  return peticion<ModuloDetalle>(`/modulos/${id}`, {
+    method: "PATCH",
+    formulario,
+  });
+}
+
+/** Da de baja o reactiva un módulo (baja lógica). */
+export function cambiarEstadoModulo(
+  id: string,
+  estado: "activo" | "baja",
+): Promise<RespuestaEstadoModulo> {
+  return peticion<RespuestaEstadoModulo>(`/modulos/${id}/estado`, {
+    method: "PATCH",
+    cuerpo: { estado },
+  });
 }

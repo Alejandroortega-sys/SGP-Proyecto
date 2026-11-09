@@ -6,10 +6,18 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { mkdirSync } from 'node:fs';
 import { AppModule } from './app.module';
+import { directorioUploads } from './modulos/foto';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Fotos del censo: se guardan en disco y se sirven desde el mismo backend.
+  // El frontend solo recibe una URL relativa (`/uploads/...`).
+  const uploads = directorioUploads();
+  mkdirSync(uploads, { recursive: true });
+  app.useStaticAssets(uploads, { prefix: '/uploads' });
 
   // CORS: el frontend (Next.js) corre en otro origen. Se permite únicamente
   // el origen configurado en FRONTEND_URL y los encabezados que usa la API

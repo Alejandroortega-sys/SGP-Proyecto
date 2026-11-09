@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { MulterError } from 'multer';
 import { Prisma } from '../../generated/prisma/client';
 
 /**
@@ -90,6 +91,7 @@ const FOREIGN_KEY_MESSAGE =
 /** Título estándar del campo `error` en el cuerpo de respuesta de NestJS. */
 const HTTP_ERROR_TITLES: Record<number, string> = {
   [HttpStatus.BAD_REQUEST]: 'Bad Request',
+  [HttpStatus.PAYLOAD_TOO_LARGE]: 'Payload Too Large',
   [HttpStatus.NOT_FOUND]: 'Not Found',
   [HttpStatus.CONFLICT]: 'Conflict',
   [HttpStatus.UNPROCESSABLE_ENTITY]: 'Unprocessable Entity',
@@ -303,6 +305,24 @@ export class PrismaExceptionFilter implements ExceptionFilter {
    */
   private defaultHandling(exception: unknown, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse();
+
+    // Errores de Multer (subida de fotos): no son HttpException y el filtro
+    // global los atraparía como 500. Se traducen a mensajes comprensibles.
+    if (exception instanceof MulterError) {
+      const esTamano = exception.code === 'LIMIT_FILE_SIZE';
+      const status = esTamano
+        ? HttpStatus.PAYLOAD_TOO_LARGE
+        : HttpStatus.BAD_REQUEST;
+      response.status(status).json({
+        statusCode: status,
+        message: esTamano
+          ? 'La foto supera el tamaño máximo permitido'
+          : 'No fue posible procesar el archivo adjunto',
+        error: HTTP_ERROR_TITLES[status] ?? 'Bad Request',
+        codigo: exception.code,
+      });
+      return;
+    }
 
     if (exception instanceof HttpException) {
       const status = exception.getStatus();

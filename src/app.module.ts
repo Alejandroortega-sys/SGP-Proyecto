@@ -16,6 +16,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProductosModule } from './productos/productos.module';
 import { CorreoModule } from './correo/correo.module';
 import { EspaciosModule } from './espacios/espacios.module';
+import { ModulosModule } from './modulos/modulos.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { ZonasModule } from './zonas/zonas.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
@@ -36,6 +37,7 @@ import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter'
     ProductosModule,
     ZonasModule,
     EspaciosModule,
+    ModulosModule,
   ],
   controllers: [AppController],
   providers: [

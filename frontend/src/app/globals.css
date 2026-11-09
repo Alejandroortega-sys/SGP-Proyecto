@@ -290,3 +290,24 @@ body {
   outline: 3px solid var(--color-primario);
   outline-offset: 3px;
 }
+
+/* ------------------------------------------------------------------ */
+/* HU-13: punto seleccionado del censo de módulos                      */
+/* ------------------------------------------------------------------ */
+
+.sgp-marcador-modulo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #ffffff;
+  border-radius: 9999px;
+  background-color: #0d5f3a;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.4);
+}
+
+.sgp-marcador-modulo span {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background-color: #ffffff;
+}

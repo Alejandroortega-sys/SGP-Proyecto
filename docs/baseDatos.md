@@ -273,6 +273,11 @@ inicial de las zonas existentes.
 
 CHECK: debe haber `titular_id` o `titular_nombre`.
 
+La migración `07_modulos_hu13.sql` agrega el trigger `trg_modulos_auditoria`,
+la secuencia `modulos_codigo_seq` para generar `MOD-####` y el índice
+`idx_modulos_categoria_estado`. El sector no es una columna: se deriva de la
+zona activa que contiene el punto.
+
 ### `espacios_temporales` — Catálogo de espacios asignables (HU-09, HU-15)
 | Campo | Tipo | Restricciones |
 |---|---|---|
@@ -544,6 +549,7 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 |---|---|---|
 | trg_usuarios_marca, trg_comerciantes_marca, trg_zonas_marca, trg_solicitudes_marca, trg_sesiones_marca | 5 tablas | fn_marca_actualizacion (BEFORE UPDATE) |
 | trg_usuarios_auditoria, trg_zonas_auditoria, trg_parametros_auditoria | 3 tablas | fn_auditoria (AFTER INSERT/UPDATE/DELETE) |
+| trg_modulos_auditoria | modulos | fn_auditoria_modulos (AFTER INSERT/UPDATE/DELETE, HU-13) |
 | trg_zonas_validar | zonas | fn_validar_zona (BEFORE INSERT/UPDATE) |
 | trg_permisos_traza | permisos | fn_permiso_trazabilidad (AFTER INSERT/UPDATE) |
 

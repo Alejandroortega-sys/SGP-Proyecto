@@ -851,3 +851,137 @@ export interface OpcionesEspacios {
   sectores: string[];
   actividades: string[];
 }
+
+/* ------------------------------------------------------------------ */
+/* Censo de módulos y puestos (HU-13)                                  */
+/* ------------------------------------------------------------------ */
+
+export type EstadoModulo = "activo" | "baja";
+
+/** Punto GeoJSON en WGS84, con coordenadas [longitud, latitud]. */
+export interface GeometriaPunto {
+  type: "Point";
+  coordinates: [number, number];
+}
+
+export interface TitularModulo {
+  id: string;
+  nombre: string;
+  apellido: string | null;
+  correo: string;
+}
+
+export interface ActorModulo {
+  id: string;
+  nombre: string;
+  apellido: string | null;
+  correo: string;
+}
+
+export interface ZonaContenedoraModulo {
+  id: string;
+  nombre: string;
+  tipo: TipoZona;
+  horarioInicio: string | null;
+  horarioFin: string | null;
+  aforoMaximo: number | null;
+  productos: string[];
+}
+
+export type TipoAdvertenciaModulo =
+  | "zona_restringida"
+  | "alta_congestion"
+  | "fuera_de_zona";
+
+export interface AdvertenciaModulo {
+  tipo: TipoAdvertenciaModulo;
+  mensaje: string;
+  requiereConfirmacion: boolean;
+}
+
+export interface ModuloListado {
+  id: string;
+  codigo: string;
+  categoria: CategoriaComercio;
+  titular: TitularModulo | null;
+  titularNombre: string | null;
+  actividad: string;
+  fotoUrl: string | null;
+  estado: EstadoModulo;
+  sector: string | null;
+  zonaContenedora: ZonaContenedoraModulo | null;
+  ubicacion: GeometriaPunto;
+  creadoEn: string;
+}
+
+export interface ModuloDetalle extends ModuloListado {
+  registradoPor: ActorModulo | null;
+  advertencias: AdvertenciaModulo[];
+}
+
+export interface ListarModulosResponse {
+  datos: ModuloListado[];
+  paginacion: Paginacion;
+}
+
+export interface OpcionesModulos {
+  sectores: string[];
+  categorias: CategoriaComercio[];
+}
+
+export interface RespuestaZonaContenedora {
+  zona: ZonaContenedoraModulo | null;
+  sector: string | null;
+  advertencias: AdvertenciaModulo[];
+  requiereConfirmacion: boolean;
+}
+
+export interface FiltrosModulos {
+  categoria?: CategoriaComercio;
+  sector?: string;
+  estado?: EstadoModulo | "todos";
+  busqueda?: string;
+  pagina?: number;
+  limite?: number;
+}
+
+export interface SolicitudModulo {
+  categoria: CategoriaComercio;
+  actividad: string;
+  ubicacion: GeometriaPunto;
+  titularId?: string;
+  titularNombre?: string;
+  aceptaAdvertencia?: boolean;
+}
+
+export interface RespuestaEstadoModulo {
+  id: string;
+  codigo: string;
+  estado: EstadoModulo;
+  mensaje: string;
+}
+
+export interface CambioModulo {
+  campo: string;
+  etiqueta: string;
+  anterior: unknown;
+  nuevo: unknown;
+}
+
+export interface ModuloHistorialItem {
+  id: string;
+  accion: "insert" | "update" | "delete";
+  creadoEn: string;
+  actor: ActorModulo | null;
+  cambios: CambioModulo[];
+}
+
+export interface ModuloHistorial {
+  modulo: {
+    id: string;
+    codigo: string;
+    estado: EstadoModulo;
+  };
+  datos: ModuloHistorialItem[];
+  paginacion: Paginacion;
+}

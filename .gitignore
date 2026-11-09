@@ -49,6 +49,9 @@ lerna-debug.log*
 .temp
 .tmp
 
+# Fotos subidas por el censo de módulos (HU-13)
+/uploads
+
 # Runtime data
 pids
 *.pid

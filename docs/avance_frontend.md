@@ -50,6 +50,10 @@ registro, activación, recuperación y primer acceso). Ahora incluye:
 | `/gestor/zonas/nueva` | `POST /zonas`, `GET /productos`, `GET /zonas/geojson` |
 | `/gestor/zonas/[id]/editar` | `GET /zonas/:id`, `PATCH /zonas/:id`, `GET /productos`, `GET /zonas/geojson` |
 | `/gestor/zonas/[id]/historial` | `GET /zonas/:id/historial` (HU-12) |
+| `/gestor/modulos` | `GET /modulos`, `GET /modulos/opciones`, `PATCH /modulos/:id/estado` |
+| `/gestor/modulos/nuevo` | `POST /modulos`, `GET /modulos/zona-contenedora` |
+| `/gestor/modulos/[id]` | `GET /modulos/:id`, `GET /modulos/:id/historial`, `PATCH /modulos/:id/estado` |
+| `/gestor/modulos/[id]/editar` | `GET /modulos/:id`, `PATCH /modulos/:id`, `GET /modulos/zona-contenedora` |
 | `/gestor/perfil` | `GET/PATCH /gestor/perfil`, `PATCH /gestor/perfil/password` |
 | `/gestor/usuarios` | `GET /gestor/usuarios` |
 | `/gestor/usuarios/[id]` | `GET /gestor/usuarios/:id`, `PATCH /gestor/usuarios/:id/estado`, `PATCH /usuarios/:id/comerciante`, `POST /gestor/gestores/:id/reenviar-invitacion` |
@@ -370,3 +374,14 @@ jest.config.ts                                            (excluye frontend de J
    pnpm test:e2e -- --runInBand
    ```
 5. No crear endpoints nuevos para los Sprints 2–6 hasta que existan en `src/`.
+
+## 9. Censo de módulos y puestos (HU-13)
+
+- Rutas: `/gestor/modulos`, `/gestor/modulos/nuevo`, `/gestor/modulos/[id]` y `/gestor/modulos/[id]/editar`.
+- Formulario con selección del punto sobre Leaflet, categoría, titular registrado o libre, actividad y foto opcional.
+- Consulta de la zona contenedora y confirmación obligatoria en zona restringida.
+- Listado con filtros por sector derivado de la zona (incluye «Sin zona»), categoría, estado y búsqueda.
+- Ficha con foto, restricciones de la zona, baja/reactivación e historial de auditoría.
+- Cliente API con `FormData` para alta y edición multipart.
+- Pruebas Vitest de validaciones y textos; Playwright de alta, advertencia, foto, filtros, baja y responsive.
+- Detalle: [`docs/Uso_modulos.md`](Uso_modulos.md).

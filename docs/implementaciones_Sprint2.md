@@ -18,7 +18,8 @@
 | **HU-10 — Buscar y filtrar espacios** | **Implementada** (filtros, disponibilidad por fecha/hora, panel y sin resultados; búsqueda de calles/barrios fuera de alcance) |
 | **HU-11 — Delimitar y clasificar zonas** | **Completo** | **Editor, clasificación, restricciones y validaciones** | **Implementada de extremo a extremo** |
 | HU-12 — Editar, desactivar y auditar zonas | Backend de edición/desactivación, versionado e historial | Edición, desactivación, línea de tiempo y comparación de geometrías | **Completa** |
-| HU-13, HU-14, HU-15 | Pendientes | Pendientes | Pendientes |
+| **HU-13 — Censo de módulos y puestos** | **Completo** | **Formulario, mapa, listado y ficha** | **Implementada de extremo a extremo** |
+| HU-14, HU-15 | Pendientes | Pendientes | Pendientes |
 
 **Estado actual del Sprint 2:** el Geo-Portal público funciona con Leaflet, zonas coloreadas, leyenda, capas, popup, geolocalización y API GeoJSON con simplificación por zoom. El comerciante ya puede consultar los espacios disponibles en tabla o mapa, ver su ficha y distinguir los estados bloqueado, ocupado y en mantenimiento. El gestor administrador ya puede dibujar zonas, clasificarlas, definir sus restricciones, editarlas y desactivarlas; el revisor accede en modo lectura.
 
@@ -319,6 +320,26 @@ el esquema ni la API.
 | `frontend/e2e/limpieza-zonas.ts` | Limpieza SQL de zonas de prueba |
 | `frontend/package.json` y `frontend/pnpm-lock.yaml` | `leaflet` y `@types/leaflet` |
 
+### HU-13 — Censo de módulos y puestos
+
+| Archivo | Cambio |
+|---|---|
+| `dataBase/07_modulos_hu13.sql` | Trigger de auditoría, secuencia de códigos, índice y auditoría inicial |
+| `src/modulos/modulos.module.ts` | Módulo NestJS |
+| `src/modulos/modulos.controller.ts` | Endpoints, Swagger y multipart |
+| `src/modulos/modulos.service.ts` | Listado, ficha, zona, alta, edición, baja e historial |
+| `src/modulos/dto/modulos.dto.ts` | DTOs y contratos de respuesta |
+| `src/modulos/advertencias.ts` | Advertencias de zona restringida/alta congestión/fuera de zona |
+| `src/modulos/foto.ts` | Validación por firma binaria, guardado y limpieza |
+| `src/modulos/historial.ts` | Cambios legibles desde auditoría |
+| `src/modulos/*.spec.ts` | Pruebas unitarias |
+| `test/modulos.e2e-spec.ts` | Pruebas e2e de API |
+| `frontend/src/app/(gestor)/gestor/modulos/**` | Rutas de listado, alta, ficha y edición |
+| `frontend/src/features/modulos/**` | Listado, formulario, mapa, ficha, foto y validaciones |
+| `frontend/src/types/api.ts` · `frontend/src/lib/api-client.ts` | Tipos y cliente con `FormData` |
+| `frontend/e2e/modulos.spec.ts` · `frontend/e2e/limpieza-modulos.ts` | Playwright y limpieza de módulos/fotos |
+| `docs/Uso_modulos.md` | Documentación funcional y de pruebas |
+
 ### Documentación
 
 | Archivo | Cambio |
@@ -416,7 +437,7 @@ Resultado: `FeatureCollection` con las 4 zonas activas del seed.
 | **HU-10** Buscar y filtrar | Filtros y disponibilidad por fecha/hora | Panel de filtros, conteo y sin resultados | **Implementada** (sin buscador de calles/barrios) |
 | **HU-11** Delimitar y clasificar zonas | Crear, clasificar, restricciones y validación | Editor de polígonos, formulario, listado y validaciones | **Implementada de extremo a extremo** |
 | **HU-12** Editar, desactivar y auditar | Editar, desactivar, versionado e historial | Edición, vista previa, baja lógica, línea de tiempo y mapa comparativo | **Implementada** |
-| **HU-13** Censar módulos y puestos | Nada | Nada | Pendiente |
+| **HU-13** Censar módulos y puestos | API, foto, auditoría e historial | Formulario, mapa, listado y ficha | **Implementada** |
 | **HU-14** Importar GeoJSON/CSV | Nada | Nada | Pendiente |
 | **HU-15** Espacios temporales y bloqueos | Nada | Nada | Pendiente |
 
@@ -440,13 +461,20 @@ previa y la confirmación de desactivación siguen disponibles en el editor.
 
 ### HU-13 — Censo de módulos
 
-- CRUD de módulos y puestos.
-- Foto con validación real de tipo y tamaño.
-- Filtros por sector y categoría.
-- Baja lógica.
-- Advertencia al ubicar un módulo en zona restringida.
+**Implementada.** El gestor revisor y el administrador pueden censar, editar,
+dar de baja y reactivar módulos y puestos de comercio formal e informal.
 
-**Bloqueo:** no hay módulo de subida de archivos ni `UPLOAD_MAX_BYTES` configurado.
+- Punto geográfico seleccionado sobre Leaflet.
+- Categoría formal/informal y titular registrado o nombre libre.
+- Foto opcional con validación real por firma binaria y límite de 5 MB.
+- Sector derivado de la zona contenedora, con opción «Sin zona».
+- Consulta de la zona contenedora y confirmación explícita en zona restringida.
+- Listado con filtros por sector, categoría, estado y búsqueda.
+- Baja lógica con fila conservada, auditoría e historial en la ficha.
+- Código automático `MOD-####` mediante secuencia.
+- Migración `dataBase/07_modulos_hu13.sql`.
+
+Detalle funcional y de pruebas: [`docs/Uso_modulos.md`](Uso_modulos.md).
 
 ### HU-14 — Importación
 
@@ -557,4 +585,6 @@ La **HU-11** quedó implementada de extremo a extremo: listado administrativo, e
 
 La **HU-12** quedó implementada: edición de la geometría con vista previa, desactivación lógica, versionado inmutable de geometrías y restricciones, endpoint de historial, línea de tiempo con actor y fecha, y mapa de comparación entre versiones. Las solicitudes históricas no se eliminan ni se modifican al desactivar una zona.
 
-El Sprint 2 sigue **incompleto**: faltan HU-13, HU-14 y HU-15. El checklist de «Sprint terminado» de `Sprint2_Funcinalidades.md` todavía no se cumple por esas historias.
+La **HU-13** quedó implementada de extremo a extremo: censo de módulos y puestos, foto validada, sector derivado de la zona, advertencia de zona restringida, listado con filtros, baja lógica, reactivación e historial de auditoría.
+
+El Sprint 2 sigue **incompleto**: faltan HU-14 y HU-15. El checklist de «Sprint terminado» de `Sprint2_Funcinalidades.md` todavía no se cumple por esas historias.
