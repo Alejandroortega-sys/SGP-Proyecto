@@ -16,12 +16,13 @@
 | **HU-08 — Mapa público de zonas** | **Implementada de extremo a extremo** |
 | **HU-09 — Espacios disponibles y ficha** | **Implementada de extremo a extremo** |
 | **HU-10 — Buscar y filtrar espacios** | **Implementada** (filtros, disponibilidad por fecha/hora, panel y sin resultados; búsqueda de calles/barrios fuera de alcance) |
-| **HU-11 — Delimitar y clasificar zonas** | **Completo** | **Editor, clasificación, restricciones y validaciones** | **Implementada de extremo a extremo** |
-| HU-12 — Editar, desactivar y auditar zonas | Backend de edición/desactivación, versionado e historial | Edición, desactivación, línea de tiempo y comparación de geometrías | **Completa** |
-| **HU-13 — Censo de módulos y puestos** | **Completo** | **Formulario, mapa, listado y ficha** | **Implementada de extremo a extremo** |
-| HU-14, HU-15 | Pendientes | Pendientes | Pendientes |
+| **HU-11 — Delimitar y clasificar zonas** | **Implementada de extremo a extremo** (editor, clasificación, restricciones y validaciones) |
+| HU-12 — Editar, desactivar y auditar zonas | **Completa** (edición, desactivación, versionado, línea de tiempo y comparación) |
+| **HU-13 — Censo de módulos y puestos** | **Implementada de extremo a extremo** (formulario, mapa, listado y ficha) |
+| **HU-14 — Importar GeoJSON/CSV** | **Implementada de extremo a extremo** (lector, reproyección, CSV, reporte y pruebas) |
+| HU-15 — Espacios temporales y bloqueos | Pendiente |
 
-**Estado actual del Sprint 2:** el Geo-Portal público funciona con Leaflet, zonas coloreadas, leyenda, capas, popup, geolocalización y API GeoJSON con simplificación por zoom. El comerciante ya puede consultar los espacios disponibles en tabla o mapa, ver su ficha y distinguir los estados bloqueado, ocupado y en mantenimiento. El gestor administrador ya puede dibujar zonas, clasificarlas, definir sus restricciones, editarlas y desactivarlas; el revisor accede en modo lectura.
+**Estado actual del Sprint 2:** el Geo-Portal público funciona con Leaflet, zonas coloreadas, leyenda, capas, popup, geolocalización y API GeoJSON con simplificación por zoom. El comerciante ya puede consultar los espacios disponibles en tabla o mapa, ver su ficha y distinguir los estados bloqueado, ocupado y en mantenimiento. El gestor administrador ya puede dibujar zonas, clasificarlas, definir sus restricciones, editarlas, desactivarlas e importar zonas desde GeoJSON; el revisor accede en modo lectura e importa módulos desde CSV. Ambos consultan y descargan el reporte de errores de cada importación.
 
 ---
 
@@ -242,6 +243,62 @@ el esquema ni la API.
   solapes, API real contra PostGIS y modo lectura del revisor.
 - Las zonas de prueba se eliminan por SQL al terminar, junto con su auditoría.
 
+### 2.12 HU-14 — Importación de zonas y módulos
+
+#### Alcance
+
+- Carga de un GeoJSON de zonas y un CSV de módulos.
+- Previsualización con resumen, mapa Leaflet y tabla de filas.
+- Confirmación parcial: se importan las filas válidas y se rechazan las demás.
+- Reporte de errores descargable en CSV UTF-8 con BOM.
+- Flujo completo: cargar, previsualizar, confirmar y reportar.
+
+#### Backend
+
+- Módulo `src/importaciones/` con endpoints bajo `/importaciones`.
+- GeoJSON: `FeatureCollection` o `Feature`, solo `Polygon`, anillos cerrados,
+  propiedades `nombre`, `tipo`, horarios, aforo y productos.
+- Reproyección a EPSG:4326 con PostGIS `ST_Transform`; el SRID se lee del
+  miembro `crs` o se selecciona en la interfaz. Si ambos existen deben coincidir.
+- Validación topológica con `ST_IsValid` y detección de solapes contra zonas
+  activas y entre candidatas del mismo archivo.
+- CSV: parser RFC 4180 con BOM, coma o punto y coma, comillas y saltos internos;
+  coma decimal en archivos con punto y coma.
+- Columnas: `categoria`, `actividad`, `latitud`, `longitud` y exactamente uno de
+  `titular_documento` o `titular_nombre`.
+- Las filas en zona restringida exigen confirmación global; sin ella se rechazan.
+- La confirmación reutiliza `ZonasService.crear` y `ModulosService.crear`, por lo
+  que se mantienen triggers, versionado, código automático y auditoría.
+- Previsualizaciones en memoria con TTL de 30 minutos y máximo 20 entradas.
+  Confirmación idempotente y revalidación contra cambios de la BD.
+- Reporte CSV con resumen, filas rechazadas, escape RFC 4180 y saneamiento de
+  fórmulas de Excel.
+
+#### Frontend
+
+- Ruta `/gestor/importaciones` con enlace «Importar» en el menú del gestor y
+  acceso rápido en el panel.
+- Pestañas por tipo; el revisor solo ve módulos.
+- Selector de SRID, plantillas descargables y validación previa del archivo.
+- Mapa de previsualización con zonas activas en gris y filas coloreadas por
+  estado.
+- Tabla de escritorio y tarjetas móviles; casilla de confirmación para zonas
+  restringidas.
+- Descarga del reporte desde el navegador y enlaces al listado de zonas o
+  módulos.
+- Estados de carga, vacío, error y éxito; vista a 360 px.
+
+#### Pruebas
+
+- Unitarias: parser CSV, lector GeoJSON, reporte, almacén y servicio.
+- E2E backend: roles, preview válido/parcial, formato incorrecto, confirmación,
+  zona restringida, reporte, token de otro gestor y token expirado.
+- Vitest: validaciones, formatos y plantillas.
+- Playwright: pestañas por perfil, GeoJSON parcial, CSV parcial con zona
+  restringida, formato incorrecto, descarga del reporte y vista móvil.
+
+Detalle completo: [`docs/Uso_importaciones.md`](Uso_importaciones.md).
+
 ---
 
 ## 3. Archivos implementados o modificados
@@ -340,12 +397,38 @@ el esquema ni la API.
 | `frontend/e2e/modulos.spec.ts` · `frontend/e2e/limpieza-modulos.ts` | Playwright y limpieza de módulos/fotos |
 | `docs/Uso_modulos.md` | Documentación funcional y de pruebas |
 
+### HU-14 — Importación de zonas y módulos
+
+| Archivo | Cambio |
+|---|---|
+| `src/importaciones/importaciones.module.ts` | Módulo de importación; importa zonas y módulos. |
+| `src/importaciones/importaciones.controller.ts` | Endpoints, multipart, perfiles y Swagger. |
+| `src/importaciones/importaciones.service.ts` | Preview, confirmación, revalidación y reporte. |
+| `src/importaciones/almacen-previsualizaciones.ts` | Tokens en memoria con TTL y máximo de entradas. |
+| `src/importaciones/csv.ts` | Parser CSV con BOM, delimitador y encabezados. |
+| `src/importaciones/geojson.ts` | Features, polígonos, propiedades y CRS. |
+| `src/importaciones/reporte.ts` | Reporte CSV con BOM y saneamiento. |
+| `src/importaciones/errores.ts` | Errores de archivo/fila y traducción de BD. |
+| `src/importaciones/dto/importaciones.dto.ts` | DTOs de entrada y respuesta. |
+| `src/importaciones/*.spec.ts` | Pruebas unitarias de parser, GeoJSON, reporte, almacén, servicio y controlador. |
+| `test/importaciones.e2e-spec.ts` | Pruebas e2e de los endpoints. |
+| `src/zonas/zonas.module.ts` · `src/modulos/modulos.module.ts` | Exportan sus servicios para reutilizarlos. |
+| `src/app.module.ts` | Registra `ImportacionesModule`. |
+| `frontend/src/app/(gestor)/gestor/importaciones/page.tsx` | Ruta de importación. |
+| `frontend/src/features/importaciones/**` | Flujo, selectores, mapa, tabla, reporte y validaciones. |
+| `frontend/src/features/importaciones/validaciones-importacion.test.ts` | Pruebas Vitest. |
+| `frontend/e2e/importaciones.spec.ts` · `frontend/e2e/limpieza-importaciones.ts` | Playwright y limpieza SQL. |
+| `frontend/src/lib/api-client.ts` · `frontend/src/types/api.ts` | Cliente y tipos de importación. |
+| `frontend/src/features/sesion/marco-sesion.tsx` · `frontend/src/features/gestor/panel-gestor.tsx` | Enlaces «Importar». |
+| `docs/Uso_importaciones.md` | Documentación funcional, formatos y pruebas. |
+
 ### Documentación
 
 | Archivo | Cambio |
 |---|---|
 | `docs/Uso_zonas.md` | Parámetro `zoom`, interfaz de HU-11, validaciones y pruebas |
-| `frontend/README.md` | Rutas de zonas y comandos de verificación |
+| `frontend/README.md` | Rutas de zonas, módulos, importación y comandos |
+| `docs/Uso_importaciones.md` | Formatos, endpoints, flujo y pruebas de HU-14 |
 | `docs/implementaciones_Sprint2.md` | Este documento |
 
 ---
@@ -354,23 +437,23 @@ el esquema ni la API.
 
 | Suite | Resultado |
 |---|---|
-| Backend unitarias | **29 suites, 307 pruebas aprobadas** |
-| Backend e2e | **9 suites, 91 pruebas aprobadas** |
+| Backend unitarias | **41 suites, 391 pruebas aprobadas** |
+| Backend e2e | **11 suites, 114 pruebas aprobadas** |
 | Backend zonas (unitarias) | **3 suites, 39 pruebas aprobadas** |
-| Frontend Vitest | **9 archivos, 59 pruebas aprobadas** |
-| Frontend Playwright | **50 pruebas ejecutadas: 43 aprobadas y 7 fallos preexistentes en `espacios.spec.ts`**; las 4 pruebas de zonas pasan |
+| Frontend Vitest | **13 archivos, 81 pruebas aprobadas** |
+| Frontend Playwright | **60 pruebas: 52 aprobadas y 8 fallos preexistentes en `espacios.spec.ts`**; las 5 pruebas de importación pasan |
 | Backend lint | Sin errores |
 | Backend build | Correcto |
 | Frontend `tsc --noEmit` | Sin errores |
 | Frontend lint | Sin errores |
-| Frontend build | Correcto (32 rutas) |
+| Frontend build | Correcto (38 rutas) |
 
-> **Nota sobre los 7 fallos de `espacios.spec.ts`:** no están relacionados con HU-11.
+> **Nota sobre los 8 fallos de `espacios.spec.ts`:** no están relacionados con HU-11 ni con HU-14.
 > El seed tiene un permiso vigente del `2026-11-01` al `2026-11-30` para el
-> espacio 1; al ejecutar la suite el `2026-11-01`, el espacio aparece ocupado y
-> quedan 2 disponibles, mientras las pruebas esperan 3. Es un supuesto de fecha
-> preexistente en esas pruebas. Las pruebas de zonas contra la API y la BD real
-> pasan completas.
+> espacio 1; al ejecutar la suite dentro de esa vigencia, el espacio aparece
+> ocupado y quedan 2 disponibles, mientras las pruebas esperan 3. Es un supuesto
+> de fecha preexistente en esas pruebas. Las pruebas de zonas contra la API y la
+> BD real pasan completas.
 
 Comandos usados:
 
@@ -438,7 +521,7 @@ Resultado: `FeatureCollection` con las 4 zonas activas del seed.
 | **HU-11** Delimitar y clasificar zonas | Crear, clasificar, restricciones y validación | Editor de polígonos, formulario, listado y validaciones | **Implementada de extremo a extremo** |
 | **HU-12** Editar, desactivar y auditar | Editar, desactivar, versionado e historial | Edición, vista previa, baja lógica, línea de tiempo y mapa comparativo | **Implementada** |
 | **HU-13** Censar módulos y puestos | API, foto, auditoría e historial | Formulario, mapa, listado y ficha | **Implementada** |
-| **HU-14** Importar GeoJSON/CSV | Nada | Nada | Pendiente |
+| **HU-14** Importar GeoJSON/CSV | Lector, reproyección, CSV, reporte y pruebas | Carga, previsualización en mapa, tabla y reporte | **Implementada de extremo a extremo** |
 | **HU-15** Espacios temporales y bloqueos | Nada | Nada | Pendiente |
 
 ---
@@ -450,6 +533,10 @@ Resultado: `FeatureCollection` con las 4 zonas activas del seed.
 > **HU-10 ya está implementada** (ver §2.10), salvo el buscador de calles/barrios, que se excluyó por decisión del alcance.
 
 > **HU-11 ya está implementada de extremo a extremo** (ver §2.11). Queda fuera de esta lista de pendientes.
+
+> **HU-14 ya está implementada de extremo a extremo** (ver §2.12 y
+> [`Uso_importaciones.md`](Uso_importaciones.md)). Queda fuera de esta lista de
+> pendientes.
 
 ### HU-12 — Historial de cambios
 
@@ -478,11 +565,18 @@ Detalle funcional y de pruebas: [`docs/Uso_modulos.md`](Uso_modulos.md).
 
 ### HU-14 — Importación
 
-- Carga de GeoJSON de zonas y CSV de módulos.
-- Previsualización antes de confirmar.
-- Resumen de importados y rechazados.
-- Reporte de errores descargable.
-- Importación parcial de filas válidas.
+**Implementada.** El gestor administrador importa zonas desde GeoJSON y el
+revisor o administrador importa módulos desde CSV.
+
+- Lector GeoJSON con validación de polígonos, propiedades y reproyección a
+  EPSG:4326 con PostGIS.
+- Parser CSV con errores por fila, resolución de titular y zona contenedora.
+- Previsualización con mapa, tabla, resumen y confirmación global de zonas
+  restringidas.
+- Confirmación parcial e idempotente; la BD vuelve a validar cada fila.
+- Reporte CSV UTF-8 con BOM descargable.
+
+Detalle funcional y de pruebas: [`docs/Uso_importaciones.md`](Uso_importaciones.md).
 
 ### HU-15 — Espacios temporales y bloqueos
 
@@ -498,7 +592,8 @@ Detalle funcional y de pruebas: [`docs/Uso_modulos.md`](Uso_modulos.md).
 
 - Triggers de auditoría para `modulos`, `espacios_temporales` y `espacio_bloqueos`.
 - Medición formal del rendimiento del mapa y las consultas (<2 s).
-- Documentación de los módulos de espacios, censo, bloqueos e importación.
+- Documentación de los módulos de espacios, censo y bloqueos (la importación ya
+  está documentada en `Uso_importaciones.md`).
 - Pruebas de aceptación con el Product Owner.
 
 ---
@@ -571,6 +666,17 @@ No se requiere iniciar sesión para consultar el mapa.
    - Entrar como revisor (`revisor@tulua.gov.co` / `Admin1234`) y comprobar el
      modo lectura.
 
+10. Abrir `http://localhost:3001/gestor/importaciones` y verificar HU-14:
+    - Descargar la plantilla CSV y cargarla: debe previsualizarse y confirmarse.
+    - Cargar un GeoJSON con un polígono libre y otro solapado: el solapado debe
+      quedar rechazado.
+    - Cargar un CSV con una fila válida, una con categoría incorrecta y una en
+      «Entorno Hospital».
+    - Confirmar sin marcar la casilla: la fila restringida debe rechazarse.
+    - Repetir marcando la casilla: debe importarse.
+    - Descargar el reporte CSV y comprobar el resumen y los motivos.
+    - Entrar como revisor y comprobar que solo aparece la pestaña de módulos.
+
 ---
 
 ## 9. Conclusión
@@ -587,4 +693,6 @@ La **HU-12** quedó implementada: edición de la geometría con vista previa, de
 
 La **HU-13** quedó implementada de extremo a extremo: censo de módulos y puestos, foto validada, sector derivado de la zona, advertencia de zona restringida, listado con filtros, baja lógica, reactivación e historial de auditoría.
 
-El Sprint 2 sigue **incompleto**: faltan HU-14 y HU-15. El checklist de «Sprint terminado» de `Sprint2_Funcinalidades.md` todavía no se cumple por esas historias.
+La **HU-14** quedó implementada de extremo a extremo: importación de zonas desde GeoJSON con validación de geometrías y reproyección a EPSG:4326, importación de módulos desde CSV con reporte de errores por fila, previsualización sobre el mapa, confirmación parcial idempotente y reporte CSV descargable. La pantalla funciona en escritorio y a 360 px, y las pruebas cubren archivos válidos, parcialmente válidos y con formato incorrecto.
+
+El Sprint 2 sigue **incompleto**: falta HU-15. El checklist de «Sprint terminado» de `Sprint2_Funcinalidades.md` todavía no se cumple por esa historia.

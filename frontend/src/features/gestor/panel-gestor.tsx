@@ -60,7 +60,7 @@ export function PanelGestor() {
             {textoPerfil(gestor.perfil)}
           </span>
           . {gestor.perfil === "revisor"
-            ? "Puedes consultar la información y censar módulos; las demás acciones de escritura están reservadas al administrador."
+            ? "Puedes consultar la información y censar módulos; las acciones de escritura están reservadas al administrador."
             : "Puedes administrar cuentas, validar organizaciones, gestionar zonas y consultar la auditoría."}
         </p>
       </section>
@@ -192,6 +192,12 @@ export function PanelGestor() {
             className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
           >
             Censar módulos
+          </Link>
+          <Link
+            href="/gestor/importaciones"
+            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+          >
+            Importar datos
           </Link>
           <Link
             href="/gestor/usuarios"

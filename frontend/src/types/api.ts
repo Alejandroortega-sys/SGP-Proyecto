@@ -985,3 +985,90 @@ export interface ModuloHistorial {
   datos: ModuloHistorialItem[];
   paginacion: Paginacion;
 }
+
+/* ------------------------------------------------------------------ */
+/* Importación de zonas y módulos (HU-14)                              */
+/* ------------------------------------------------------------------ */
+
+export type TipoImportacion = "zonas" | "modulos";
+
+export type EstadoFilaImportacion = "valida" | "rechazada" | "advertencia";
+
+export interface SridOpcion {
+  srid: number;
+  etiqueta: string;
+}
+
+export interface SridsImportacion {
+  comunes: SridOpcion[];
+  permiteOtro: boolean;
+}
+
+export interface ZonaPreviewImportacion {
+  id: string;
+  nombre: string;
+  tipo: TipoZona;
+}
+
+export interface FilaPreviewImportacion {
+  fila: number;
+  estado: EstadoFilaImportacion;
+  datos: Record<string, unknown>;
+  geometria?: GeometriaPoligono | GeometriaPunto;
+  zonaContenedora?: ZonaPreviewImportacion | null;
+  errores: string[];
+  advertencias: string[];
+  requiereConfirmacion?: boolean;
+}
+
+export interface ResumenPreviewImportacion {
+  total: number;
+  validas: number;
+  rechazadas: number;
+  advertencias: number;
+}
+
+export interface PrevisualizacionImportacion {
+  token: string;
+  tipo: TipoImportacion;
+  expiraEn: string;
+  archivo: { nombre: string; bytes: number };
+  sridOrigen: number | null;
+  sridDetectado: boolean;
+  resumen: ResumenPreviewImportacion;
+  filas: FilaPreviewImportacion[];
+}
+
+export interface ImportadoImportacion {
+  fila: number;
+  id: string;
+  codigo?: string;
+  nombre: string;
+}
+
+export interface RechazadoImportacion {
+  fila: number;
+  motivo: string;
+}
+
+export interface ResumenConfirmacionImportacion {
+  total: number;
+  importados: number;
+  rechazados: number;
+  conAdvertencia: number;
+}
+
+export interface ReporteImportacionInfo {
+  disponible: boolean;
+  nombreArchivo: string;
+  url: string;
+}
+
+export interface ConfirmacionImportacion {
+  token: string;
+  tipo: TipoImportacion;
+  resumen: ResumenConfirmacionImportacion;
+  importados: ImportadoImportacion[];
+  rechazados: RechazadoImportacion[];
+  reporte: ReporteImportacionInfo;
+}

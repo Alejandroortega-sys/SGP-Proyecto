@@ -13,5 +13,6 @@ import { ZonasService } from './zonas.service';
 @Module({
   controllers: [ZonasController],
   providers: [ZonasService, ThrottlerGuard],
+  exports: [ZonasService],
 })
 export class ZonasModule {}

@@ -75,19 +75,21 @@ src/
 │   ├── inicio/                 # Resumen de comerciante y organizador
 │   ├── perfil/                 # Perfil editable + cambio de contraseña
 │   ├── organizador/            # Onboarding y edición de la organización
-│   ├── gestor/                 # Panel, listados, detalles, auditoría y zonas
-zonas/                  # Listado, editor y clasificación de zonas
+│   ├── gestor/                 # Panel, listados, detalles y auditoría
+│   ├── zonas/                  # Listado, editor y clasificación de zonas
+│   ├── modulos/                # Censo, ficha y formulario de módulos
+│   ├── importaciones/          # Carga, previsualización, mapa y reporte
 │   └── notificaciones/         # Bandeja de notificaciones
 ├── hooks/
 │   ├── use-sesion.ts           # Restaura la sesión con GET /auth/me
 │   └── use-consulta-api.ts     # Carga, error y recarga de consultas
 ├── lib/
-│   ├── api-client.ts           # ÚNICO punto de HTTP (36 endpoints)
+│   ├── api-client.ts           # ÚNICO punto de HTTP de la aplicación
 │   ├── sesion.ts               # accessToken / refreshToken / usuario
 │   ├── rutas.ts                # Redirección por rol
 │   ├── formato.ts              # Fechas, roles, categorías y resúmenes
 │   └── validaciones.ts         # Reglas espejo de los DTOs del backend
-└── types/api.ts                # Contrato completo del Sprint 1
+└── types/api.ts                # Contrato de la API usado por el frontend
 ```
 
 ---
@@ -112,7 +114,7 @@ zonas/                  # Listado, editor y clasificación de zonas
 
 **Organizador:** `/organizador/inicio` · `/organizador/perfil` · `/organizador/mi-organizacion`
 
-**Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/zonas` · `/gestor/zonas/nueva` · `/gestor/zonas/[id]/editar` · `/gestor/zonas/[id]/historial` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
+**Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/zonas` · `/gestor/zonas/nueva` · `/gestor/zonas/[id]/editar` · `/gestor/zonas/[id]/historial` · `/gestor/modulos` · `/gestor/modulos/nuevo` · `/gestor/modulos/[id]` · `/gestor/modulos/[id]/editar` · `/gestor/importaciones` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
 
 **Transversal:** `/notificaciones`
 
@@ -133,7 +135,7 @@ zonas/                  # Listado, editor y clasificación de zonas
 El detalle funcional y de pruebas está en [`docs/Uso_zonas.md`](../docs/Uso_zonas.md)
 y [`docs/implementaciones_Sprint2.md`](../docs/implementaciones_Sprint2.md).
 
-Los módulos de mapa, solicitudes, ferias, permisos QR, cobros y dashboard (Sprints 2 a 6) se muestran como "Próximamente" y no consumen endpoints inexistentes. El detalle del avance y los pendientes está en [`docs/avance_frontend.md`](../docs/avance_frontend.md).
+Los módulos de solicitudes, ferias, permisos QR, cobros y dashboard (Sprints 3 a 6) se muestran como "Próximamente" y no consumen endpoints inexistentes. El detalle del avance y los pendientes está en [`docs/avance_frontend.md`](../docs/avance_frontend.md).
 
 ---
 
@@ -143,7 +145,7 @@ Los módulos de mapa, solicitudes, ferias, permisos QR, cobros y dashboard (Spri
 pnpm lint      # ESLint sin errores
 pnpm test      # Vitest: funciones de rutas, formato y validaciones
 pnpm test:e2e  # Playwright: flujos reales de todos los módulos
-pnpm build     # build verde (32 rutas)
+pnpm build     # build verde (38 rutas)
 ```
 
 Las pruebas e2e usan **Microsoft Edge** (`channel: "msedge"`) y levantan la API y el
@@ -160,3 +162,16 @@ Para probar los flujos contra la API real, consulta la sección *"Cómo probar l
 - `/gestor/modulos/[id]/editar`: edición del censo.
 - El backend valida la foto por MIME, firma binaria y tamaño máximo de 5 MB.
 - Detalle funcional: [`docs/Uso_modulos.md`](../docs/Uso_modulos.md).
+
+## Importación de zonas y módulos (HU-14)
+
+- `/gestor/importaciones`: flujo de carga, previsualización, confirmación y
+  reporte.
+- Administrador: GeoJSON de zonas y CSV de módulos. Revisor: solo CSV de módulos.
+- GeoJSON: validación de polígonos, detección de solapes y reproyección a
+  EPSG:4326 con PostGIS.
+- CSV: errores por fila, resolución de titular y zona contenedora, y confirmación
+  global para zonas restringidas.
+- Mapa de previsualización con zonas de contexto y filas coloreadas por estado.
+- Reporte de errores descargable en CSV UTF-8 con BOM.
+- Detalle funcional: [`docs/Uso_importaciones.md`](../docs/Uso_importaciones.md).

@@ -1,6 +1,7 @@
 import type {
   ComercianteActualizado,
   ComercianteListado,
+  ConfirmacionImportacion,
   CuerpoError,
   EspacioDetalle,
   FiltrosAuditoria,
@@ -31,6 +32,7 @@ import type {
   Panel,
   Perfil,
   PerfilGestorCompleto,
+  PrevisualizacionImportacion,
   RespuestaActivacion,
   RespuestaCambioEstadoOrganizacion,
   RespuestaCambioEstadoUsuario,
@@ -57,6 +59,7 @@ import type {
   SolicitudRegistroOrganizador,
   SolicitudRestablecer,
   SolicitudZona,
+  SridsImportacion,
   UsuarioDetalle,
   UsuarioListado,
   UsuarioSesion,
@@ -205,6 +208,56 @@ async function peticion<T>(
     if (!reintento) {
       const accessToken = await rotarSesion();
       if (accessToken) return peticion<T>(ruta, opciones, true);
+    }
+    limpiarSesion();
+    redirigirALogin();
+  }
+
+  throw await construirError(respuesta);
+}
+
+interface RespuestaArchivo {
+  blob: Blob;
+  nombreArchivo: string;
+}
+
+/** Descarga autenticada de un archivo, con la misma rotación de sesión. */
+async function peticionArchivo(
+  ruta: string,
+  reintento = false,
+): Promise<RespuestaArchivo> {
+  const token = obtenerAccessToken();
+  const habiaSesion = token !== null || obtenerRefreshToken() !== null;
+
+  const cabeceras: Record<string, string> = { Accept: "text/csv" };
+  if (token) cabeceras.Authorization = `Bearer ${token}`;
+
+  let respuesta: Response;
+  try {
+    respuesta = await fetch(`${URL_BASE}${ruta}`, {
+      headers: cabeceras,
+      cache: "no-store",
+    });
+  } catch {
+    throw new ApiError(
+      0,
+      "No pudimos conectar con el servidor. Verifica tu conexión e inténtalo de nuevo.",
+    );
+  }
+
+  if (respuesta.ok) {
+    const disposicion = respuesta.headers.get("Content-Disposition") ?? "";
+    const coincidencia = /filename="?([^";]+)"?/i.exec(disposicion);
+    return {
+      blob: await respuesta.blob(),
+      nombreArchivo: coincidencia?.[1] ?? "reporte-importacion.csv",
+    };
+  }
+
+  if (respuesta.status === 401 && habiaSesion) {
+    if (!reintento) {
+      const accessToken = await rotarSesion();
+      if (accessToken) return peticionArchivo(ruta, true);
     }
     limpiarSesion();
     redirigirALogin();
@@ -815,4 +868,69 @@ export function cambiarEstadoModulo(
     method: "PATCH",
     cuerpo: { estado },
   });
+}
+
+/* ------------------------------------------------------------------ */
+/* Importación de zonas y módulos (HU-14)                              */
+/* ------------------------------------------------------------------ */
+
+/** Sistemas de referencia disponibles para el selector del GeoJSON. */
+export function obtenerSridsImportacion(): Promise<SridsImportacion> {
+  return peticion<SridsImportacion>("/importaciones/srids");
+}
+
+/** Sube un GeoJSON de zonas y obtiene la previsualización. */
+export function previsualizarImportacionZonas(
+  archivo: File,
+  sridOrigen?: number,
+): Promise<PrevisualizacionImportacion> {
+  const formulario = new FormData();
+  formulario.append("archivo", archivo);
+  if (sridOrigen !== undefined) {
+    formulario.append("sridOrigen", String(sridOrigen));
+  }
+  return peticion<PrevisualizacionImportacion>(
+    "/importaciones/zonas/previsualizar",
+    { method: "POST", formulario },
+  );
+}
+
+/** Confirma la importación de las zonas válidas. */
+export function confirmarImportacionZonas(
+  token: string,
+): Promise<ConfirmacionImportacion> {
+  return peticion<ConfirmacionImportacion>(
+    "/importaciones/zonas/confirmar",
+    { method: "POST", cuerpo: { token } },
+  );
+}
+
+/** Sube un CSV de módulos y obtiene la previsualización. */
+export function previsualizarImportacionModulos(
+  archivo: File,
+): Promise<PrevisualizacionImportacion> {
+  const formulario = new FormData();
+  formulario.append("archivo", archivo);
+  return peticion<PrevisualizacionImportacion>(
+    "/importaciones/modulos/previsualizar",
+    { method: "POST", formulario },
+  );
+}
+
+/** Confirma la importación de los módulos válidos. */
+export function confirmarImportacionModulos(
+  token: string,
+  aceptaAdvertencia: boolean,
+): Promise<ConfirmacionImportacion> {
+  return peticion<ConfirmacionImportacion>(
+    "/importaciones/modulos/confirmar",
+    { method: "POST", cuerpo: { token, aceptaAdvertencia } },
+  );
+}
+
+/** Descarga el reporte CSV de errores de una importación confirmada. */
+export function descargarReporteImportacion(
+  token: string,
+): Promise<RespuestaArchivo> {
+  return peticionArchivo(`/importaciones/${token}/reporte`);
 }

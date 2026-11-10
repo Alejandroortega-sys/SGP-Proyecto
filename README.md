@@ -38,6 +38,7 @@ Decisiones de integración:
 │   ├── gestor/             # Administración de cuentas, organizaciones, auditoría
 │   ├── panel/              # Indicadores iniciales del gestor
 │   ├── notificaciones/     # Bandeja de notificaciones
+│   ├── importaciones/      # Importación de zonas GeoJSON y módulos CSV
 │   ├── correo/             # Envío de códigos y credenciales temporales
 │   └── common/             # Filtros de error, auditoría, serialización
 ├── test/                   # Tests e2e
@@ -160,7 +161,7 @@ pnpm build     # debe compilar las 10 rutas
 | Sprint | Alcance | Estado |
 |---|---|---|
 | **1** | Autenticación y gestión de usuarios (HU-01 a HU-07) | Backend **completo** (36 endpoints); frontend implementado (ver `docs/avance_frontend.md`) |
-| **2** | Geo-Portal y zonas (HU-08 a HU-15) | **HU-08, HU-09, HU-10, HU-11 y HU-12 implementadas** (mapa público; espacios con tabla, mapa, agrupación, ficha responsive y filtros; editor de zonas, baja lógica, versionado e historial con línea de tiempo y comparación de geometrías). Faltan HU-13, HU-14 y HU-15. La búsqueda de calles/barrios de HU-10 quedó fuera de alcance |
+| **2** | Geo-Portal y zonas (HU-08 a HU-15) | **HU-08 a HU-14 implementadas** (mapa público; espacios con tabla, mapa, agrupación, ficha responsive y filtros; editor de zonas, baja lógica, versionado e historial; censo de módulos; importación de GeoJSON y CSV con previsualización y reporte de errores). Falta HU-15. La búsqueda de calles/barrios de HU-10 quedó fuera de alcance |
 | **3** | Solicitudes y asignación de espacio | Pendiente |
 | **4** | Simulador de factibilidad y densidad | Pendiente |
 | **5** | Permisos con QR y cobros simulados | Pendiente |
@@ -174,12 +175,12 @@ Rutas públicas funcionales, verificadas con `lint`, `build` y render HTTP 200:
 
 Además, paneles protegidos por rol: `/comerciante/*`, `/organizador/*` y `/gestor/*`.
 
-Incluye: design system mobile-first (360 px, WCAG AA), estados de carga/vacío/error/éxito, sesión con `GET /auth/me` y `POST /auth/logout` en el navbar, rotación de refresh tokens, manejo de los códigos HTTP 401/403/423/429, el Geo-Portal público con Leaflet y la consulta de espacios del comerciante en `/comerciante/espacios` (tabla, mapa con agrupación, ficha en panel lateral/hoja inferior y filtros por sector, actividad, fecha y horario).
+Incluye: design system mobile-first (360 px, WCAG AA), estados de carga/vacío/error/éxito, sesión con `GET /auth/me` y `POST /auth/logout` en el navbar, rotación de refresh tokens, manejo de los códigos HTTP 401/403/423/429, el Geo-Portal público con Leaflet, la consulta de espacios del comerciante en `/comerciante/espacios` (tabla, mapa con agrupación, ficha en panel lateral/hoja inferior y filtros por sector, actividad, fecha y horario), el censo de módulos y la importación de zonas/módulos en `/gestor/importaciones` con previsualización en mapa y reporte de errores descargable.
 
 ### Frontend: qué falta
 
 - Módulos de los Sprints 3 a 6: solicitudes, ferias, permisos QR, cobros y dashboard analítico.
-- Del Sprint 2: censo de módulos (HU-13), importación (HU-14) y espacios temporales y bloqueos (HU-15). El buscador de calles/barrios de HU-10 quedó fuera de alcance.
+- Del Sprint 2: espacios temporales y bloqueos (HU-15). El buscador de calles/barrios de HU-10 quedó fuera de alcance.
 
 ---
 
@@ -188,5 +189,5 @@ Incluye: design system mobile-first (360 px, WCAG AA), estados de carga/vacío/e
 | Documento | Contenido |
 |---|---|
 | `docs/Uso_endpoints.md` | Contrato completo de la API del Sprint 1 (el frontend se construyó sobre este documento) |
-| `docs/` | Guías por módulo: `baseDatos.md`, `Uso_zonas.md`, `Uso_espacios.md`, `gestor.md`, `perfil.md`, `organizadores.md`, `panel.md`, `resumen.md`, `swagger.md` |
+| `docs/` | Guías por módulo: `baseDatos.md`, `Uso_zonas.md`, `Uso_espacios.md`, `Uso_modulos.md`, `Uso_importaciones.md`, `gestor.md`, `perfil.md`, `organizadores.md`, `panel.md`, `resumen.md`, `swagger.md` |
 | `.opencode/AGENTS.md` | Reglas del proyecto para agentes de IA (fuente de verdad) |
