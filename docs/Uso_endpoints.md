@@ -7,9 +7,11 @@
 **Fuente de verdad:** código actual en `src/` + `docs/` + `prisma/schema.prisma`
 
 > Este documento describe **lo que ya existe** y **lo que falta** para cerrar el Sprint 1.
-> Los módulos de los Sprints 2 a 6 (zonas, ferias, solicitudes, factibilidad, permisos QR,
-> cobros y dashboard analítico) no forman parte de este resumen: se documentarán al
-> finalizar cada sprint.
+> El **Sprint 2 ya está implementado** (zonas, módulos, espacios temporales, bloqueos e
+> importaciones) y se documenta en `Uso_zonas.md`, `Uso_modulos.md`, `Uso_espacios.md`,
+> `Uso_importaciones.md` e `implementaciones_Sprint2.md`. Los módulos de los Sprints 3 a 6
+> (solicitudes, ferias, factibilidad, permisos QR, cobros y dashboard analítico) siguen
+> fuera de este contrato hasta que se implementen.
 
 ---
 
@@ -27,9 +29,9 @@
 | Errores de BD | Traducidos a HTTP por `PrismaExceptionFilter` |
 | Correo | Nodemailer; sin SMTP escribe el contenido en el log en desarrollo |
 | Rate limit | Login, registro, activación y recuperación de contraseña, por IP |
-| Frontend | **Implementado para el Sprint 1** (Next.js 16): rutas públicas, paneles por rol, notificaciones y auditoría. Ver `docs/avance_frontend.md` |
+| Frontend | **Implementado para los Sprints 1 y 2** (Next.js 16): rutas públicas, paneles por rol, notificaciones, auditoría, mapa, zonas, módulos, espacios e importaciones. Ver `docs/avance_frontend.md` |
 
-### 1.2 Módulos del backend relacionados con el Sprint 1
+### 1.2 Módulos del backend (Sprint 1 y módulos del Sprint 2 ya implementados)
 
 | Módulo | Ruta base | Responsabilidad |
 |---|---|---|
@@ -40,6 +42,11 @@
 | `gestor` | `/gestor` | Administración de cuentas, comerciantes, organizaciones, perfil y auditoría |
 | `notificaciones` | `/notificaciones` | Bandeja de notificaciones del usuario autenticado |
 | `panel` | `/panel` | Resumen inicial del gestor |
+| `zonas` | `/zonas` | Zonas normativas, GeoJSON público e historial (Sprint 2) |
+| `modulos` | `/modulos` | Censo de módulos y puestos (Sprint 2) |
+| `espacios` | `/espacios`, `/gestor/espacios` | Consulta y administración de espacios (Sprint 2) |
+| `productos` | `/productos` | Catálogo maestro de productos (Sprint 2) |
+| `importaciones` | `/importaciones` | Importación de GeoJSON y CSV (Sprint 2) |
 | `correo` | — | Envío de códigos, credenciales temporales y avisos |
 | `common` | — | Filtro de errores, auditoría, parseo de IDs y serialización de BigInt |
 
@@ -248,7 +255,9 @@ o una lista.
 | `POST /usuarios/password/recuperar` | 10 peticiones por IP por minuto |
 | `POST /usuarios/password/restablecer` | 10 peticiones por IP por minuto |
 
-El resto de endpoints no tiene rate limit explícito en el código actual.
+El resto de endpoints no tiene rate limit explícito en el código actual, salvo
+`GET /zonas/geojson`, que desde el Sprint 2 está limitado a **60 peticiones por minuto
+por IP** (ver `docs/Uso_zonas.md`).
 
 ---
 
@@ -1984,25 +1993,26 @@ implementados.**
 
 ---
 
-## 9. Módulos de frontend que el Sprint 1 todavía no puede alimentar
+## 9. Módulos de frontend fuera del contrato del Sprint 1
 
 Estos módulos **no deben conectarse a endpoints inexistentes**. Se deben mostrar como
 “Próximamente” o dejarse fuera de la navegación principal.
 
 | Módulo / pantalla | Estado backend | Qué hacer en el frontend |
 |---|---|---|
-| Eventos y ferias de la bienvenida | Sin endpoint público en Sprint 1 | Contenido estático o placeholder |
-| Mapa interactivo ciudadano | Corresponde al Sprint 2 (GIS) | Vista “Próximamente”; no inventar endpoint |
-| Solicitudes de espacio | Sprint 3 | No incluir en menú del Sprint 1 |
+| Eventos y ferias de la bienvenida | Sin endpoint público todavía | Contenido estático o placeholder |
+| Mapa interactivo ciudadano | **Implementado en el Sprint 2** | Usar `/mapa` y `GET /zonas/geojson` (ver `Uso_zonas.md`) |
+| Zonas, módulos, espacios e importaciones | **Implementado en el Sprint 2** | Usar los endpoints de `Uso_zonas.md`, `Uso_modulos.md`, `Uso_espacios.md` y `Uso_importaciones.md` |
+| Solicitudes de espacio | Sprint 3 | No incluir todavía; la consulta de espacios ya existe |
 | Ferias y calendario | Sprint 3 | No incluir |
 | Permisos y QR | Sprint 5 | No incluir |
 | Cobros simulados | Sprint 5 | No incluir |
 | Dashboard analítico | Sprint 6 | Solo usar los indicadores básicos de `GET /panel` |
 
 **Sobre la página de bienvenida:** el requisito de “información sobre la alcaldía,
-eventos, etc.” se cubre en el Sprint 1 con contenido institucional estático. Los eventos
-reales llegarán cuando exista el módulo de ferias. El mapa ciudadano se mostrará como
-una sección futura.
+eventos, etc.” se cubre con contenido institucional estático. Los eventos reales llegarán
+cuando exista el módulo de ferias. El mapa ciudadano ya está implementado en `/mapa`
+(Sprint 2).
 
 ---
 
@@ -2127,7 +2137,7 @@ Swagger: `http://localhost:3000/api/docs`.
 - [ ] Ocultar acciones no permitidas para el revisor.
 - [ ] Añadir estados de carga, vacío, error y éxito.
 - [ ] Verificar responsive a 360 px y accesibilidad básica.
-- [ ] No enlazar módulos de Sprints 2–6 hasta que existan sus endpoints.
+- [ ] No enlazar módulos de Sprints 3–6 hasta que existan sus endpoints. Los del Sprint 2 ya están disponibles.
 
 ---
 
@@ -2161,9 +2171,11 @@ Swagger: `http://localhost:3000/api/docs`.
 - CORS, prefijo de API, `GET /auth/me`, refresh token con rotación, logout persistente,
   perfil del gestor, reenvío de invitación, motivo de suspensión, notificaciones,
   auditoría y rate limits **ya están implementados**.
-- Los módulos de eventos, mapa, solicitudes, ferias, permisos, cobros y dashboard
-  analítico **no pertenecen al Sprint 1** y no tienen endpoints disponibles todavía.
-- La bienvenida debe usar contenido estático y placeholders para eventos y mapa.
+- Los módulos de solicitudes, ferias, permisos, cobros y dashboard analítico **no
+  pertenecen al Sprint 1** y todavía no tienen endpoints disponibles. El mapa, las zonas,
+  los módulos, los espacios y las importaciones ya están implementados en el Sprint 2.
+- La bienvenida puede enlazar al mapa público; los eventos y ferias siguen como contenido
+  estático hasta el Sprint 3.
 - El frontend debe tratar los IDs como string, manejar `message` como string o array y
   respetar los roles `comerciante`, `organizador`, `gestor/revisor` y
   `gestor/administrador`.

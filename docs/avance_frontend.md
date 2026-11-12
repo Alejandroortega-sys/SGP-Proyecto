@@ -1,8 +1,9 @@
-# Avance del frontend — Sprint 1 completo
+# Avance del frontend — Sprints 1 y 2
 
-**Fecha:** octubre de 2026
-**Alcance:** conectar en Next.js todos los endpoints del Sprint 1 documentados en
-`docs/Uso_endpoints.md`.
+**Fecha:** noviembre de 2026
+**Alcance:** conectar en Next.js los endpoints del Sprint 1 documentados en
+`docs/Uso_endpoints.md` y los módulos del Sprint 2 (mapa, zonas, módulos, espacios
+temporales e importaciones).
 **Estado:** implementado, con `tsc`, ESLint y `next build` en verde; pruebas unitarias y
 e2e del backend en verde.
 
@@ -26,12 +27,19 @@ registro, activación, recuperación y primer acceso). Ahora incluye:
 
 ## 2. Rutas nuevas
 
+### Público
+
+| Ruta | Endpoints |
+|---|---|
+| `/mapa` | `GET /zonas/geojson?zoom=` (sin sesión) |
+
 ### Comerciante
 
 | Ruta | Endpoints |
 |---|---|
 | `/comerciante/inicio` | `GET /perfil`, `GET /auth/me`, `GET /notificaciones` |
 | `/comerciante/perfil` | `GET /perfil`, `PATCH /perfil`, `PATCH /perfil/password` |
+| `/comerciante/espacios` | `GET /espacios`, `GET /espacios/opciones`, `GET /espacios/:id`, `GET /zonas/geojson` (HU-09 y HU-10) |
 
 ### Organizador
 
@@ -58,6 +66,7 @@ registro, activación, recuperación y primer acceso). Ahora incluye:
 | `/gestor/espacios/nuevo` | `POST /gestor/espacios`, `GET /gestor/espacios/zona-contenedora` |
 | `/gestor/espacios/[id]` | `GET /gestor/espacios/:id`, historial, bloqueos, asignar, liberar y cambios de estado |
 | `/gestor/espacios/[id]/editar` | `GET /gestor/espacios/:id`, `PATCH /gestor/espacios/:id` |
+| `/gestor/importaciones` | `GET /importaciones/srids`, previsualización, confirmación y reporte de zonas y módulos (HU-14) |
 | `/gestor/perfil` | `GET/PATCH /gestor/perfil`, `PATCH /gestor/perfil/password` |
 | `/gestor/usuarios` | `GET /gestor/usuarios` |
 | `/gestor/usuarios/[id]` | `GET /gestor/usuarios/:id`, `PATCH /gestor/usuarios/:id/estado`, `PATCH /usuarios/:id/comerciante`, `POST /gestor/gestores/:id/reenviar-invitacion` |
@@ -121,6 +130,15 @@ registro, activación, recuperación y primer acceso). Ahora incluye:
 | 34 | `PATCH /notificaciones/leer-todas` | `/notificaciones` |
 | 35 | `GET /gestor/auditoria` | `/gestor/auditoria` |
 | 36 | `POST /auth/refresh` | `api-client.ts` (renovación automática) |
+
+Además, el frontend consume los endpoints del Sprint 2:
+
+| Módulo | Endpoints | Vistas |
+|---|---|---|
+| Zonas | `GET /zonas/geojson`, `GET /zonas`, `GET /zonas/:id`, `POST /zonas`, `PATCH /zonas/:id`, `PATCH /zonas/:id/estado`, `GET /zonas/:id/historial`, `GET /productos` | `/mapa`, `/gestor/zonas/**` |
+| Módulos | `GET /modulos`, `GET /modulos/opciones`, `GET /modulos/zona-contenedora`, `GET /modulos/:id`, `GET /modulos/:id/historial`, `POST /modulos`, `PATCH /modulos/:id`, `PATCH /modulos/:id/estado` | `/gestor/modulos/**` |
+| Espacios | `GET /espacios`, `GET /espacios/opciones`, `GET /espacios/:id` y los endpoints de `/gestor/espacios` | `/comerciante/espacios`, `/gestor/espacios/**` |
+| Importaciones | `GET /importaciones/srids`, previsualizar/confirmar zonas y módulos, `GET /importaciones/:token/reporte` | `/gestor/importaciones` |
 
 ---
 
@@ -220,17 +238,17 @@ backend:  pnpm test:e2e -- --runInBand    → e2e de API
 ```text
 frontend: tsc --noEmit                    → sin errores
 frontend: eslint                          → sin errores
-frontend: next build                      → 27 rutas generadas
-frontend: vitest run                      → 3 archivos, 15 pruebas aprobadas
-frontend: playwright test                 → 26 pruebas aprobadas (1.2 min)
+frontend: next build                      → 39 páginas/rutas generadas
+frontend: vitest run                      → 15 archivos, 93 pruebas aprobadas
+frontend: playwright test                 → 66 pruebas aprobadas
 
-> Con la incorporación de HU-15 el frontend pasa a **39 rutas**, **15 archivos
-> Vitest / 93 pruebas** y **66 pruebas Playwright**. Las pruebas de espacios se
-> ajustaron para depender de la API y no del mes del seed; la suite completa
-> queda en verde.
 backend:  jest --runInBand                → 42 suites, 402 pruebas aprobadas
 backend:  jest e2e --runInBand            → 12 suites, 123 pruebas aprobadas
 ```
+
+Las pruebas de espacios se ajustaron para depender de la API y no del mes del
+seed; la suite completa queda en verde con la base `sgp_tulua` y el seed
+aplicados.
 
 ### 5.4 Cobertura de usabilidad (Playwright)
 
@@ -290,7 +308,7 @@ para probar el reenvío de invitación.
 | Cambio de correo | El backend lo mantiene fuera de alcance; la UI lo muestra deshabilitado. |
 | Documentos de la organización | El modelo no tiene tabla de documentos. |
 | Administración de sesiones por dispositivo | No hay endpoint expuesto. |
-| Módulos de Sprints 2–6 | Se muestran como “Próximamente”; no se consumen endpoints inexistentes. |
+| Módulos de Sprints 3–6 | Se muestran como “Próximamente”; no se consumen endpoints inexistentes. El Sprint 2 ya está implementado. |
 
 ### 6.2 Deuda técnica del frontend
 
@@ -377,7 +395,7 @@ jest.config.ts                                            (excluye frontend de J
    pnpm test -- --runInBand
    pnpm test:e2e -- --runInBand
    ```
-5. No crear endpoints nuevos para los Sprints 2–6 hasta que existan en `src/`.
+5. No crear endpoints nuevos para los Sprints 3–6 hasta que existan en `src/`.
 
 ## 9. Censo de módulos y puestos (HU-13)
 

@@ -424,6 +424,61 @@ Detalles:
 
 ---
 
+## 9.1 Catálogo de productos (módulo `src/productos/`)
+
+Las zonas restringen la actividad por **productos permitidos**. El catálogo maestro vive
+en la tabla `productos` y se administra con el módulo `productos`.
+
+| Método | Ruta | Acceso | Descripción |
+| --- | --- | --- | --- |
+| `GET` | `/productos` | Cualquier usuario autenticado | Lista los productos. Comerciantes y organizadores solo ven los activos; los gestores ven también los inactivos. |
+| `POST` | `/productos` | Gestor revisor y administrador | Crea un producto activo. |
+| `PATCH` | `/productos/:id` | Gestor revisor y administrador | Activa o desactiva un producto. No cambia el nombre. |
+
+### `GET /productos`
+
+```json
+{
+  "datos": [
+    { "id": "1", "nombre": "Frutas frescas", "activo": true },
+    { "id": "2", "nombre": "Verduras", "activo": true }
+  ]
+}
+```
+
+- El resultado se ordena alfabéticamente por nombre.
+- Los productos inactivos no se ofrecen en el formulario de zonas ni deben usarse en
+  solicitudes o ferias.
+- El frontend del gestor consume este endpoint en el editor de zonas.
+
+### `POST /productos`
+
+```json
+{ "nombre": "Plantas ornamentales" }
+```
+
+- `nombre`: obligatorio, 2–100 caracteres y único en la BD. La comparación es sensible a
+  mayúsculas/minúsculas, porque la columna es `VARCHAR` y no `citext`.
+- El producto nace con `activo = true`.
+- Duplicado → `409`.
+
+### `PATCH /productos/:id`
+
+```json
+{ "activo": false }
+```
+
+- `activo` es obligatorio y booleano.
+- No elimina el producto: solo lo retira del catálogo visible para comerciantes y
+  organizadores. Las zonas que ya lo tenían asociado conservan la relación histórica,
+  pero el formulario de zonas lo mostrará como inactivo.
+- Producto inexistente → `404`.
+
+**Errores comunes:** `400` cuerpo inválido · `401` sin token · `403` rol distinto de
+gestor · `404` producto inexistente · `409` nombre duplicado.
+
+---
+
 ## 10. Flujo transaccional y auditoría
 
 `POST`, `PATCH` y `PATCH /estado` ejecutan:
@@ -466,6 +521,10 @@ await prisma.$transaction(async (tx) => {
 | `frontend/src/app/(gestor)/gestor/zonas/[id]/historial/page.tsx` | Ruta del historial               |
 | `src/common/geo.ts`                             | `poligonoASql`, `sqlGeoJson`, `leerGeoJson`           |
 | `src/common/filters/prisma-exception.filter.ts` | Traduce `P0001` a `422`                               |
+| `src/productos/productos.controller.ts`         | Catálogo: listar, crear y activar/desactivar          |
+| `src/productos/productos.service.ts`            | Reglas del catálogo y visibilidad por rol             |
+| `src/productos/dto/productos.dto.ts`            | DTOs del catálogo                                     |
+| `frontend/src/features/zonas/formulario-zona.tsx` | Selección de productos activos en la zona           |
 
 ---
 

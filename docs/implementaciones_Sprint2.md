@@ -1,7 +1,7 @@
 # Implementaciones del Sprint 2 — Estado actual
 
 **Proyecto:** Plataforma Web de Gestión del Espacio Público, Ferias Agroecológicas y Comercio Formal/Informal de Tuluá (Equipo 6)
-**Fecha de actualización:** octubre de 2026
+**Fecha de actualización:** noviembre de 2026
 **Rama:** `Alejandro-Sprint2`
 **Alcance del documento:** lo implementado para el Sprint 2 (HU-08 a HU-15) y lo que sigue pendiente.
 
@@ -12,7 +12,7 @@
 | Área | Estado |
 |---|---|
 | Sprint 1 (HU-01 a HU-07) | Backend completo (36 endpoints) y frontend implementado |
-| Base de datos | Esquema completo de los 6 sprints ya creado (30 tablas base + `zona_versiones` de HU-12, enums, triggers, `EXCLUDE`, vistas) |
+| Base de datos | Esquema completo de los 6 sprints ya creado (30 tablas base + `sesiones` de autenticación + `zona_versiones` de HU-12, enums, triggers, `EXCLUDE`, vistas) |
 | **HU-08 — Mapa público de zonas** | **Implementada de extremo a extremo** |
 | **HU-09 — Espacios disponibles y ficha** | **Implementada de extremo a extremo** |
 | **HU-10 — Buscar y filtrar espacios** | **Implementada** (filtros, disponibilidad por fecha/hora, panel y sin resultados; búsqueda de calles/barrios fuera de alcance) |
@@ -134,7 +134,7 @@ La migración `dataBase/04_espacios_hu09.sql` agrega a `espacios_temporales`:
 - `sector`, `dimensiones`, `horario_inicio` y `horario_fin`.
 - Índices `idx_espacios_estado` y `idx_bloqueos_espacio_fechas`.
 
-El seed ahora tiene 6 espacios: 3 disponibles, 1 bloqueado (25–31 oct 2026), 1 asignado y 1 en mantenimiento. Así se demuestran todos los estados.
+El seed ahora tiene 6 espacios: 3 con estado registrado disponible, 1 bloqueado (25–31 oct 2026), 1 asignado y 1 en mantenimiento. La disponibilidad efectiva depende de la fecha: el permiso del seed (1–30 nov 2026) ocupa uno de los espacios disponibles durante esa vigencia.
 
 #### API
 
@@ -437,23 +437,18 @@ Detalle completo: [`docs/Uso_importaciones.md`](Uso_importaciones.md).
 
 | Suite | Resultado |
 |---|---|
-| Backend unitarias | **41 suites, 391 pruebas aprobadas** |
-| Backend e2e | **11 suites, 114 pruebas aprobadas** |
-| Backend zonas (unitarias) | **3 suites, 39 pruebas aprobadas** |
-| Frontend Vitest | **13 archivos, 81 pruebas aprobadas** |
-| Frontend Playwright | **60 pruebas: 52 aprobadas y 8 fallos preexistentes en `espacios.spec.ts`**; las 5 pruebas de importación pasan |
+| Backend unitarias | **42 suites, 402 pruebas aprobadas** |
+| Backend e2e | **12 suites, 123 pruebas aprobadas** |
+| Frontend Vitest | **15 archivos, 93 pruebas aprobadas** |
+| Frontend Playwright | **66 pruebas aprobadas** con la API y la base `sgp_tulua` reales |
 | Backend lint | Sin errores |
 | Backend build | Correcto |
 | Frontend `tsc --noEmit` | Sin errores |
 | Frontend lint | Sin errores |
-| Frontend build | Correcto (38 rutas) |
+| Frontend build | Correcto (39 páginas/rutas) |
 
-> **Nota sobre los 8 fallos de `espacios.spec.ts`:** no están relacionados con HU-11 ni con HU-14.
-> El seed tiene un permiso vigente del `2026-11-01` al `2026-11-30` para el
-> espacio 1; al ejecutar la suite dentro de esa vigencia, el espacio aparece
-> ocupado y quedan 2 disponibles, mientras las pruebas esperan 3. Es un supuesto
-> de fecha preexistente en esas pruebas. Las pruebas de zonas contra la API y la
-> BD real pasan completas.
+> Las pruebas de espacios se ajustaron para depender de la API y no del mes del
+> seed. La suite completa queda en verde con el seed aplicado.
 
 Comandos usados:
 
@@ -596,16 +591,15 @@ Detalle funcional y de pruebas: [`Uso_espacios.md`](Uso_espacios.md) §10.
 
 - Triggers de auditoría para `modulos`, `espacios_temporales` y `espacio_bloqueos` (implementados en `07_modulos_hu13.sql` y `08_espacios_hu15.sql`).
 - Medición formal del rendimiento del mapa y las consultas (<2 s).
-- Documentación de los módulos de espacios, censo y bloqueos (la importación ya
-  está documentada en `Uso_importaciones.md`).
+- Documentación de todos los módulos del Sprint 2: `Uso_zonas.md`, `Uso_modulos.md`, `Uso_espacios.md` y `Uso_importaciones.md`. El manual de usuario está en `Manual.md`.
 - Pruebas de aceptación con el Product Owner.
 
 ---
 
 ## 7. Decisiones pendientes
 
-1. **Almacenamiento de fotos:** disco local vs S3. Falta definir `UPLOAD_MAX_BYTES`.
-2. **Cambios de esquema:** evaluar `sector` en `zonas` y `modulos`; las columnas de la ficha de `espacios_temporales` ya se agregaron en HU-09.
+1. **Almacenamiento de fotos:** se usa disco local (`UPLOAD_DIR`, por defecto `uploads`) con límite configurable `UPLOAD_MAX_BYTES` (5 MB por defecto). Queda evaluar un almacenamiento externo tipo S3 para producción.
+2. **Cambios de esquema:** evaluar `sector` en `zonas` y `modulos`; las columnas de la ficha de `espacios_temporales` ya se agregaron en HU-09 y el sector de módulos se deriva de la zona contenedora.
 3. **Historial de zonas:** resuelto con `GET /zonas/:id/historial` y la tabla `zona_versiones`; `auditoria` se conserva como registro genérico de bajo nivel.
 4. **Buscador de calles y barrios:** Nominatim, capa propia de barrios o datos del municipio.
 5. **Auditoría de espacios, módulos y bloqueos:** resuelta con triggers en la base (`07_modulos_hu13.sql` y `08_espacios_hu15.sql`).
@@ -644,7 +638,7 @@ No se requiere iniciar sesión para consultar el mapa.
 5. Iniciar sesión como comerciante (`maria.gomez@gmail.com` / `Comerciante123`) y abrir `http://localhost:3001/comerciante/espacios`.
 
 6. Verificar:
-   - La tabla muestra solo los 3 espacios disponibles.
+   - La tabla muestra solo los espacios disponibles para la fecha actual. Si estás dentro de la vigencia del permiso del seed (1–30 nov 2026), verás **2**; fuera de ella, **3**. Usa una fecha fuera de la vigencia para comprobar los 3.
    - El mapa agrupa los marcadores al alejar y los separa al acercar.
    - «Mostrar no disponibles» revela el bloqueado, el asignado y el de mantenimiento con su color y símbolo.
    - La ficha se abre como panel lateral en escritorio y hoja inferior a 360 px.

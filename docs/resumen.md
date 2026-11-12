@@ -41,12 +41,14 @@ Desarrollar una **aplicación web responsive / PWA** (con panel administrativo w
 | **Rendimiento** | Respuestas < 2 segundos (renderizado de capas geográficas, generación/validación de QR, dashboard). |
 | **Usabilidad** | Responsive móvil-primero (probado a 360 px), intuitiva para comerciantes; optimizada para escritorio en oficinas. Contraste WCAG AA, áreas táctiles ≥ 44 px. |
 
-## 5. Especificación técnica (stack)
+## 5. Especificación técnica (stack implementado)
 
-- **Backend:** Laravel (PHP) — *recomendado por el docente* — o Node.js / Python (FastAPI).
-- **Base de datos:** PostgreSQL + **PostGIS** (o MySQL), con índices espaciales GIST, geometrías GeoJSON.
-- **Frontend/mapas:** Leaflet.js (plugins de heatmaps) o Mapbox GL JS.
-- **Herramientas:** VS Code, Git/GitHub, Postman, Figma, navegadores modernos.
+- **Backend:** NestJS 12 + TypeScript estricto, Prisma 7 y PostgreSQL 18 + **PostGIS 3.6**.
+- **Base de datos:** PostgreSQL + PostGIS, con índices espaciales GIST, geometrías GeoJSON, triggers, restricciones `EXCLUDE` y vistas materializadas.
+- **Frontend/mapas:** Next.js 16 (App Router) + React 19 + Tailwind CSS 4; **Leaflet 1.9.4** con teselas de OpenStreetMap.
+- **Autenticación:** JWT con access token + refresh token persistido en la tabla `sesiones`, contraseñas con argon2id.
+- **Documentación de API:** Swagger/OpenAPI en `/api/docs`.
+- **Herramientas:** VS Code, Git/GitHub, Postman, Figma, navegadores modernos y pnpm.
 - **Roles del equipo:** (1) Desarrollador Backend/GIS, (2) Desarrollador Frontend, (3) Diseñador UX/UI & Tester.
 
 ## 6. Usuarios del sistema y sus campos de datos

@@ -16,6 +16,9 @@ POST /auth/login (público, rate limit 10/min por IP)
   ▼
 Authorization: Bearer <token>
   │
+  ├─ GET  /gestor/perfil                → revisor y administrador
+  ├─ PATCH /gestor/perfil               → revisor y administrador
+  ├─ PATCH /gestor/perfil/password      → revisor y administrador
   ├─ GET  /gestor/usuarios              → admin: cualquier cuenta
   │                                       revisor: comerciantes y organizadores
   ├─ GET  /gestor/comerciantes          → revisor y administrador
@@ -23,7 +26,9 @@ Authorization: Bearer <token>
   │                                       revisor: comerciantes y organizadores
   ├─ GET  /gestor/organizaciones        → revisor y administrador
   ├─ GET  /gestor/organizaciones/:id    → revisor y administrador
+  ├─ GET  /gestor/auditoria             → solo administrador
   ├─ POST /gestor/gestores              → solo administrador
+  ├─ POST /gestor/gestores/:id/reenviar-invitacion → solo administrador
   ├─ PATCH /gestor/usuarios/:id/estado  → solo administrador
   └─ PATCH /gestor/organizaciones/:id/estado → solo administrador
 ```
@@ -313,6 +318,33 @@ catálogo, los bloqueos y los estados está documentada en
 
 ---
 
+## 7.2 Perfil del gestor — `/gestor/perfil`
+
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| `GET` | `/gestor/perfil` | Datos personales, correo institucional, perfil y estado. |
+| `PATCH` | `/gestor/perfil` | Actualiza `nombre`, `apellido` y/o `telefono` (al menos uno). |
+| `PATCH` | `/gestor/perfil/password` | Cambia la contraseña; exige la actual y envía un aviso al correo. |
+
+- El correo, el perfil y el estado no se modifican desde este endpoint.
+- Todos los cambios quedan auditados con el gestor autenticado como actor.
+- La política de contraseña es la misma del registro: 8–128 caracteres y al menos un
+  número.
+
+## 7.3 Auditoría — `GET /gestor/auditoria`
+
+**Solo administrador.** Devuelve los registros de la tabla `auditoria` con filtros por
+`tabla`, `registroId`, `accion` (`insert`/`update`/`delete`), `pagina` y `limite`.
+Incluye el actor y los valores anterior/nuevo; los campos sensibles
+(`password_hash`, `token_hash`, `qr_token`) se eliminan antes de responder.
+
+## 7.4 Reenviar invitación — `POST /gestor/gestores/:id/reenviar-invitacion`
+
+**Solo administrador.** Genera una nueva contraseña temporal para un gestor en
+`pendiente_activacion`, actualiza el hash y envía las credenciales al correo
+institucional. La contraseña no se devuelve en la respuesta. Si la cuenta ya está
+activa o no está pendiente, responde `409`.
+
 ## 8. Seguridad
 
 | Guard | Alcance | Qué valida |
@@ -347,6 +379,8 @@ Errores habituales:
 | `src/gestor/dto/listar-comerciantes-*.dto.ts` | Listado de comerciantes |
 | `src/gestor/dto/usuario-detalle-response.dto.ts` | Detalle |
 | `src/gestor/dto/cambiar-estado-usuario.dto.ts` | Cambio de estado |
+| `src/gestor/dto/perfil-gestor.dto.ts` | Perfil y actualización del gestor |
+| `src/gestor/dto/auditoria.dto.ts` | Filtros y respuesta de auditoría |
 | `src/auth/decorators/perfil-gestor.decorator.ts` | `@PerfilGestor(...)` |
 | `src/auth/guards/perfil-gestor.guard.ts` | Guard por perfil |
 | `src/auth/dto/primer-acceso-gestor.dto.ts` | Primer acceso |

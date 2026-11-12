@@ -2,7 +2,7 @@
 
 **Proyecto:** Plataforma Web de Gestión del Espacio Público, Ferias Agroecológicas y Comercio Formal/Informal de Tuluá (Equipo 6)
 **Motor:** PostgreSQL 18 + PostGIS 3.6 · **Codificación:** UTF8 · **Convención:** `snake_case`, español
-**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba) · `03_sesiones.sql` (tabla de sesiones) · `04_espacios_hu09.sql` (migración de la ficha de espacios) · `05_filtros_hu10.sql` (índices de filtros y disponibilidad) · `06_zonas_hu12.sql` (historial versionado de zonas)
+**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba) · `03_sesiones.sql` (tabla de sesiones) · `04_espacios_hu09.sql` (ficha de espacios) · `05_filtros_hu10.sql` (índices de filtros y disponibilidad) · `06_zonas_hu12.sql` (historial versionado de zonas) · `07_modulos_hu13.sql` (auditoría y códigos de módulos) · `08_espacios_hu15.sql` (asignación manual, recálculo de estado y auditoría de espacios/bloqueos)
 **Base de desarrollo verificada:** `sgp_tulua`
 
 ---
@@ -13,9 +13,9 @@
 # 1) Crear la base de datos
 psql -U postgres -d postgres -c 'CREATE DATABASE "sgp_tulua";'
 
-# 2) Crear la estructura base (30 tablas, 18 ENUM, 3 secuencias, 33 índices,
-#    6 funciones, 10 triggers y 4 vistas materializadas). La migración 06
-#    agrega la tabla zona_versiones y la función fn_registrar_version_zona.
+# 2) Crear la estructura base (30 tablas, 17 ENUM, 3 secuencias, índices,
+#    6 funciones, 10 triggers y 4 vistas materializadas). Las migraciones 03–08
+#    agregan sesiones, columnas de espacios, historial de zonas y auditoría.
 psql -U postgres -d "sgp_tulua" -f 01_creacion_bd.sql
 
 # 3) Cargar datos de prueba (incluye 4 pruebas automáticas de reglas de negocio)
@@ -106,7 +106,7 @@ erDiagram
 
 ---
 
-## 4. Tipos ENUM (18)
+## 4. Tipos ENUM (17)
 
 | Tipo | Valores |
 |---|---|
@@ -552,10 +552,14 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 | `fn_marca_actualizacion()` | trigger | Actualiza `actualizado_en` en cada UPDATE (usuarios, comerciantes, zonas, solicitudes, sesiones). |
 | `fn_auditoria()` | trigger | Vuelca cada cambio (INSERT/UPDATE/DELETE) de `usuarios`, `zonas` y `parametros_motor` a `auditoria` con valores antes/después en JSONB. |
 | `fn_validar_zona()` | trigger (BEFORE) | HU-11/12: rechaza geometrías inválidas (`ST_IsValid`) y solapes con zonas activas (`ST_Relate '2********'`); permite bordes compartidos. |
-| `fn_registrar_version_zona(zona_id, accion, actor_id)` | plpgsql | HU-12: registra un snapshot inmutable de la zona y sus productos; devuelve el número de versión. |
+| `fn_registrar_version_zona(zona_id, accion, actor_id)` | plpgsql | HU-12: registra un snapshot inmutable de la zona y sus productos; devuelve el número de versión. Creada en `06_zonas_hu12.sql`. |
 | `fn_permiso_trazabilidad()` | trigger (AFTER) | HU-35/37: registra `emitido` al insertar y un evento por cada cambio de estado; **exige motivo** (`app.motivo`) para `suspendido`/`revocado`, si no lanza excepción. |
 | `fn_evaluar_factibilidad(ubicacion, producto_id)` | plpgsql STABLE | **Motor de reglas (HU-25)**: devuelve una fila por regla (`distancia_minima`, `producto_permitido`, `aforo_cuadrante`) con `cumple` y `detalle`. La distancia se calcula en metros con cast `geography`; el aforo y los productos se validan contra la zona que contiene el punto usando los parámetros vigentes de `parametros_motor`. |
 | `fn_buscar_alternativas(ubicacion, producto_id, radio_m)` | sql STABLE | HU-30: espacios `disponibles` dentro del radio (default 500 m) que cumplen **todas** las reglas del motor, ordenados por distancia. |
+| `fn_recalcular_estado_espacio(espacio_id)` | plpgsql | HU-15: sincroniza `espacios_temporales.estado` con la fecha actual. Respeta `mantenimiento` y la asignación manual; asigna `asignado` si hay permiso vigente o solicitud aprobada que cubra hoy, `bloqueado` si hay un bloqueo vigente y `disponible` en otro caso. |
+| `fn_estado_por_bloqueo()` · `fn_estado_por_permiso()` · `fn_estado_por_solicitud()` | trigger | HU-15: recalculan el estado del espacio después de insertar, editar o eliminar bloqueos, permisos o solicitudes. |
+| `fn_auditoria_modulos()` | trigger | HU-13: registra en `auditoria` los cambios de `modulos` con el actor de `app.actor_id`. |
+| `fn_auditoria_espacios()` · `fn_auditoria_bloqueos()` | trigger | HU-15: registran en `auditoria` los cambios de `espacios_temporales` y `espacio_bloqueos`; el historial del espacio usa el `espacio_id` como `registro_id`. |
 
 ## 13. Triggers
 
@@ -566,6 +570,11 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 | trg_modulos_auditoria | modulos | fn_auditoria_modulos (AFTER INSERT/UPDATE/DELETE, HU-13) |
 | trg_zonas_validar | zonas | fn_validar_zona (BEFORE INSERT/UPDATE) |
 | trg_permisos_traza | permisos | fn_permiso_trazabilidad (AFTER INSERT/UPDATE) |
+| trg_espacios_auditoria | espacios_temporales | fn_auditoria_espacios (AFTER INSERT/UPDATE/DELETE, HU-15) |
+| trg_bloqueos_auditoria | espacio_bloqueos | fn_auditoria_bloqueos (AFTER INSERT/UPDATE/DELETE, HU-15) |
+| trg_bloqueos_estado | espacio_bloqueos | fn_estado_por_bloqueo (AFTER INSERT/UPDATE/DELETE, HU-15) |
+| trg_permisos_estado | permisos | fn_estado_por_permiso (AFTER INSERT/UPDATE, HU-15) |
+| trg_solicitudes_estado | solicitudes | fn_estado_por_solicitud (AFTER INSERT/UPDATE, HU-15) |
 
 ---
 
@@ -619,7 +628,7 @@ Las cuatro pruebas negativas se ejecutan dentro de `02_seed_datos_prueba.sql` y 
 | Versiones de zona (4) | La migración `06_zonas_hu12.sql` registra la versión 1 (`creacion`) de cada zona del seed con su geometría y productos |
 | Productos (6) | Frutas frescas, Verduras, Artesanías, Comidas rápidas, Ropa y calzado, Plantas ornamentales |
 | Módulos (6) | 2 con titular registrado, 4 con titular por nombre; mezcla formal/informal |
-| Espacios (6) | 3 disponibles, 1 bloqueado con bloqueo 25–31 oct 2026, 1 asignado y 1 en mantenimiento; con tipo, sector, dimensiones y horario (HU-09) |
+| Espacios (6) | 3 con estado registrado disponible (la disponibilidad efectiva depende de la fecha), 1 bloqueado con bloqueo 25–31 oct 2026, 1 asignado y 1 en mantenimiento; con tipo, sector, dimensiones y horario (HU-09). El permiso del seed (1–30 nov 2026) ocupa uno de los espacios disponibles durante ese periodo |
 | Parámetros | distancia_minima = 5 m · aforo_cuadrante_defecto = 40 · umbral_alerta = 80 % |
 | Solicitudes (4) | 1 aprobada, 1 radicada, 1 rechazada (con motivo), 1 borrador; 5 documentos (incluye corrección versionada con `reemplaza_a`) |
 | Ferias (2) | 1 aprobada (Dic 2026, Parque La Guadua, 20 puestos, 3 vendedores), 1 radicada (Ene 2027) |

@@ -17,7 +17,7 @@ El repositorio contiene **dos aplicaciones independientes**, cada una con su `pa
 
 Decisiones de integración:
 
-- La API se expone **sin prefijo global**: las rutas comienzan en `/auth`, `/usuarios`, `/perfil`, `/gestor`, `/panel`, `/organizadores`, `/notificaciones`.
+- La API se expone **sin prefijo global**: las rutas comienzan en `/auth`, `/usuarios`, `/perfil`, `/gestor`, `/panel`, `/organizadores`, `/notificaciones`, `/zonas`, `/modulos`, `/espacios`, `/productos` e `/importaciones`.
 - El backend permite por CORS el origen `http://localhost:3001` (variable `FRONTEND_URL`).
 - El frontend define `NEXT_PUBLIC_API_URL=http://localhost:3000` (ver `frontend/.env.example`).
 - **Todas** las peticiones HTTP del frontend pasan por un único archivo: `frontend/src/lib/api-client.ts` (header `Authorization`, renovación automática de sesión ante un `401`, control de `Retry-After` y manejo de errores).
@@ -35,21 +35,28 @@ Decisiones de integración:
 │   ├── usuarios/           # Registro, activación, recuperación de contraseña
 │   ├── perfil/             # Perfil de comerciante y organizador
 │   ├── organizadores/      # Organización propia del organizador
-│   ├── gestor/             # Administración de cuentas, organizaciones, auditoría
+│   ├── gestor/             # Cuentas, organizaciones, perfil y auditoría
 │   ├── panel/              # Indicadores iniciales del gestor
 │   ├── notificaciones/     # Bandeja de notificaciones
+│   ├── zonas/              # Zonas normativas, GeoJSON público e historial
+│   ├── modulos/            # Censo de módulos y puestos del espacio público
+│   ├── espacios/           # Espacios temporales, consulta, bloqueos y estados
+│   ├── productos/          # Catálogo maestro de productos permitidos
 │   ├── importaciones/      # Importación de zonas GeoJSON y módulos CSV
 │   ├── correo/             # Envío de códigos y credenciales temporales
 │   └── common/             # Filtros de error, auditoría, serialización
 ├── test/                   # Tests e2e
 ├── docs/                   # Guías por módulo y contrato de la API
-└── frontend/               # Aplicación Next.js (Sprint 1)
+└── frontend/               # Aplicación Next.js (Sprints 1 y 2)
     └── src/
-        ├── app/(publico)/  # Rutas accesibles sin sesión
+        ├── app/(publico)/  # Rutas accesibles sin sesión (incluye /mapa)
+        ├── app/(comerciante)/ # Inicio, perfil y consulta de espacios
+        ├── app/(organizador)/ # Inicio, perfil y organización
+        ├── app/(gestor)/   # Panel, zonas, módulos, espacios, importaciones, usuarios
         ├── components/ui/  # Design system propio (botones, campos, badges…)
-        ├── features/publico/ # Navbar, footer y formularios públicos
+        ├── features/       # Módulos funcionales del frontend
         ├── lib/            # api-client, sesión, validaciones
-        ├── hooks/          # useSesion
+        ├── hooks/          # useSesion, useConsultaApi
         └── types/          # Tipos derivados de docs/Uso_endpoints.md
 ```
 
@@ -113,6 +120,8 @@ pnpm dev                     # http://localhost:3001
 | `pnpm build` | Build de producción (compila + typecheck) |
 | `pnpm start` | Sirve el build de producción |
 | `pnpm lint` | Lint con ESLint + `eslint-config-next` |
+| `pnpm test` | Pruebas unitarias con Vitest |
+| `pnpm test:e2e` | Pruebas de usabilidad con Playwright (levanta API y frontend) |
 
 ---
 
@@ -135,6 +144,7 @@ Si `MAIL_HOST` **no** está configurado en el `.env` del backend, no se envía n
 | `revisor@tulua.gov.co` | `Admin1234` | Gestor revisor |
 | `maria.gomez@gmail.com` | `Comerciante123` | Comerciante activa |
 | `jose.perez@hotmail.com` | `Comerciante123` | Comerciante activa |
+| `ana.ruiz@gmail.com` | `Comerciante123` | Comerciante activa |
 | `pedro.sanchez@gmail.com` | `Comerciante123` | Comerciante pendiente de activación |
 | `luis.alvarez@agrovalle.org` | `Organizador123` | Organizador activo con organización activa |
 | `marta.cifuentes@asocampesinos.org` | `Organizador123` | Organizador con organización pendiente de validación |
@@ -144,14 +154,14 @@ Si `MAIL_HOST` **no** está configurado en el `.env` del backend, no se envía n
 1. **Comerciante:** `/registro/comerciante` → crear cuenta → copiar el código del log del backend → `/activar` → iniciar sesión → el navbar muestra el nombre y el rol → cerrar sesión.
 2. **Gestor:** iniciar sesión con `admin@tulua.gov.co` / `Admin1234` → debe quedar en `/gestor/panel`.
 3. **Recuperación:** `/recuperar` → copiar el código del log → `/restablecer` → nueva contraseña → login con la nueva clave.
-4. **Errores de seguridad:** 3 contraseñas incorrectas seguidas producen el bloqueo temporal (`423`) que el formulario muestra con los minutos restantes; el límite de peticiones por IP (`429`) muestra los segundos a esperar.
+4. **Errores de seguridad:** 5 contraseñas incorrectas seguidas producen el bloqueo temporal (`423`) que el formulario muestra con los minutos restantes; el límite de peticiones por IP (`429`) muestra los segundos a esperar.
 
 ### 6.5 Verificación técnica
 
 ```bash
 cd frontend
 pnpm lint      # debe quedar sin errores
-pnpm build     # debe compilar las 10 rutas
+pnpm build     # debe compilar las 39 páginas/rutas
 ```
 
 ---
@@ -160,27 +170,33 @@ pnpm build     # debe compilar las 10 rutas
 
 | Sprint | Alcance | Estado |
 |---|---|---|
-| **1** | Autenticación y gestión de usuarios (HU-01 a HU-07) | Backend **completo** (36 endpoints); frontend implementado (ver `docs/avance_frontend.md`) |
-| **2** | Geo-Portal y zonas (HU-08 a HU-15) | **HU-08 a HU-14 implementadas** (mapa público; espacios con tabla, mapa, agrupación, ficha responsive y filtros; editor de zonas, baja lógica, versionado e historial; censo de módulos; importación de GeoJSON y CSV con previsualización y reporte de errores). Falta HU-15. La búsqueda de calles/barrios de HU-10 quedó fuera de alcance |
-| **3** | Solicitudes y asignación de espacio | Pendiente |
-| **4** | Simulador de factibilidad y densidad | Pendiente |
-| **5** | Permisos con QR y cobros simulados | Pendiente |
-| **6** | Dashboard e indicadores | Pendiente |
+| **1** | Autenticación y gestión de usuarios (HU-01 a HU-07) | **Completo**: backend (36 endpoints) y frontend (ver `docs/avance_frontend.md`) |
+| **2** | Geo-Portal y zonas (HU-08 a HU-15) | **Completo**: mapa público; espacios con tabla, mapa, agrupación, ficha responsive y filtros; editor de zonas, baja lógica, versionado e historial; censo de módulos; administración de espacios temporales con bloqueos, estados y auditoría; importación de GeoJSON y CSV con previsualización y reporte de errores. La búsqueda de calles/barrios de HU-10 quedó fuera de alcance |
+| **3** | Solicitudes y asignación de espacio | **Pendiente** (las tablas y los datos de prueba ya existen; no hay endpoints ni pantallas) |
+| **4** | Simulador de factibilidad y densidad | **Pendiente** (el motor de reglas existe en PostgreSQL, pero no está expuesto en la API ni en la interfaz) |
+| **5** | Permisos con QR y cobros simulados | **Pendiente** (el modelo y el seed existen; no hay endpoints ni pantallas) |
+| **6** | Dashboard e indicadores | **Pendiente** (el panel solo muestra los indicadores básicos de `GET /panel`) |
 
 ### Frontend: qué está implementado hoy
 
-Rutas públicas funcionales, verificadas con `lint`, `build` y render HTTP 200:
+El frontend tiene **39 rutas** de página y está verificado con `lint`, `build`, Vitest y Playwright.
 
-`/` · `/mapa` · `/login` · `/registro` · `/registro/comerciante` · `/registro/organizador` · `/activar` · `/recuperar` · `/restablecer` · `/primer-acceso`
+**Públicas:** `/` · `/mapa` · `/login` · `/registro` · `/registro/comerciante` · `/registro/organizador` · `/activar` · `/recuperar` · `/restablecer` · `/primer-acceso`
 
-Además, paneles protegidos por rol: `/comerciante/*`, `/organizador/*` y `/gestor/*`.
+**Comerciante:** `/comerciante/inicio` · `/comerciante/perfil` · `/comerciante/espacios`
 
-Incluye: design system mobile-first (360 px, WCAG AA), estados de carga/vacío/error/éxito, sesión con `GET /auth/me` y `POST /auth/logout` en el navbar, rotación de refresh tokens, manejo de los códigos HTTP 401/403/423/429, el Geo-Portal público con Leaflet, la consulta de espacios del comerciante en `/comerciante/espacios` (tabla, mapa con agrupación, ficha en panel lateral/hoja inferior y filtros por sector, actividad, fecha y horario), el censo de módulos y la importación de zonas/módulos en `/gestor/importaciones` con previsualización en mapa y reporte de errores descargable.
+**Organizador:** `/organizador/inicio` · `/organizador/perfil` · `/organizador/mi-organizacion`
+
+**Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/zonas` · `/gestor/zonas/nueva` · `/gestor/zonas/[id]/editar` · `/gestor/zonas/[id]/historial` · `/gestor/modulos` · `/gestor/modulos/nuevo` · `/gestor/modulos/[id]` · `/gestor/modulos/[id]/editar` · `/gestor/espacios` · `/gestor/espacios/nuevo` · `/gestor/espacios/[id]` · `/gestor/espacios/[id]/editar` · `/gestor/importaciones` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
+
+**Transversal:** `/notificaciones`
+
+Incluye: design system mobile-first (360 px, WCAG AA), estados de carga/vacío/error/éxito, sesión con `GET /auth/me` y `POST /auth/logout` en el navbar, rotación de refresh tokens, manejo de los códigos HTTP 401/403/423/429, el Geo-Portal público con Leaflet, la consulta de espacios del comerciante en `/comerciante/espacios` (tabla, mapa con agrupación, ficha en panel lateral/hoja inferior y filtros por sector, actividad, fecha y horario), el censo de módulos, la administración completa de espacios temporales en `/gestor/espacios`, y la importación de zonas/módulos en `/gestor/importaciones` con previsualización en mapa y reporte de errores descargable.
 
 ### Frontend: qué falta
 
-- Módulos de los Sprints 3 a 6: solicitudes, ferias, permisos QR, cobros y dashboard analítico.
-- Del Sprint 2: espacios temporales y bloqueos (HU-15). El buscador de calles/barrios de HU-10 quedó fuera de alcance.
+- Módulos de los Sprints 3 a 6: solicitudes, ferias, permisos QR, cobros y dashboard analítico. La consulta de espacios ya existe, pero todavía **no hay botón ni formulario para solicitar** el uso de un espacio.
+- El buscador de calles/barrios de HU-10 quedó fuera de alcance.
 
 ---
 
@@ -188,6 +204,11 @@ Incluye: design system mobile-first (360 px, WCAG AA), estados de carga/vacío/e
 
 | Documento | Contenido |
 |---|---|
-| `docs/Uso_endpoints.md` | Contrato completo de la API del Sprint 1 (el frontend se construyó sobre este documento) |
-| `docs/` | Guías por módulo: `baseDatos.md`, `Uso_zonas.md`, `Uso_espacios.md`, `Uso_modulos.md`, `Uso_importaciones.md`, `gestor.md`, `perfil.md`, `organizadores.md`, `panel.md`, `resumen.md`, `swagger.md` |
+| `docs/Manual.md` | Manual de usuario completo: qué es la plataforma, cómo funciona y cómo usarla por rol |
+| `docs/Uso_endpoints.md` | Contrato de la API del Sprint 1 (el frontend se construyó sobre este documento) |
+| `docs/Uso_zonas.md` | Zonas, catálogo de productos, GeoJSON público e historial versionado |
+| `docs/Uso_espacios.md` | Consulta de espacios y administración municipal de espacios y bloqueos |
+| `docs/Uso_modulos.md` | Censo de módulos y puestos de comercio formal e informal |
+| `docs/Uso_importaciones.md` | Importación de zonas (GeoJSON) y módulos (CSV) |
+| `docs/` | Guías por módulo: `baseDatos.md`, `gestor.md`, `perfil.md`, `organizadores.md`, `panel.md`, `resumen.md`, `swagger.md`, `avance_frontend.md`, `implementaciones_Sprint2.md` |
 | `.opencode/AGENTS.md` | Reglas del proyecto para agentes de IA (fuente de verdad) |

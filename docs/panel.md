@@ -42,8 +42,10 @@ el `rol` que devuelve el login; el backend la hace cumplir con guards.
 ## 3. Panel administrativo — `GET /panel` (nuevo)
 
 **Acceso:** exclusivo del rol `gestor` (`@Roles('gestor')` a nivel de clase en
-`PanelController`). Tanto `revisor` como `administrador` entran por ahora; la distinción
-fina por perfil se hará al implementar los módulos de las Épicas 2–6.
+`PanelController`). Tanto `revisor` como `administrador` entran al panel. La distinción
+fina por perfil se aplica en los módulos de escritura: zonas (solo administrador),
+cuentas y organizaciones (solo administrador), mientras módulos, espacios e
+importaciones de módulos admiten revisor y administrador.
 
 **Guards:** no se declaran en el controlador porque son globales (`APP_GUARD` en
 `AppModule`): primero `JwtAuthGuard` (valida el token, recarga el usuario de la BD y

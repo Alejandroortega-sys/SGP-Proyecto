@@ -12,7 +12,7 @@ La documentación se genera **desde el código**: cada endpoint nuevo se documen
 - **`src/main.ts`** — construye el documento (`DocumentBuilder`: título, descripción, versión) y lo monta en `/api/docs` con `addBearerAuth()` listo para los endpoints protegidos.
 - **`nest-cli.json`** — plugin CLI de `@nestjs/swagger` con:
   - `introspectComments: true` → los comentarios JSDoc (`/** ... */`) de controllers y propiedades se convierten en **descripciones** de Swagger automáticamente.
-  - `classValidatorShim: true` → cuando se agregue `class-validator`, los DTOs con validadores generan sus schemas sin decoradores extra.
+  - `classValidatorShim: true` → `class-validator` ya está instalado; los DTOs con validadores generan sus schemas sin decoradores extra.
 
 > Con el plugin activo, un DTO con tipos correctos y JSDoc queda documentado **sin necesidad de `@ApiProperty`** en cada campo; solo se usa `@ApiProperty` para casos especiales (ejemplos, formatos, enums).
 
@@ -43,7 +43,7 @@ import { UsuariosService } from './usuarios.service';
 import { CrearUsuarioDto, UsuarioResponseDto } from './dto/usuarios.dto';
 
 @ApiTags('usuarios')
-@ApiBearerAuth() // mientras no exista auth, puede omitirse
+@ApiBearerAuth()
 @Controller('usuarios')
 export class UsuariosController {
   constructor(private readonly usuarios: UsuariosService) {}
@@ -105,7 +105,7 @@ export class UsuarioResponseDto {
 
 1. **IDs como `string`.** Las llaves BIGINT llegan al frontend como string (parche global de serialización); declara `id: string` en los DTOs de respuesta y en `@ApiParam({ example: '3' })`.
 2. Comenta cada propiedad con JSDoc: con `introspectComments` se vuelven descripciones del schema en la UI.
-3. Cuando se instale `class-validator` (recomendado para validar los `@Body()`), agregar los validadores basta — el plugin genera los schemas y `ValidationPipe` devuelve 400 automáticos.
+3. `class-validator` ya está instalado y el `ValidationPipe` global valida los `@Body()`; agregar los validadores al DTO basta para que el plugin genere los schemas y los errores `400`.
 4. Enums de la BD (rol, estados): usar los enums generados (`import { rol_usuario } from '../generated/prisma/client'`) y `@ApiProperty({ enum: ... })` si se quiere el desplegable en la UI.
 
 ---

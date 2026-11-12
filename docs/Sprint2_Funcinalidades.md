@@ -28,9 +28,10 @@ Al terminar el sprint, la plataforma debe permitir **ver y administrar el territ
 
 ### Comerciante
 - Todo lo anterior, con su cuenta.
-- Ver los módulos, casetas y espacios temporales disponibles y abrir la ficha completa de cada uno.
-- Buscar y filtrar espacios por sector, tipo de actividad y fecha.
-- Buscar una calle o barrio y que el mapa se centre allí.
+- Ver los espacios temporales disponibles y abrir la ficha completa de cada uno.
+- Buscar y filtrar espacios por sector, tipo de actividad, fecha y horario.
+- Consultar la zona contenedora y sus restricciones desde la ficha del espacio.
+- *(El buscador de calles y barrios se excluyó del alcance de esta entrega.)*
 
 ### Gestor municipal
 - Dibujar zonas sobre el mapa, clasificarlas y definir sus restricciones.
@@ -73,10 +74,10 @@ Al terminar el sprint, la plataforma debe permitir **ver y administrar el territ
 ### HU-10: Buscar y filtrar espacios (Should)
 
 **Qué debe ofrecer**
-- Filtros por sector, tipo de actividad y fecha, que se pueden combinar.
+- Filtros por sector, tipo de actividad, fecha y rango horario, que se pueden combinar.
 - Conteo de resultados que se actualiza al filtrar.
-- Buscador de calles y barrios que centra el mapa en la zona elegida.
 - Mensaje «No hay espacios disponibles con esos criterios», con una sugerencia para ampliar la búsqueda.
+- **Buscador de calles y barrios:** quedó fuera del alcance de esta entrega por decisión del equipo.
 
 **Debe cumplir**
 - Al combinar filtros se muestra solo lo que cumple **todos** los criterios.
@@ -139,8 +140,9 @@ Al terminar el sprint, la plataforma debe permitir **ver y administrar el territ
 
 **Debe cumplir**
 - Un espacio bloqueado no se puede solicitar en las fechas del bloqueo.
-- Al aprobarse una solicitud (Sprint 3), el espacio pasa a «Ocupado» hasta que termina el permiso. En este sprint se deja lista esa lógica.
-- No se puede bloquear un espacio en fechas donde ya tiene un permiso aprobado.
+- Al aprobarse una solicitud (Sprint 3) o emitirse un permiso, el espacio pasa a «Ocupado» mediante los triggers de recálculo ya implementados en la base de datos.
+- No se puede bloquear un espacio en fechas donde ya tiene un permiso aprobado o una solicitud aprobada.
+- El mantenimiento y la asignación manual prevalecen hasta que el gestor los retire o libere.
 
 ---
 
@@ -190,7 +192,12 @@ Si falta capacidad, se recorta en este orden: HU-14, luego HU-12 y HU-10. Las hi
 - [x] El sistema impide guardar zonas inválidas o solapadas y explica el motivo.
 - [x] El gestor puede censar módulos con foto y recibe la advertencia al ubicar uno en zona restringida.
 - [x] El gestor puede crear espacios temporales y bloquearlos por fechas, y los bloqueos se respetan en la consulta.
-- [ ] El mapa y las consultas responden en menos de 2 segundos.
-- [ ] Todas las pantallas funcionan en celular y escritorio, con sus estados de carga, vacío y error.
+- [ ] El mapa y las consultas responden en menos de 2 segundos (medición formal pendiente).
+- [x] Todas las pantallas funcionan en celular y escritorio, con sus estados de carga, vacío y error.
 - [ ] Los criterios de aceptación de cada historia fueron probados y el Product Owner aceptó las historias en la demo.
 - [ ] No quedan defectos críticos ni altos abiertos.
+
+> **Estado técnico (noviembre de 2026):** las ocho historias del Sprint 2 están
+> implementadas de extremo a extremo, con pruebas unitarias, e2e de API y Playwright.
+> Quedan pendientes la medición formal de rendimiento, la aceptación del Product Owner
+> y el cierre de defectos. El buscador de calles/barrios de HU-10 no se implementó.

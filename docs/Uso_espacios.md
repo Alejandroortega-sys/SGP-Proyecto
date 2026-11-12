@@ -52,7 +52,7 @@ El estado **registrado** es el de la columna `estado`. El estado **efectivo** se
 4. Si la BD lo registra como `bloqueado` o `asignado`, se respeta aunque no exista un registro auxiliar activo.
 5. Solo es `disponible` si el estado efectivo es `disponible`.
 
-Así se cumple la regla de aceptación: **un espacio ocupado o bloqueado no aparece como disponible**. Además, desde HU-15 el estado almacenado se sincroniza automáticamente con bloqueos, permisos, solicitudes y asignaciones manuales mediante `fn_recalcular_estado_espacio`.
+Así se cumple la regla de aceptación: **un espacio ocupado o bloqueado no aparece como disponible**. Además, desde HU-15 el estado almacenado se sincroniza automáticamente con bloqueos, permisos y solicitudes mediante `fn_recalcular_estado_espacio`. El **mantenimiento** y la **asignación manual** son decisiones del gestor y prevalecen hasta que las retire o libere; los triggers de la base recalculan el estado al cambiar bloqueos, permisos o solicitudes.
 
 ---
 
@@ -128,7 +128,7 @@ Reglas del filtro horario:
   ],
   "total": 3,
   "disponibles": 3,
-  "noDisponibles": 3
+  "noDisponibles": 0
 }
 ```
 
@@ -360,7 +360,7 @@ $login = Invoke-RestMethod -Method Post -Uri http://localhost:3000/auth/login `
     -Body '{"correo":"maria.gomez@gmail.com","password":"Comerciante123"}'
 $auth = @{ Authorization = "Bearer $($login.accessToken)" }
 
-# 3) Disponibles (3 con el seed)
+# 3) Disponibles según la fecha actual
 Invoke-RestMethod -Uri 'http://localhost:3000/espacios' -Headers $auth
 
 # 4) Todos los estados (6 con el seed)
@@ -381,10 +381,18 @@ Invoke-RestMethod -Uri 'http://localhost:3000/espacios/3' -Headers $auth
 
 El seed incluye:
 
-- 3 espacios disponibles.
+- 3 espacios con estado registrado `disponible` (aunque su disponibilidad efectiva depende de la fecha).
 - 1 bloqueado con mantenimiento del 25 al 31 de octubre de 2026.
 - 1 asignado.
 - 1 en mantenimiento.
+- 1 permiso vigente del **1 al 30 de noviembre de 2026** sobre «Espacio móvil Calle 30 - A».
+
+> **Importante para las pruebas:** dentro de la vigencia de ese permiso, el espacio
+> «Espacio móvil Calle 30 - A» aparece como **asignado** y el listado por defecto
+> devuelve **2 disponibles**, no 3. Es el comportamiento correcto. Para verlo como
+> disponible, consulta una fecha fuera de la vigencia
+> (`?fecha=2026-12-01`) o usa `incluirNoDisponibles=true` para inspeccionar todos los
+> estados.
 
 ---
 
@@ -413,6 +421,25 @@ La administración está disponible para gestores con perfil **revisor** y **adm
 | `PATCH` | `/gestor/espacios/:id/bloqueos/:bloqueoId` | Editar bloqueo |
 | `DELETE` | `/gestor/espacios/:id/bloqueos/:bloqueoId` | Eliminar bloqueo |
 | `GET` | `/gestor/espacios/:id/historial` | Auditoría del espacio y sus bloqueos |
+
+**Filtros del listado (`GET /gestor/espacios`):** `busqueda` (nombre), `tipo`, `estado`
+(incluye `todos`), `sector`, `zonaId`, `asignacionManual`, `fecha` (para el estado
+efectivo), `pagina` y `limite`. La ficha (`GET /gestor/espacios/:id`) acepta `fecha`.
+Los bloqueos se pueden filtrar por `fecha` en
+`GET /gestor/espacios/:id/bloqueos?fecha=YYYY-MM-DD`. Las opciones del formulario
+(`GET /gestor/espacios/opciones`) devuelven los tipos, los estados, las zonas activas y
+los sectores existentes.
+
+**Cuerpo de creación (`POST /gestor/espacios`):** `nombre`, `tipo`, `sector?`,
+`dimensiones?`, `actividadPermitida?`, `ubicacion` (Point GeoJSON), `horarioInicio?`,
+`horarioFin?` y `estado?` (`disponible` o `mantenimiento`). La zona se detecta
+automáticamente con el polígono activo que contiene el punto; si el punto está fuera de
+toda zona, `zonaId` queda nulo.
+
+**Edición (`PATCH /gestor/espacios/:id`):** acepta los mismos campos; si cambia la
+ubicación, vuelve a calcular la zona y, cuando el sector estaba vacío o era el nombre de
+la zona anterior, lo actualiza con la nueva zona. El estado manual solo puede ser
+`disponible` o `mantenimiento`.
 
 ### 10.2 Reglas de estado
 

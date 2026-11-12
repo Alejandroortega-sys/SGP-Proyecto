@@ -19,7 +19,7 @@ La aplicación web (PWA responsive) tiene **cuatro roles**:
 
 **Módulos funcionales:** (1) autenticación y cuentas con roles, (2) geo-portal GIS con zonas y catálogo de espacios, (3) trámites de solicitud/asignación digital, (4) motor de factibilidad (densidad y reglas urbanas, sin IoT), (5) permisos digitales con QR, verificación ciudadana y dashboard analítico.
 
-**El esquema real de la BD ya existe:** `01_creacion_bd.sql` (30 tablas, 17 enums, triggers, funciones, restricciones EXCLUDE y 4 vistas materializadas) es la máxima autoridad del dominio. La tabla `sesiones` se creó con `03_sesiones.sql` y `zona_versiones` con `06_zonas_hu12.sql` (31 tablas de negocio).
+**El esquema real de la BD ya existe:** `01_creacion_bd.sql` (30 tablas, 17 enums, triggers, funciones, restricciones EXCLUDE y 4 vistas materializadas) es la máxima autoridad del dominio. La tabla `sesiones` se creó con `03_sesiones.sql`, `zona_versiones` con `06_zonas_hu12.sql` y las migraciones `07` y `08` agregaron auditoría, códigos de módulos y estados de espacios. `prisma/schema.prisma` refleja 32 modelos (incluida `spatial_ref_sys`, que es de PostGIS).
 
 **Exclusiones del alcance (jamás las implementes ni las "resuelvas" sin aprobación):**
 - Sin sensores/hardware/IoT: toda la simulación de flujo y ocupación es algorítmica sobre datos de BD.
@@ -35,22 +35,19 @@ La aplicación web (PWA responsive) tiene **cuatro roles**:
 |---|---|---|
 | Base de datos | **PostgreSQL 18 + PostGIS 3.6** (extensiones `postgis`, `btree_gist`, `citext`, `pgcrypto`) | ✅ creada y verificada (`01_creacion_bd.sql`; BD local de desarrollo: `sgp_tulua`) |
 | Lenguaje | **TypeScript** (strict) | ✅ implementado |
-| Backend | **NestJS** (API REST, sin prefijo global) | ✅ implementado |
-| ORM | **Prisma** | ✅ implementado |
-| Frontend | **Next.js** (App Router, en `frontend/`) | 🔴 sin crear |
-| Tests (previsto) | Jest + Supertest (unit + e2e) | ✅ unitarias y e2e |
-| Lint / formato | ESLint + Prettier (configurar al crear el backend, con aprobación) | ✅ oxlint + Prettier |
+| Backend | **NestJS** (API REST, sin prefijo global) | ✅ implementado (Sprints 1 y 2) |
+| ORM | **Prisma 7** + `@prisma/adapter-pg` | ✅ implementado |
+| Frontend | **Next.js 16** (App Router, en `frontend/`) | ✅ implementado (Sprints 1 y 2) |
+| Tests | Jest + Supertest (unit + e2e) · Vitest + Playwright (frontend) | ✅ unitarias, e2e y usabilidad |
+| Lint / formato | oxlint + Prettier (backend) · ESLint (frontend) | ✅ configurado |
 
-**Estado actual:** el repositorio contiene documentación, scripts SQL, el backend NestJS implementado (Sprint 1), pruebas unitarias/e2e, Swagger y `prisma/schema.prisma`. El frontend Next.js todavía no existe. La BD de desarrollo ya está creada y poblada con datos de prueba; sus credenciales viven solo en el `.env` local (**jamás las escribas en un archivo del repo ni las comitees**). Las credenciales de los usuarios de prueba están documentadas en la cabecera de `02_seed_datos_prueba.sql`.
+**Estado actual:** el repositorio contiene documentación, scripts SQL, el backend NestJS implementado (Sprints 1 y 2), pruebas unitarias/e2e, Swagger, `prisma/schema.prisma` y el frontend Next.js implementado (Sprints 1 y 2). La BD de desarrollo ya está creada y poblada con datos de prueba; sus credenciales viven solo en el `.env` local (**jamás las escribas en un archivo del repo ni las comitees**). Las credenciales de los usuarios de prueba están documentadas en la cabecera de `02_seed_datos_prueba.sql` y en `docs/Uso_endpoints.md`.
 
-**Librerías (instalar solo con aprobación, ver §10):** `@nestjs/config`, `@nestjs/jwt`, `@nestjs/passport`, `@nestjs/swagger`, `helmet`, `class-validator`, `class-transformer`, `bcrypt` o `argon2`, y la librería de mapas del frontend.
+**Librerías y decisiones ya tomadas:** NestJS 12, Prisma 7, `@nestjs/swagger`, `class-validator`, `class-transformer`, `argon2` (argon2id), `@nestjs/throttler`, `nodemailer`, `multer`; frontend Next.js 16, React 19, Tailwind CSS 4, Leaflet 1.9.4 con OpenStreetMap. El gestor de paquetes es **pnpm** (prohibido mezclar con npm/yarn). Las fotos se guardan en disco local (`UPLOAD_DIR`, límite `UPLOAD_MAX_BYTES`).
 
-**Puertos previstos:** API `:3000`, frontend `:3001`. No los cambies sin aprobación.
+**Puertos:** API `:3000`, frontend `:3001`. No los cambies sin aprobación.
 
-**Decisiones aún NO tomadas (pregunta antes de elegir; no las decidas tú):**
-- Gestor de paquetes (`npm` vs `pnpm`): el que se elija queda fijado con su lockfile; prohibido mezclar.
-- Librería de componentes UI y librería de mapas (Leaflet vs Mapbox GL JS).
-- Almacenamiento de archivos (disco local vs S3…), estrategia de despliegue y forma del monorepo.
+**Pendiente de decisión:** almacenamiento externo de archivos (S3 u otro) para producción y estrategia de despliegue.
 
 **Versiones:** no asumas versiones de memoria. Revisa `package.json` / lockfile cuando existan y usa la API de la versión instalada. Si dudas de cómo funciona algo de NestJS, Prisma, Next.js o PostGIS, revisa sus tipos en `node_modules` o la documentación oficial antes de escribir código.
 
@@ -72,21 +69,28 @@ Antes de tocar algo, consulta en este orden:
 
 ## 4. Estructura del repositorio
 
-**Propuesta** cuando se autorice crear código (no la creas sin aprobación, §10):
+**Estructura real implementada:**
 
 ```
 ├── package.json                 # backend NestJS en la raíz
 ├── prisma/schema.prisma         # ORM (baselining en §7)
+├── dataBase/                    # scripts 01–08 (estructura, seed y migraciones)
 ├── src/
 │   ├── main.ts / app.module.ts
-│   ├── common/                  # guards, filters, interceptors, pipes
-│   └── modules/<modulo>/        # estructura por módulo (abajo)
-├── test/                        # tests e2e
+│   ├── common/                  # filtros, auditoría, geografía, serialización
+│   ├── auth/ usuarios/ perfil/ organizadores/ gestor/ panel/
+│   ├── notificaciones/ correo/
+│   ├── zonas/ modulos/ espacios/ productos/ importaciones/
+│   └── prisma/ generated/
+├── test/                        # tests e2e de la API
+├── docs/                        # documentación funcional y técnica
 └── frontend/                    # app Next.js con su propio package.json
     └── src/
         ├── app/                 # App Router; route groups por rol
-        ├── features/{comerciante,organizador,gestor,publico}/
-        ├── components/{ui,features,mapa}/
+        ├── features/{publico,sesion,inicio,perfil,organizador,gestor,
+        │             mapa,zonas,modulos,espacios,espacios-gestor,
+        │             importaciones,notificaciones}/
+        ├── components/ui/       # design system
         ├── hooks/
         ├── lib/api-client.ts    # ÚNICO punto de HTTP
         └── types/
@@ -188,7 +192,7 @@ La BD implementa reglas de negocio con **triggers, funciones, restricciones de e
 | `23505` unique_violation / Prisma `P2002` | `409 Conflict` |
 | `23P01` exclusion_violation | `409 Conflict` (con mensaje: "el espacio ya está asignado en esas fechas" / "ya existe una feria en esa zona y fechas") |
 | `23503` foreign_key_violation / Prisma `P2003` | `409` o `422` según el caso |
-| `23514` check_violation | `422 Unprocessable Entity` |
+| `23514` check_violation | `400 Bad Request` (el filtro global traduce el mensaje de la regla) |
 | `P0001` raise_exception de triggers (`fn_validar_zona`, motivo obligatorio…) | `422` con el mensaje legible que lanza la BD |
 | Prisma `P2025` | `404 Not Found` |
 | Error inesperado | `500` genérico, **sin filtrar detalles internos** al cliente |
@@ -197,7 +201,7 @@ La BD implementa reglas de negocio con **triggers, funciones, restricciones de e
 
 ## 7. Convenciones de Prisma (esquema + PostGIS)
 
-> Prisma aún no existe en el repo (no hay `prisma/schema.prisma`). Esta sección se aplica al crearlo, siempre con aprobación (§10).
+> `prisma/schema.prisma` ya existe y se generó por baselining sobre el SQL real. La BD sigue siendo la autoridad; no uses `prisma migrate` como flujo normal de trabajo.
 
 **Estrategia de arranque (baselining):** el esquema ya existe en SQL. Genera `schema.prisma` partiendo de la BD (`prisma db pull` sobre `SPG-Prueba`) y coloca en **migraciones SQL manuales** lo que Prisma no expresa: triggers, funciones, restricciones EXCLUDE, vistas materializadas, índices GIST y defaults con expresión (`lpad(nextval(...))`, `gen_random_bytes`). No uses `db push` como flujo normal de trabajo.
 
@@ -244,7 +248,7 @@ La BD implementa reglas de negocio con **triggers, funciones, restricciones de e
 - API REST, **sin prefijo global**, recursos en plural español: `/usuarios`, `/zonas`, `/espacios`, `/solicitudes`, `/ferias`, `/permisos`, `/verificaciones`. No mezcles inglés y español en la misma ruta.
 - GeoJSON para el mapa: `GET /zonas/geojson` devuelve un FeatureCollection generado con `ST_AsGeoJSON` (§7) — el frontend lo renderiza tal cual.
 - HTTP correcto: `201` crear, `204` borrar, `400` validación, `401` no autenticado, `403` sin permiso, `404` no existe, `409` conflicto de unicidad/EXCLUDE, `422` regla de negocio violada. Nunca devuelvas `200` con `{error: ...}`.
-- Paginación estándar: `?page=1&limit=20` → `{ data, meta: { total, page, limit } }`.
+- Paginación estándar del proyecto: `?pagina=1&limite=20` → `{ datos, paginacion: { pagina, limite, total, totalPaginas } }` (algunos módulos usan `pagina`/`limite`/`total`/`totalPaginas` en la raíz; revisa el DTO real antes de consumirlo).
 - Config por variables de entorno validadas al arranque (`@nestjs/config` con esquema de validación); prohibido leer `process.env` suelto en los módulos.
 - Documenta la API con Swagger (`@nestjs/swagger`): es el **contrato** que consume el frontend.
 
@@ -255,7 +259,7 @@ La BD implementa reglas de negocio con **triggers, funciones, restricciones de e
 - Tipos derivados del contrato Swagger — no dupliques tipos "a ojo" desde las respuestas.
 - Estados de UI obligatorios: **carga, vacío y error** en toda pantalla con datos.
 - Responsive (mobile-first, se prueba en 360 px) y accesible: WCAG AA de contraste, labels para inputs, foco visible; el backlog exige áreas táctiles ≥ 44 px.
-- El mapa (Leaflet/Mapbox, por decidir) consume GeoJSON de la API; jamás invoques SQL ni tipado fuerte de la BD directamente en el cliente.
+- El mapa usa **Leaflet 1.9.4 con OpenStreetMap** y consume GeoJSON de la API; jamás invoques SQL ni tipado fuerte de la BD directamente en el cliente.
 
 ### Git (GUARDA)
 - **Prohibido hacer commits de ningún tipo sin autorización explícita** (ni `commit`, ni `push`, ni `merge`, ni `rebase`, ni `reset`). No ejecutes comandos de git destructivos ni de historial bajo ninguna interpretación propia.
@@ -267,7 +271,7 @@ La BD implementa reglas de negocio con **triggers, funciones, restricciones de e
 
 1. **Inyección SQL:** solo Prisma parametrizado o `Prisma.sql`. Nunca concatenar variables en consultas ni interpolar strings en SQL crudo.
 2. **XSS:** al renderizar en el frontend, React lo escapa por defecto; prohibido usar `dangerouslySetInnerHTML` con contenido sin sanear (incluyendo nombres/heredados de la BD).
-3. **Contraseñas:** se hashean desde la app (bcrypt o argon2, se definirá con aprobación). Jamás texto plano, jamás en logs o respuestas. El `hash` del seed usa `pgcrypto crypt()` solo para datos de prueba.
+3. **Contraseñas:** se hashean desde la app con **argon2id**. Jamás texto plano, jamás en logs o respuestas. El `hash` del seed usa literales argon2id solo para datos de prueba.
 4. **Autenticación:** access token JWT de vida corta + refresh token opaco. El refresh se guarda **hasheado** en `sesiones`; el access token lleva el claim `sid`. El logout y la suspensión/inactivación revocan `sesiones.revocada_en` (invalidación persistente). Rate limiting en login, registro, activación y refresh. Bloqueo temporal del usuario tras 5 intentos fallidos (con `intentos_fallidos` y `bloqueado_hasta` — la BD o la app acumulan, siempre registra qué capa lo hizo).
 5. **Verificación QR pública:** endpoint SIN autenticación con rate limiting por IP; devuelve **datos mínimos**: validez, vigencia, categoría del permiso y nombre del titular comercial. **Jamás** documento, teléfono, correo, dirección ni hashes de tokens.
 6. **Datos personales:** los DTOs difieren por rol; no expongas documento ni contacto de una cuenta a otra sin que sean datos de negocio del recurso pedido. Auditoría (JSONB) solo es visible para gestores.
@@ -311,13 +315,15 @@ La BD implementa reglas de negocio con **triggers, funciones, restricciones de e
 
 ### Tareas grandes
 - Primero **plan** (enfoque, archivos a tocar, riesgos, orden) y pide aprobación; luego código.
-- Orden de construcción previsto (respeta este orden salvo indicación contraria): Prisma + config → autenticación y roles → usuarios/perfiles → zonas GIS → censo/espacios → solicitudes y documentos → factibilidad → permisos con QR → cobros → notificaciones → dashboard → frontend.
+- Orden de construcción previsto (respeta este orden salvo indicación contraria): Prisma + config → autenticación y roles → usuarios/perfiles → zonas GIS → censo/espacios → solicitudes y documentos → factibilidad → permisos con QR → cobros → notificaciones → dashboard → frontend. **Estado:** Prisma, autenticación, usuarios/perfiles, zonas, censo, espacios, notificaciones y el frontend de los Sprints 1–2 ya están implementados; siguen solicitudes, ferias, factibilidad, permisos, cobros y dashboard.
 
 ---
 
 ## 11. Flujos de negocio de referencia
 
 Basados en el esquema real y en las reglas de BD (§6). Si dudas de un estado o paso, confirma en `baseDatos.md`.
+
+> **Estado de implementación (noviembre de 2026):** los flujos 1, 2 (registro de organización), 9 (bloqueos de espacios) y 11 (notificaciones internas) están operativos. Los flujos 3–8 y 10 (solicitudes, ferias, factibilidad, permisos QR, cobros y dashboard analítico) tienen el esquema y los datos de prueba listos, pero **todavía no tienen endpoints ni pantallas**. La consulta de espacios del comerciante (HU-09/HU-10) y la administración de espacios (HU-15) sí están implementadas.
 
 1. **Registro y activación de cuenta:** comerciante se registra → usuario `pendiente_activacion` + token (`tokens_seguridad`, tipo `activacion`) → enlaza/activa → `activa` (+ `comerciantes` con documento, categoría y contacto). Login → access token + refresh token; la sesión se guarda en `sesiones`. `POST /auth/refresh` rota el refresh; `POST /auth/logout` marca `revocada_en`. A los 5 intentos fallidos, bloqueo temporal (`bloqueado_hasta`).
 2. **Organización feria:** organizador registra organización → `pendiente_validacion` → gestor valida a `activa` (o la suspende). Solo con organización activa se pueden radicaciones de ferias.

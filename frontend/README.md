@@ -56,16 +56,18 @@ src/
 │   ├── globals.css             # Design system (tokens de color institucionales)
 │   ├── (publico)/              # Rutas sin sesión
 │   │   ├── page.tsx            # /              bienvenida
+│   │   ├── mapa/               # /mapa          Geo-Portal público
 │   │   ├── login/              # /login
 │   │   ├── registro/           # /registro, comerciante y organizador
 │   │   ├── activar/            # /activar       código OTP de 6 dígitos
 │   │   ├── recuperar/          # /recuperar
 │   │   ├── restablecer/        # /restablecer
 │   │   └── primer-acceso/      # /primer-acceso gestor invitado
-│   ├── (comerciante)/          # /comerciante/inicio y /comerciante/perfil
+│   ├── (comerciante)/          # inicio, perfil y consulta de espacios
 │   ├── (organizador)/          # inicio, perfil y mi-organizacion
-│   ├── (gestor)/               # panel, usuarios, comerciantes,
-│   │                           # organizaciones, gestores, auditoría y perfil
+│   ├── (gestor)/               # panel, zonas, módulos, espacios,
+│   │                           # importaciones, usuarios, organizaciones,
+│   │                           # gestores, auditoría y perfil
 │   └── (sesion)/               # /notificaciones para cualquier rol
 ├── components/ui/              # Design system: boton, tarjeta, campo, tabla,
 │                               # paginación, modal, alerta, etiqueta, spinner
@@ -76,8 +78,11 @@ src/
 │   ├── perfil/                 # Perfil editable + cambio de contraseña
 │   ├── organizador/            # Onboarding y edición de la organización
 │   ├── gestor/                 # Panel, listados, detalles y auditoría
+│   ├── mapa/                   # Geo-Portal público con Leaflet
 │   ├── zonas/                  # Listado, editor y clasificación de zonas
 │   ├── modulos/                # Censo, ficha y formulario de módulos
+│   ├── espacios/               # Consulta de espacios del comerciante
+│   ├── espacios-gestor/        # Administración de espacios y bloqueos
 │   ├── importaciones/          # Carga, previsualización, mapa y reporte
 │   └── notificaciones/         # Bandeja de notificaciones
 ├── hooks/
@@ -106,17 +111,19 @@ src/
 
 ---
 
-## Rutas implementadas (Sprint 1 completo)
+## Rutas implementadas (Sprints 1 y 2)
 
-**Públicas:** `/` · `/login` · `/registro` · `/registro/comerciante` · `/registro/organizador` · `/activar` · `/recuperar` · `/restablecer` · `/primer-acceso`
+**Públicas:** `/` · `/mapa` · `/login` · `/registro` · `/registro/comerciante` · `/registro/organizador` · `/activar` · `/recuperar` · `/restablecer` · `/primer-acceso`
 
-**Comerciante:** `/comerciante/inicio` · `/comerciante/perfil`
+**Comerciante:** `/comerciante/inicio` · `/comerciante/perfil` · `/comerciante/espacios`
 
 **Organizador:** `/organizador/inicio` · `/organizador/perfil` · `/organizador/mi-organizacion`
 
 **Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/zonas` · `/gestor/zonas/nueva` · `/gestor/zonas/[id]/editar` · `/gestor/zonas/[id]/historial` · `/gestor/modulos` · `/gestor/modulos/nuevo` · `/gestor/modulos/[id]` · `/gestor/modulos/[id]/editar` · `/gestor/espacios` · `/gestor/espacios/nuevo` · `/gestor/espacios/[id]` · `/gestor/espacios/[id]/editar` · `/gestor/importaciones` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
 
 **Transversal:** `/notificaciones`
+
+El detalle funcional para usuarios está en [`docs/Manual.md`](../docs/Manual.md).
 
 ### Módulo de zonas (HU-11)
 
@@ -135,7 +142,7 @@ src/
 El detalle funcional y de pruebas está en [`docs/Uso_zonas.md`](../docs/Uso_zonas.md)
 y [`docs/implementaciones_Sprint2.md`](../docs/implementaciones_Sprint2.md).
 
-Los módulos de solicitudes, ferias, permisos QR, cobros y dashboard (Sprints 3 a 6) se muestran como "Próximamente" y no consumen endpoints inexistentes. El detalle del avance y los pendientes está en [`docs/avance_frontend.md`](../docs/avance_frontend.md).
+Los módulos de solicitudes, ferias, permisos QR, cobros y dashboard (Sprints 3 a 6) se muestran como "Próximamente" y no consumen endpoints inexistentes. La consulta de espacios ya está disponible, pero la solicitud formal todavía no. El detalle del avance y los pendientes está en [`docs/avance_frontend.md`](../docs/avance_frontend.md).
 
 ---
 
@@ -145,7 +152,7 @@ Los módulos de solicitudes, ferias, permisos QR, cobros y dashboard (Sprints 3 
 pnpm lint      # ESLint sin errores
 pnpm test      # Vitest: funciones de rutas, formato y validaciones
 pnpm test:e2e  # Playwright: flujos reales de todos los módulos
-pnpm build     # build verde (42 rutas)
+pnpm build     # build verde (39 páginas/rutas)
 ```
 
 Las pruebas e2e usan **Microsoft Edge** (`channel: "msedge"`) y levantan la API y el
@@ -166,6 +173,15 @@ Para probar los flujos contra la API real, consulta la sección *"Cómo probar l
 - `/gestor/espacios/[id]`: ficha con bloqueos, calendario mensual, historial y acciones de estado.
 - `/gestor/espacios/[id]/editar`: edición del espacio y su horario.
 - Detalle funcional: [`docs/Uso_modulos.md`](../docs/Uso_modulos.md).
+
+## Espacios temporales (HU-09 y HU-15)
+
+- `/comerciante/espacios`: consulta de espacios disponibles con tabla, mapa, agrupación de marcadores, ficha responsive y filtros por sector, actividad, fecha y horario.
+- `/gestor/espacios`: catálogo administrativo con búsqueda, tipo, estado, sector, zona, paginación y borrado condicionado.
+- `/gestor/espacios/nuevo`: creación con punto sobre Leaflet y detección automática de la zona contenedora.
+- `/gestor/espacios/[id]`: ficha con estado registrado/efectivo, bloqueos, calendario mensual, historial, asignación/liberación y mantenimiento.
+- `/gestor/espacios/[id]/editar`: edición de datos, ubicación, horario y estado manual.
+- Detalle funcional: [`docs/Uso_espacios.md`](../docs/Uso_espacios.md).
 
 ## Importación de zonas y módulos (HU-14)
 
