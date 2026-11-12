@@ -174,6 +174,7 @@ export const Espacios_temporalesScalarFieldEnum = {
   horario_inicio: 'horario_inicio',
   horario_fin: 'horario_fin',
   estado: 'estado',
+  asignacion_manual: 'asignacion_manual',
   creado_por: 'creado_por',
   creado_en: 'creado_en'
 } as const

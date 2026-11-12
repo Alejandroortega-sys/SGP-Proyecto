@@ -41,6 +41,7 @@ const ENLACES: EnlaceSesion[] = [
   { href: "/gestor/panel", texto: "Panel", roles: ["gestor"] },
   { href: "/gestor/zonas", texto: "Zonas", roles: ["gestor"] },
   { href: "/gestor/modulos", texto: "Módulos", roles: ["gestor"] },
+  { href: "/gestor/espacios", texto: "Espacios", roles: ["gestor"] },
   {
     href: "/gestor/importaciones",
     texto: "Importar",

@@ -114,7 +114,7 @@ src/
 
 **Organizador:** `/organizador/inicio` · `/organizador/perfil` · `/organizador/mi-organizacion`
 
-**Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/zonas` · `/gestor/zonas/nueva` · `/gestor/zonas/[id]/editar` · `/gestor/zonas/[id]/historial` · `/gestor/modulos` · `/gestor/modulos/nuevo` · `/gestor/modulos/[id]` · `/gestor/modulos/[id]/editar` · `/gestor/importaciones` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
+**Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/zonas` · `/gestor/zonas/nueva` · `/gestor/zonas/[id]/editar` · `/gestor/zonas/[id]/historial` · `/gestor/modulos` · `/gestor/modulos/nuevo` · `/gestor/modulos/[id]` · `/gestor/modulos/[id]/editar` · `/gestor/espacios` · `/gestor/espacios/nuevo` · `/gestor/espacios/[id]` · `/gestor/espacios/[id]/editar` · `/gestor/importaciones` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
 
 **Transversal:** `/notificaciones`
 
@@ -145,7 +145,7 @@ Los módulos de solicitudes, ferias, permisos QR, cobros y dashboard (Sprints 3 
 pnpm lint      # ESLint sin errores
 pnpm test      # Vitest: funciones de rutas, formato y validaciones
 pnpm test:e2e  # Playwright: flujos reales de todos los módulos
-pnpm build     # build verde (38 rutas)
+pnpm build     # build verde (42 rutas)
 ```
 
 Las pruebas e2e usan **Microsoft Edge** (`channel: "msedge"`) y levantan la API y el
@@ -161,6 +161,10 @@ Para probar los flujos contra la API real, consulta la sección *"Cómo probar l
 - `/gestor/modulos/[id]`: ficha con foto, zona contenedora, restricciones e historial.
 - `/gestor/modulos/[id]/editar`: edición del censo.
 - El backend valida la foto por MIME, firma binaria y tamaño máximo de 5 MB.
+- `/gestor/espacios`: catálogo administrativo con filtros, asignación/liberación, mantenimiento y borrado condicionado.
+- `/gestor/espacios/nuevo`: creación con punto sobre Leaflet y detección automática de zona.
+- `/gestor/espacios/[id]`: ficha con bloqueos, calendario mensual, historial y acciones de estado.
+- `/gestor/espacios/[id]/editar`: edición del espacio y su horario.
 - Detalle funcional: [`docs/Uso_modulos.md`](../docs/Uso_modulos.md).
 
 ## Importación de zonas y módulos (HU-14)

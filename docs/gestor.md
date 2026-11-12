@@ -299,6 +299,20 @@ suspender.
 
 ---
 
+## 7.1 Espacios temporales y bloqueos — `/gestor/espacios`
+
+Disponible para **revisor** y **administrador**. La administración completa del
+catálogo, los bloqueos y los estados está documentada en
+[`Uso_espacios.md`](Uso_espacios.md) §10.
+
+- CRUD de espacios con detección automática de zona.
+- Bloqueos por rango de fechas con calendario y validación de solapes.
+- Asignación manual/liberación y cambios entre disponible y mantenimiento.
+- Borrado físico solo si no hay permisos ni solicitudes.
+- Auditoría e historial por espacio.
+
+---
+
 ## 8. Seguridad
 
 | Guard | Alcance | Qué valida |

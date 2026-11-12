@@ -2848,6 +2848,7 @@ export const Espacios_temporalesScalarFieldEnum = {
   horario_inicio: 'horario_inicio',
   horario_fin: 'horario_fin',
   estado: 'estado',
+  asignacion_manual: 'asignacion_manual',
   creado_por: 'creado_por',
   creado_en: 'creado_en'
 } as const
@@ -3383,6 +3384,13 @@ export type ListEnumestado_espacioFieldRefInput<$PrismaModel> = FieldRefInputTyp
 
 
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
  * Reference to a field of type 'regla_urbanistica'
  */
 export type Enumregla_urbanisticaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'regla_urbanistica'>
@@ -3393,13 +3401,6 @@ export type Enumregla_urbanisticaFieldRefInput<$PrismaModel> = FieldRefInputType
  * Reference to a field of type 'regla_urbanistica[]'
  */
 export type ListEnumregla_urbanisticaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'regla_urbanistica[]'>
-    
-
-
-/**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 

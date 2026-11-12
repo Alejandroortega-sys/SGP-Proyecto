@@ -54,6 +54,10 @@ registro, activación, recuperación y primer acceso). Ahora incluye:
 | `/gestor/modulos/nuevo` | `POST /modulos`, `GET /modulos/zona-contenedora` |
 | `/gestor/modulos/[id]` | `GET /modulos/:id`, `GET /modulos/:id/historial`, `PATCH /modulos/:id/estado` |
 | `/gestor/modulos/[id]/editar` | `GET /modulos/:id`, `PATCH /modulos/:id`, `GET /modulos/zona-contenedora` |
+| `/gestor/espacios` | `GET /gestor/espacios`, `GET /gestor/espacios/opciones`, `DELETE /gestor/espacios/:id` |
+| `/gestor/espacios/nuevo` | `POST /gestor/espacios`, `GET /gestor/espacios/zona-contenedora` |
+| `/gestor/espacios/[id]` | `GET /gestor/espacios/:id`, historial, bloqueos, asignar, liberar y cambios de estado |
+| `/gestor/espacios/[id]/editar` | `GET /gestor/espacios/:id`, `PATCH /gestor/espacios/:id` |
 | `/gestor/perfil` | `GET/PATCH /gestor/perfil`, `PATCH /gestor/perfil/password` |
 | `/gestor/usuarios` | `GET /gestor/usuarios` |
 | `/gestor/usuarios/[id]` | `GET /gestor/usuarios/:id`, `PATCH /gestor/usuarios/:id/estado`, `PATCH /usuarios/:id/comerciante`, `POST /gestor/gestores/:id/reenviar-invitacion` |
@@ -220,12 +224,12 @@ frontend: next build                      → 27 rutas generadas
 frontend: vitest run                      → 3 archivos, 15 pruebas aprobadas
 frontend: playwright test                 → 26 pruebas aprobadas (1.2 min)
 
-> Con la incorporación de HU-11 el frontend pasa a **32 rutas**, **9 archivos
-> Vitest / 59 pruebas** y **50 pruebas Playwright**. Las 4 pruebas de zonas
-> pasan; la suite completa conserva 7 fallos preexistentes de `espacios.spec.ts`
-> por la vigencia del permiso del seed al 2026-11-01.
-backend:  jest --runInBand                → 20 suites, 190 pruebas aprobadas
-backend:  jest e2e --runInBand            → 6 suites, 35 pruebas aprobadas
+> Con la incorporación de HU-15 el frontend pasa a **39 rutas**, **15 archivos
+> Vitest / 93 pruebas** y **66 pruebas Playwright**. Las pruebas de espacios se
+> ajustaron para depender de la API y no del mes del seed; la suite completa
+> queda en verde.
+backend:  jest --runInBand                → 42 suites, 402 pruebas aprobadas
+backend:  jest e2e --runInBand            → 12 suites, 123 pruebas aprobadas
 ```
 
 ### 5.4 Cobertura de usabilidad (Playwright)
@@ -385,3 +389,14 @@ jest.config.ts                                            (excluye frontend de J
 - Cliente API con `FormData` para alta y edición multipart.
 - Pruebas Vitest de validaciones y textos; Playwright de alta, advertencia, foto, filtros, baja y responsive.
 - Detalle: [`docs/Uso_modulos.md`](Uso_modulos.md).
+
+## 10. Administración de espacios temporales (HU-15)
+
+- Rutas: `/gestor/espacios`, `/gestor/espacios/nuevo`, `/gestor/espacios/[id]` y `/gestor/espacios/[id]/editar`.
+- Listado con búsqueda, tipo, estado, sector, zona, paginación y acciones de ficha, edición y borrado.
+- Formulario con selección del punto sobre Leaflet, detección automática de zona, tipo, dimensiones, actividad, horario y estado manual.
+- Ficha con estado registrado/efectivo, asignación manual, liberación, mantenimiento, borrado condicionado, bloqueos e historial.
+- Calendario mensual propio para crear, editar y eliminar bloqueos por rango de fechas.
+- Responsive desde 360 px; el calendario se complementa con una lista de bloqueos.
+- Pruebas Vitest de validaciones y calendario; Playwright de alta, edición, bloqueos, solapes, estados, permisos y responsive.
+- Detalle: [`docs/Uso_espacios.md`](Uso_espacios.md) §10.

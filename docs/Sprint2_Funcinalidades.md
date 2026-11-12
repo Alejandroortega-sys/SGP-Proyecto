@@ -189,7 +189,7 @@ Si falta capacidad, se recorta en este orden: HU-14, luego HU-12 y HU-10. Las hi
 - [x] El gestor puede dibujar, clasificar, editar y desactivar zonas, y ver su historial de cambios.
 - [x] El sistema impide guardar zonas inválidas o solapadas y explica el motivo.
 - [x] El gestor puede censar módulos con foto y recibe la advertencia al ubicar uno en zona restringida.
-- [ ] El gestor puede crear espacios temporales y bloquearlos por fechas, y los bloqueos se respetan en la consulta.
+- [x] El gestor puede crear espacios temporales y bloquearlos por fechas, y los bloqueos se respetan en la consulta.
 - [ ] El mapa y las consultas responden en menos de 2 segundos.
 - [ ] Todas las pantallas funcionan en celular y escritorio, con sus estados de carga, vacío y error.
 - [ ] Los criterios de aceptación de cada historia fueron probados y el Product Owner aceptó las historias en la demo.

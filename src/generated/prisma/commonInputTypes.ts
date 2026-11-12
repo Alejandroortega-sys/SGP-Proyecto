@@ -315,6 +315,11 @@ export type Enumestado_espacioFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumestado_espacioFilter<$PrismaModel> | $Enums.estado_espacio
 }
 
+export type BoolFilter<$PrismaModel = never> = {
+  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean
+}
+
 export type Enumtipo_espacioWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.tipo_espacio | Prisma.Enumtipo_espacioFieldRefInput<$PrismaModel>
   in?: $Enums.tipo_espacio[] | Prisma.ListEnumtipo_espacioFieldRefInput<$PrismaModel>
@@ -335,16 +340,19 @@ export type Enumestado_espacioWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumestado_espacioFilter<$PrismaModel>
 }
 
+export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedBoolFilter<$PrismaModel>
+  _max?: Prisma.NestedBoolFilter<$PrismaModel>
+}
+
 export type Enumregla_urbanisticaFilter<$PrismaModel = never> = {
   equals?: $Enums.regla_urbanistica | Prisma.Enumregla_urbanisticaFieldRefInput<$PrismaModel>
   in?: $Enums.regla_urbanistica[] | Prisma.ListEnumregla_urbanisticaFieldRefInput<$PrismaModel>
   notIn?: $Enums.regla_urbanistica[] | Prisma.ListEnumregla_urbanisticaFieldRefInput<$PrismaModel>
   not?: Prisma.NestedEnumregla_urbanisticaFilter<$PrismaModel> | $Enums.regla_urbanistica
-}
-
-export type BoolFilter<$PrismaModel = never> = {
-  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean
 }
 
 export type Enumregla_urbanisticaWithAggregatesFilter<$PrismaModel = never> = {
@@ -355,14 +363,6 @@ export type Enumregla_urbanisticaWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumregla_urbanisticaFilter<$PrismaModel>
   _max?: Prisma.NestedEnumregla_urbanisticaFilter<$PrismaModel>
-}
-
-export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedBoolFilter<$PrismaModel>
-  _max?: Prisma.NestedBoolFilter<$PrismaModel>
 }
 
 export type Enumresultado_factibilidadFilter<$PrismaModel = never> = {
@@ -983,6 +983,11 @@ export type NestedEnumestado_espacioFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumestado_espacioFilter<$PrismaModel> | $Enums.estado_espacio
 }
 
+export type NestedBoolFilter<$PrismaModel = never> = {
+  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean
+}
+
 export type NestedEnumtipo_espacioWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.tipo_espacio | Prisma.Enumtipo_espacioFieldRefInput<$PrismaModel>
   in?: $Enums.tipo_espacio[] | Prisma.ListEnumtipo_espacioFieldRefInput<$PrismaModel>
@@ -1003,16 +1008,19 @@ export type NestedEnumestado_espacioWithAggregatesFilter<$PrismaModel = never> =
   _max?: Prisma.NestedEnumestado_espacioFilter<$PrismaModel>
 }
 
+export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedBoolFilter<$PrismaModel>
+  _max?: Prisma.NestedBoolFilter<$PrismaModel>
+}
+
 export type NestedEnumregla_urbanisticaFilter<$PrismaModel = never> = {
   equals?: $Enums.regla_urbanistica | Prisma.Enumregla_urbanisticaFieldRefInput<$PrismaModel>
   in?: $Enums.regla_urbanistica[] | Prisma.ListEnumregla_urbanisticaFieldRefInput<$PrismaModel>
   notIn?: $Enums.regla_urbanistica[] | Prisma.ListEnumregla_urbanisticaFieldRefInput<$PrismaModel>
   not?: Prisma.NestedEnumregla_urbanisticaFilter<$PrismaModel> | $Enums.regla_urbanistica
-}
-
-export type NestedBoolFilter<$PrismaModel = never> = {
-  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedBoolFilter<$PrismaModel> | boolean
 }
 
 export type NestedEnumregla_urbanisticaWithAggregatesFilter<$PrismaModel = never> = {
@@ -1023,14 +1031,6 @@ export type NestedEnumregla_urbanisticaWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumregla_urbanisticaFilter<$PrismaModel>
   _max?: Prisma.NestedEnumregla_urbanisticaFilter<$PrismaModel>
-}
-
-export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: boolean | Prisma.BooleanFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedBoolFilter<$PrismaModel>
-  _max?: Prisma.NestedBoolFilter<$PrismaModel>
 }
 
 export type NestedEnumresultado_factibilidadFilter<$PrismaModel = never> = {

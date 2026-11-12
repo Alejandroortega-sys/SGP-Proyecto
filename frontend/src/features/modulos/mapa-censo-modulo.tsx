@@ -28,6 +28,9 @@ export interface MapaCensoModuloProps {
   punto: GeometriaPunto | null;
   onCambiarPunto?: (punto: GeometriaPunto) => void;
   soloLectura?: boolean;
+  etiquetaMapa?: string;
+  tituloMarcador?: string;
+  ayuda?: string;
 }
 
 /** Icono del punto del censo. */
@@ -50,6 +53,9 @@ export function MapaCensoModulo({
   punto,
   onCambiarPunto,
   soloLectura = false,
+  etiquetaMapa = "Mapa para seleccionar el punto del módulo",
+  tituloMarcador = "Punto del módulo",
+  ayuda = "Haz clic en el mapa o arrastra el marcador para ubicar el punto del módulo.",
 }: MapaCensoModuloProps) {
   const contenedorRef = useRef<HTMLDivElement | null>(null);
   const mapaRef = useRef<L.Map | null>(null);
@@ -203,7 +209,7 @@ export function MapaCensoModulo({
         icon: iconoPunto(),
         draggable: !soloLectura,
         keyboard: false,
-        title: "Punto del módulo",
+        title: tituloMarcador,
       }).addTo(mapa);
 
       marcador.on("dragend", () => {
@@ -221,7 +227,7 @@ export function MapaCensoModulo({
       marcadorRef.current.dragging?.enable();
       if (soloLectura) marcadorRef.current.dragging?.disable();
     }
-  }, [punto, soloLectura]);
+  }, [punto, soloLectura, tituloMarcador]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -229,7 +235,7 @@ export function MapaCensoModulo({
         <div
           ref={contenedorRef}
           role="application"
-          aria-label="Mapa para seleccionar el punto del módulo"
+          aria-label={etiquetaMapa}
           className="h-[360px] w-full sm:h-[480px]"
         />
         {cargandoZonas ? (
@@ -239,12 +245,7 @@ export function MapaCensoModulo({
         ) : null}
       </div>
 
-      {!soloLectura ? (
-        <p className="text-xs text-tenue">
-          Haz clic en el mapa o arrastra el marcador para ubicar el punto del
-          módulo.
-        </p>
-      ) : null}
+      {!soloLectura ? <p className="text-xs text-tenue">{ayuda}</p> : null}
 
       {errorZonas ? (
         <Alerta tono="informacion">

@@ -20,7 +20,7 @@
 | HU-12 — Editar, desactivar y auditar zonas | **Completa** (edición, desactivación, versionado, línea de tiempo y comparación) |
 | **HU-13 — Censo de módulos y puestos** | **Implementada de extremo a extremo** (formulario, mapa, listado y ficha) |
 | **HU-14 — Importar GeoJSON/CSV** | **Implementada de extremo a extremo** (lector, reproyección, CSV, reporte y pruebas) |
-| HU-15 — Espacios temporales y bloqueos | Pendiente |
+| **HU-15 — Espacios temporales y bloqueos** | **Implementada de extremo a extremo** (catálogo, bloqueos, estados, calendario y auditoría) |
 
 **Estado actual del Sprint 2:** el Geo-Portal público funciona con Leaflet, zonas coloreadas, leyenda, capas, popup, geolocalización y API GeoJSON con simplificación por zoom. El comerciante ya puede consultar los espacios disponibles en tabla o mapa, ver su ficha y distinguir los estados bloqueado, ocupado y en mantenimiento. El gestor administrador ya puede dibujar zonas, clasificarlas, definir sus restricciones, editarlas, desactivarlas e importar zonas desde GeoJSON; el revisor accede en modo lectura e importa módulos desde CSV. Ambos consultan y descargan el reporte de errores de cada importación.
 
@@ -522,7 +522,7 @@ Resultado: `FeatureCollection` con las 4 zonas activas del seed.
 | **HU-12** Editar, desactivar y auditar | Editar, desactivar, versionado e historial | Edición, vista previa, baja lógica, línea de tiempo y mapa comparativo | **Implementada** |
 | **HU-13** Censar módulos y puestos | API, foto, auditoría e historial | Formulario, mapa, listado y ficha | **Implementada** |
 | **HU-14** Importar GeoJSON/CSV | Lector, reproyección, CSV, reporte y pruebas | Carga, previsualización en mapa, tabla y reporte | **Implementada de extremo a extremo** |
-| **HU-15** Espacios temporales y bloqueos | Nada | Nada | Pendiente |
+| **HU-15** Espacios temporales y bloqueos | Catálogo, bloqueos, estados y auditoría | Listado, formulario, ficha, calendario y acciones | **Implementada de extremo a extremo** |
 
 ---
 
@@ -580,17 +580,21 @@ Detalle funcional y de pruebas: [`docs/Uso_importaciones.md`](Uso_importaciones.
 
 ### HU-15 — Espacios temporales y bloqueos
 
-- CRUD de espacios temporales.
-- Bloqueos por rango de fechas con calendario.
-- Estados visibles: disponible, bloqueado y ocupado.
-- Validación para no bloquear fechas con permisos aprobados.
-- Lógica preparada para pasar a «Ocupado» al aprobar una solicitud en el Sprint 3.
+**Implementada de extremo a extremo.**
 
-**Pendiente:** la auditoría no cubre `espacios_temporales` ni `espacio_bloqueos`. Las columnas de dimensiones y horario ya existen desde HU-09.
+- CRUD de espacios temporales con detección automática de zona.
+- Bloqueos por rango de fechas con calendario propio y validación de solapes.
+- Estados visibles: disponible, bloqueado, asignado y mantenimiento.
+- Asignación manual y liberación con recálculo automático del estado.
+- Validación para no bloquear fechas con permisos vigentes o solicitudes aprobadas.
+- Migración `08_espacios_hu15.sql` con `asignacion_manual`, función de recálculo y triggers de auditoría para espacios y bloqueos.
+- Pruebas unitarias, e2e de API y Playwright contra la BD real.
+
+Detalle funcional y de pruebas: [`Uso_espacios.md`](Uso_espacios.md) §10.
 
 ### Transversal
 
-- Triggers de auditoría para `modulos`, `espacios_temporales` y `espacio_bloqueos`.
+- Triggers de auditoría para `modulos`, `espacios_temporales` y `espacio_bloqueos` (implementados en `07_modulos_hu13.sql` y `08_espacios_hu15.sql`).
 - Medición formal del rendimiento del mapa y las consultas (<2 s).
 - Documentación de los módulos de espacios, censo y bloqueos (la importación ya
   está documentada en `Uso_importaciones.md`).
@@ -604,7 +608,7 @@ Detalle funcional y de pruebas: [`docs/Uso_importaciones.md`](Uso_importaciones.
 2. **Cambios de esquema:** evaluar `sector` en `zonas` y `modulos`; las columnas de la ficha de `espacios_temporales` ya se agregaron en HU-09.
 3. **Historial de zonas:** resuelto con `GET /zonas/:id/historial` y la tabla `zona_versiones`; `auditoria` se conserva como registro genérico de bajo nivel.
 4. **Buscador de calles y barrios:** Nominatim, capa propia de barrios o datos del municipio.
-5. **Auditoría de espacios, módulos y bloqueos:** triggers nuevos en la base o registro manual desde el backend.
+5. **Auditoría de espacios, módulos y bloqueos:** resuelta con triggers en la base (`07_modulos_hu13.sql` y `08_espacios_hu15.sql`).
 
 La librería de mapas ya está decidida: **Leaflet con OpenStreetMap**.
 
@@ -695,4 +699,4 @@ La **HU-13** quedó implementada de extremo a extremo: censo de módulos y puest
 
 La **HU-14** quedó implementada de extremo a extremo: importación de zonas desde GeoJSON con validación de geometrías y reproyección a EPSG:4326, importación de módulos desde CSV con reporte de errores por fila, previsualización sobre el mapa, confirmación parcial idempotente y reporte CSV descargable. La pantalla funciona en escritorio y a 360 px, y las pruebas cubren archivos válidos, parcialmente válidos y con formato incorrecto.
 
-El Sprint 2 sigue **incompleto**: falta HU-15. El checklist de «Sprint terminado» de `Sprint2_Funcinalidades.md` todavía no se cumple por esa historia.
+La **HU-15** quedó implementada de extremo a extremo: catálogo administrativo, formulario de creación/edición con detección de zona, ficha, bloqueos por rango con calendario, asignación/liberación manual, recálculo automático del estado, borrado condicionado, auditoría y pruebas unitarias, e2e de API y Playwright. Con esta historia se completa el alcance funcional del Sprint 2.

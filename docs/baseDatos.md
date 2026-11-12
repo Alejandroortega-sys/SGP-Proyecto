@@ -33,6 +33,12 @@ psql -U postgres -d "sgp_tulua" -f 05_filtros_hu10.sql
 # 7) HU-12: historial versionado de zonas:
 psql -U postgres -d "sgp_tulua" -f 06_zonas_hu12.sql
 
+# 8) HU-13: auditoría y secuencia de códigos de módulos:
+psql -U postgres -d "sgp_tulua" -f 07_modulos_hu13.sql
+
+# 9) HU-15: asignación manual, estados automáticos y auditoría de espacios:
+psql -U postgres -d "sgp_tulua" -f 08_espacios_hu15.sql
+
 # Para repetir desde cero:
 psql -U postgres -d postgres -c 'DROP DATABASE "sgp_tulua" WITH (FORCE);'
 ```
@@ -291,8 +297,16 @@ zona activa que contiene el punto.
 | actividad_permitida | VARCHAR(100) | |
 | horario_inicio / horario_fin | TIME | Opcionales; si existen, `fin > inicio` |
 | estado | estado_espacio | DEFAULT disponible |
+| asignacion_manual | BOOLEAN | DEFAULT FALSE — asignación conservada hasta liberarla (HU-15) |
 | creado_por | BIGINT | FK→usuarios(id) |
 | creado_en | TIMESTAMPTZ | DEFAULT now() |
+
+La migración `08_espacios_hu15.sql` agrega `asignacion_manual`, la función
+`fn_recalcular_estado_espacio` y triggers sobre `espacio_bloqueos`, `permisos`
+y `solicitudes` para mantener sincronizado el estado con la fecha actual.
+También crea los triggers de auditoría de `espacios_temporales` y
+`espacio_bloqueos`; el historial de bloqueos se consulta usando el
+`espacio_id` como `registro_id`.
 
 ### `espacio_bloqueos` — Bloqueos por fechas (HU-15)
 | Campo | Tipo | Restricciones |

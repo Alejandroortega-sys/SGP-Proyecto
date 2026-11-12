@@ -52,7 +52,7 @@ El estado **registrado** es el de la columna `estado`. El estado **efectivo** se
 4. Si la BD lo registra como `bloqueado` o `asignado`, se respeta aunque no exista un registro auxiliar activo.
 5. Solo es `disponible` si el estado efectivo es `disponible`.
 
-Así se cumple la regla de aceptación: **un espacio ocupado o bloqueado no aparece como disponible**, aunque su fila siga marcada como `disponible` (la transición automática pertenece al Sprint 3).
+Así se cumple la regla de aceptación: **un espacio ocupado o bloqueado no aparece como disponible**. Además, desde HU-15 el estado almacenado se sincroniza automáticamente con bloqueos, permisos, solicitudes y asignaciones manuales mediante `fn_recalcular_estado_espacio`.
 
 ---
 
@@ -385,3 +385,86 @@ El seed incluye:
 - 1 bloqueado con mantenimiento del 25 al 31 de octubre de 2026.
 - 1 asignado.
 - 1 en mantenimiento.
+
+---
+
+## 10. Administración municipal — HU-15
+
+**Ruta base:** `/gestor/espacios` · **Frontend:** `/gestor/espacios`, `/gestor/espacios/nuevo`, `/gestor/espacios/[id]`, `/gestor/espacios/[id]/editar`.
+
+La administración está disponible para gestores con perfil **revisor** y **administrador**. La consulta del comerciante sigue en `/espacios` y no cambia.
+
+### 10.1 Endpoints
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/gestor/espacios` | Listado con filtros, paginación y estado efectivo |
+| `GET` | `/gestor/espacios/opciones` | Tipos, estados, zonas activas y sectores |
+| `GET` | `/gestor/espacios/zona-contenedora` | Zona activa que contiene un punto |
+| `GET` | `/gestor/espacios/:id` | Ficha con zona, bloqueos y estado efectivo |
+| `POST` | `/gestor/espacios` | Crear espacio |
+| `PATCH` | `/gestor/espacios/:id` | Editar espacio |
+| `DELETE` | `/gestor/espacios/:id` | Eliminar si no tiene permisos ni solicitudes |
+| `PATCH` | `/gestor/espacios/:id/estado` | Fijar `disponible` o `mantenimiento` |
+| `POST` | `/gestor/espacios/:id/asignar` | Asignación manual |
+| `POST` | `/gestor/espacios/:id/liberar` | Liberar asignación manual |
+| `GET` | `/gestor/espacios/:id/bloqueos` | Listar bloqueos |
+| `POST` | `/gestor/espacios/:id/bloqueos` | Crear bloqueo |
+| `PATCH` | `/gestor/espacios/:id/bloqueos/:bloqueoId` | Editar bloqueo |
+| `DELETE` | `/gestor/espacios/:id/bloqueos/:bloqueoId` | Eliminar bloqueo |
+| `GET` | `/gestor/espacios/:id/historial` | Auditoría del espacio y sus bloqueos |
+
+### 10.2 Reglas de estado
+
+- La zona se detecta automáticamente con `ST_Contains` al crear o mover el punto.
+- El formulario solo permite fijar manualmente `disponible` o `mantenimiento`.
+- `mantenimiento` prevalece sobre cualquier bloqueo u ocupación.
+- La asignación manual se conserva en `asignacion_manual` hasta que el gestor pulsa **Liberar**.
+- El estado se recalcula con la fecha actual:
+  1. permiso `vigente` que cubre hoy → `asignado`;
+  2. solicitud `aprobada` que cubre hoy → `asignado`;
+  3. bloqueo que cubre hoy → `bloqueado`;
+  4. en otro caso → `disponible`.
+- Al liberar, el estado se recalcula; si hay un bloqueo vigente queda `bloqueado`.
+- No se puede asignar un espacio en mantenimiento, bloqueado hoy o ya ocupado por un permiso/solicitud.
+
+### 10.3 Bloqueos
+
+- `fechaFin >= fechaInicio`.
+- No se permite cruzar con otro bloqueo, un permiso `vigente`, una solicitud `aprobada` o una asignación manual activa.
+- La restricción `EXCLUDE` de `espacio_bloqueos` sigue siendo la última barrera de la BD.
+- Crear, editar o eliminar un bloqueo dispara el recálculo del estado.
+- El calendario es propio, sin librerías adicionales; en móvil se muestra además la lista de bloqueos.
+
+### 10.4 Borrado
+
+- Solo se elimina un espacio sin filas asociadas en `permisos` o `solicitudes`.
+- Los bloqueos se eliminan en cascada.
+- Si hay relaciones, responde `409` y conserva el registro.
+
+### 10.5 Migración y auditoría
+
+`dataBase/08_espacios_hu15.sql` agrega:
+
+- `espacios_temporales.asignacion_manual`.
+- `fn_recalcular_estado_espacio` y triggers sobre `espacio_bloqueos`, `permisos` y `solicitudes`.
+- Triggers de auditoría para `espacios_temporales` y `espacio_bloqueos`.
+- Historial inicial de los espacios existentes.
+
+### 10.6 Pruebas
+
+```powershell
+pnpm test -- --runInBand src/espacios
+pnpm test:e2e -- --runInBand test/gestor-espacios.e2e-spec.ts
+cd frontend
+pnpm test
+pnpm test:e2e e2e/gestor-espacios.spec.ts
+```
+
+Cubren roles, CRUD, validaciones, bloqueos solapados, conflictos con permisos/solicitudes, asignación/liberación, mantenimiento, borrado condicionado, historial, calendario y vista a 360 px.
+
+> Para las pruebas Playwright debe aplicarse antes la migración:
+>
+> ```powershell
+> psql -U postgres -d "sgp_tulua" -f dataBase/08_espacios_hu15.sql
+> ```

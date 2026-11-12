@@ -853,6 +853,153 @@ export interface OpcionesEspacios {
 }
 
 /* ------------------------------------------------------------------ */
+/* Administración de espacios temporales (HU-15)                       */
+/* ------------------------------------------------------------------ */
+
+export interface BloqueoEspacioGestor {
+  id: string;
+  fechaInicio: string;
+  fechaFin: string;
+  motivo: string | null;
+  activo: boolean;
+  creadoPorId: string;
+  creadoPorNombre: string;
+  creadoEn: string;
+}
+
+export interface ZonaEspacioGestor extends ZonaResumenEspacio {
+  activa: boolean;
+  horarioInicio: string | null;
+  horarioFin: string | null;
+  aforoMaximo: number | null;
+  productos: string[];
+}
+
+export interface EspacioGestorListado {
+  id: string;
+  nombre: string;
+  tipo: TipoEspacio;
+  sector: string | null;
+  dimensiones: string | null;
+  actividadPermitida: string | null;
+  estado: EstadoEspacio;
+  estadoEfectivo: EstadoEspacio;
+  disponible: boolean;
+  motivoEstado: string | null;
+  asignacionManual: boolean;
+  ubicacion: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+  horario: HorarioEspacio;
+  horarioPropio: HorarioEspacio;
+  zona: ZonaEspacioGestor | null;
+  totalBloqueos: number;
+  tienePermisos: boolean;
+  tieneSolicitudes: boolean;
+  creadoEn: string;
+}
+
+export interface EspacioGestorDetalle extends EspacioGestorListado {
+  bloqueos: BloqueoEspacioGestor[];
+  puedeEliminar: boolean;
+  creadoPor: string;
+  bloqueoVigente: boolean;
+  permisoVigente: boolean;
+  solicitudVigente: boolean;
+}
+
+export interface ListarEspaciosGestorResponse {
+  datos: EspacioGestorListado[];
+  pagina: number;
+  limite: number;
+  total: number;
+  totalPaginas: number;
+}
+
+export interface FiltrosEspaciosGestor {
+  busqueda?: string;
+  tipo?: TipoEspacio;
+  estado?: EstadoEspacio | "todos";
+  sector?: string;
+  zonaId?: string;
+  asignacionManual?: boolean;
+  fecha?: string;
+  pagina?: number;
+  limite?: number;
+}
+
+export interface ZonaOpcionEspacio {
+  id: string;
+  nombre: string;
+  tipo: TipoZona;
+}
+
+export interface ZonaContenedoraEspacio {
+  zona: ZonaOpcionEspacio | null;
+  sector: string | null;
+}
+
+export interface OpcionesEspaciosGestor {
+  tipos: TipoEspacio[];
+  estados: EstadoEspacio[];
+  zonas: ZonaOpcionEspacio[];
+  sectores: string[];
+}
+
+export interface SolicitudEspacioGestor {
+  nombre: string;
+  tipo: TipoEspacio;
+  sector?: string | null;
+  dimensiones?: string | null;
+  actividadPermitida?: string | null;
+  ubicacion: GeometriaPunto;
+  horarioInicio?: string | null;
+  horarioFin?: string | null;
+  estado?: "disponible" | "mantenimiento";
+}
+
+export interface SolicitudBloqueoEspacio {
+  fechaInicio: string;
+  fechaFin: string;
+  motivo?: string | null;
+}
+
+export interface RespuestaEstadoEspacio {
+  id: string;
+  nombre: string;
+  estado: EstadoEspacio;
+  asignacionManual: boolean;
+  mensaje: string;
+}
+
+export interface HistorialEspacioItem {
+  id: string;
+  tabla: string;
+  accion: "insert" | "update" | "delete";
+  creadoEn: string;
+  actorId: string | null;
+  actorNombre: string | null;
+  actorApellido: string | null;
+  actorCorreo: string | null;
+  valorAnterior: unknown;
+  valorNuevo: unknown;
+}
+
+export interface HistorialEspacio {
+  espacio: {
+    id: string;
+    nombre: string;
+    estado: EstadoEspacio;
+  };
+  datos: HistorialEspacioItem[];
+  pagina: number;
+  limite: number;
+  total: number;
+  totalPaginas: number;
+}
+
+/* ------------------------------------------------------------------ */
 /* Censo de módulos y puestos (HU-13)                                  */
 /* ------------------------------------------------------------------ */
 

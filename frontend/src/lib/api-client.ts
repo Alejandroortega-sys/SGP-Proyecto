@@ -2,11 +2,14 @@ import type {
   ComercianteActualizado,
   ComercianteListado,
   ConfirmacionImportacion,
+  BloqueoEspacioGestor,
   CuerpoError,
   EspacioDetalle,
+  EspacioGestorDetalle,
   FiltrosAuditoria,
   FiltrosComerciantes,
   FiltrosEspacios,
+  FiltrosEspaciosGestor,
   FiltrosNotificaciones,
   FiltrosHistorialZona,
   FiltrosModulos,
@@ -14,8 +17,10 @@ import type {
   FiltrosUsuarios,
   FiltrosZonas,
   GestorCreado,
+  HistorialEspacio,
   InvitacionReenviada,
   ListarAuditoriaResponse,
+  ListarEspaciosGestorResponse,
   ListarEspaciosResponse,
   ListarModulosResponse,
   ListarNotificacionesResponse,
@@ -25,6 +30,7 @@ import type {
   ModuloHistorial,
   Notificacion,
   OpcionesEspacios,
+  OpcionesEspaciosGestor,
   OpcionesModulos,
   Organizacion,
   OrganizacionGestor,
@@ -36,6 +42,7 @@ import type {
   RespuestaActivacion,
   RespuestaCambioEstadoOrganizacion,
   RespuestaCambioEstadoUsuario,
+  RespuestaEstadoEspacio,
   RespuestaEstadoModulo,
   RespuestaEstadoZona,
   RespuestaLogin,
@@ -50,6 +57,8 @@ import type {
   SolicitudCambiarPassword,
   SolicitudCorregirComerciante,
   SolicitudCrearGestor,
+  SolicitudBloqueoEspacio,
+  SolicitudEspacioGestor,
   SolicitudLogin,
   SolicitudModulo,
   SolicitudOrganizacion,
@@ -63,6 +72,7 @@ import type {
   UsuarioDetalle,
   UsuarioListado,
   UsuarioSesion,
+  ZonaContenedoraEspacio,
   ZonaDetalle,
   ZonaFeatureCollection,
   ZonaHistorial,
@@ -740,6 +750,168 @@ export function obtenerEspacio(
 ): Promise<EspacioDetalle> {
   return peticion<EspacioDetalle>(
     conParametros(`/espacios/${id}`, { fecha }),
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Administración de espacios temporales (HU-15)                       */
+/* ------------------------------------------------------------------ */
+
+/** Lista el catálogo administrativo de espacios temporales. */
+export function listarEspaciosGestor(
+  filtros: FiltrosEspaciosGestor = {},
+): Promise<ListarEspaciosGestorResponse> {
+  return peticion<ListarEspaciosGestorResponse>(
+    conParametros("/gestor/espacios", {
+      busqueda: filtros.busqueda,
+      tipo: filtros.tipo,
+      estado: filtros.estado,
+      sector: filtros.sector,
+      zonaId: filtros.zonaId,
+      asignacionManual: filtros.asignacionManual,
+      fecha: filtros.fecha,
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
+}
+
+/** Opciones de tipos, estados, zonas y sectores del catálogo. */
+export function obtenerOpcionesEspaciosGestor(): Promise<OpcionesEspaciosGestor> {
+  return peticion<OpcionesEspaciosGestor>("/gestor/espacios/opciones");
+}
+
+/** Zona activa que contiene un punto y sector sugerido. */
+export function consultarZonaEspacio(
+  lat: number,
+  lng: number,
+): Promise<ZonaContenedoraEspacio> {
+  return peticion<ZonaContenedoraEspacio>(
+    conParametros("/gestor/espacios/zona-contenedora", { lat, lng }),
+  );
+}
+
+/** Ficha administrativa de un espacio. */
+export function obtenerEspacioGestor(
+  id: string,
+  fecha?: string,
+): Promise<EspacioGestorDetalle> {
+  return peticion<EspacioGestorDetalle>(
+    conParametros(`/gestor/espacios/${id}`, { fecha }),
+  );
+}
+
+/** Crea un espacio temporal. */
+export function crearEspacioGestor(
+  datos: SolicitudEspacioGestor,
+): Promise<EspacioGestorDetalle> {
+  return peticion<EspacioGestorDetalle>("/gestor/espacios", {
+    method: "POST",
+    cuerpo: datos,
+  });
+}
+
+/** Edita un espacio temporal. */
+export function actualizarEspacioGestor(
+  id: string,
+  datos: Partial<SolicitudEspacioGestor>,
+): Promise<EspacioGestorDetalle> {
+  return peticion<EspacioGestorDetalle>(`/gestor/espacios/${id}`, {
+    method: "PATCH",
+    cuerpo: datos,
+  });
+}
+
+/** Elimina un espacio sin permisos ni solicitudes asociadas. */
+export function eliminarEspacioGestor(id: string): Promise<void> {
+  return peticion<void>(`/gestor/espacios/${id}`, { method: "DELETE" });
+}
+
+/** Fija el estado manual disponible o mantenimiento. */
+export function cambiarEstadoEspacioGestor(
+  id: string,
+  estado: "disponible" | "mantenimiento",
+): Promise<RespuestaEstadoEspacio> {
+  return peticion<RespuestaEstadoEspacio>(`/gestor/espacios/${id}/estado`, {
+    method: "PATCH",
+    cuerpo: { estado },
+  });
+}
+
+/** Asigna manualmente un espacio. */
+export function asignarEspacioGestor(
+  id: string,
+  motivo?: string,
+): Promise<RespuestaEstadoEspacio> {
+  return peticion<RespuestaEstadoEspacio>(`/gestor/espacios/${id}/asignar`, {
+    method: "POST",
+    cuerpo: motivo ? { motivo } : {},
+  });
+}
+
+/** Libera una asignación manual. */
+export function liberarEspacioGestor(
+  id: string,
+  motivo?: string,
+): Promise<RespuestaEstadoEspacio> {
+  return peticion<RespuestaEstadoEspacio>(`/gestor/espacios/${id}/liberar`, {
+    method: "POST",
+    cuerpo: motivo ? { motivo } : {},
+  });
+}
+
+/** Lista los bloqueos de un espacio. */
+export function listarBloqueosEspacio(
+  id: string,
+): Promise<{ datos: BloqueoEspacioGestor[] }> {
+  return peticion<{ datos: BloqueoEspacioGestor[] }>(
+    `/gestor/espacios/${id}/bloqueos`,
+  );
+}
+
+/** Crea un bloqueo de fechas. */
+export function crearBloqueoEspacio(
+  id: string,
+  datos: SolicitudBloqueoEspacio,
+): Promise<BloqueoEspacioGestor> {
+  return peticion<BloqueoEspacioGestor>(`/gestor/espacios/${id}/bloqueos`, {
+    method: "POST",
+    cuerpo: datos,
+  });
+}
+
+/** Edita un bloqueo de fechas. */
+export function actualizarBloqueoEspacio(
+  id: string,
+  bloqueoId: string,
+  datos: Partial<SolicitudBloqueoEspacio>,
+): Promise<BloqueoEspacioGestor> {
+  return peticion<BloqueoEspacioGestor>(
+    `/gestor/espacios/${id}/bloqueos/${bloqueoId}`,
+    { method: "PATCH", cuerpo: datos },
+  );
+}
+
+/** Elimina un bloqueo de fechas. */
+export function eliminarBloqueoEspacio(
+  id: string,
+  bloqueoId: string,
+): Promise<void> {
+  return peticion<void>(`/gestor/espacios/${id}/bloqueos/${bloqueoId}`, {
+    method: "DELETE",
+  });
+}
+
+/** Historial de auditoría del espacio y sus bloqueos. */
+export function obtenerHistorialEspacio(
+  id: string,
+  filtros: { pagina?: number; limite?: number } = {},
+): Promise<HistorialEspacio> {
+  return peticion<HistorialEspacio>(
+    conParametros(`/gestor/espacios/${id}/historial`, {
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
   );
 }
 

@@ -1,15 +1,20 @@
 import { Module } from '@nestjs/common';
 import { EspaciosController } from './espacios.controller';
 import { EspaciosService } from './espacios.service';
+import { GestorEspaciosController } from './gestor-espacios.controller';
+import { GestorEspaciosService } from './gestor-espacios.service';
 
 /**
- * Módulo de consulta de espacios temporales (HU-09).
+ * Módulo de espacios temporales.
+ *
+ * - `EspaciosController`: consulta del comerciante (HU-09).
+ * - `GestorEspaciosController`: catálogo, bloqueos y estados (HU-15).
  *
  * `PrismaModule` es global y los guards de autenticación/autorización se
- * aplican desde `AppModule`. El módulo solo expone lectura.
+ * aplican desde `AppModule`.
  */
 @Module({
-  controllers: [EspaciosController],
-  providers: [EspaciosService],
+  controllers: [EspaciosController, GestorEspaciosController],
+  providers: [EspaciosService, GestorEspaciosService],
 })
 export class EspaciosModule {}

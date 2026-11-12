@@ -371,10 +371,6 @@ export type Enumregla_urbanisticaFieldUpdateOperationsInput = {
   set?: $Enums.regla_urbanistica
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type evaluacion_reglasUpdateManyWithoutEvaluaciones_factibilidadNestedInput = {
   create?: Prisma.XOR<Prisma.evaluacion_reglasCreateWithoutEvaluaciones_factibilidadInput, Prisma.evaluacion_reglasUncheckedCreateWithoutEvaluaciones_factibilidadInput> | Prisma.evaluacion_reglasCreateWithoutEvaluaciones_factibilidadInput[] | Prisma.evaluacion_reglasUncheckedCreateWithoutEvaluaciones_factibilidadInput[]
   connectOrCreate?: Prisma.evaluacion_reglasCreateOrConnectWithoutEvaluaciones_factibilidadInput | Prisma.evaluacion_reglasCreateOrConnectWithoutEvaluaciones_factibilidadInput[]

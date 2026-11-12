@@ -92,6 +92,7 @@ model espacios_temporales {
   horario_inicio      DateTime?               @db.Time(6)
   horario_fin         DateTime?               @db.Time(6)
   estado              estado_espacio          @default(disponible)
+  asignacion_manual   Boolean                 @default(false)
   creado_por          BigInt?
   creado_en           DateTime                @default(now()) @db.Timestamptz(6)
   espacio_bloqueos    espacio_bloqueos[]

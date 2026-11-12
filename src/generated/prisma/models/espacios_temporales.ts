@@ -49,6 +49,7 @@ export type Espacios_temporalesMinAggregateOutputType = {
   horario_inicio: Date | null
   horario_fin: Date | null
   estado: $Enums.estado_espacio | null
+  asignacion_manual: boolean | null
   creado_por: bigint | null
   creado_en: Date | null
 }
@@ -64,6 +65,7 @@ export type Espacios_temporalesMaxAggregateOutputType = {
   horario_inicio: Date | null
   horario_fin: Date | null
   estado: $Enums.estado_espacio | null
+  asignacion_manual: boolean | null
   creado_por: bigint | null
   creado_en: Date | null
 }
@@ -79,6 +81,7 @@ export type Espacios_temporalesCountAggregateOutputType = {
   horario_inicio: number
   horario_fin: number
   estado: number
+  asignacion_manual: number
   creado_por: number
   creado_en: number
   _all: number
@@ -108,6 +111,7 @@ export type Espacios_temporalesMinAggregateInputType = {
   horario_inicio?: true
   horario_fin?: true
   estado?: true
+  asignacion_manual?: true
   creado_por?: true
   creado_en?: true
 }
@@ -123,6 +127,7 @@ export type Espacios_temporalesMaxAggregateInputType = {
   horario_inicio?: true
   horario_fin?: true
   estado?: true
+  asignacion_manual?: true
   creado_por?: true
   creado_en?: true
 }
@@ -138,6 +143,7 @@ export type Espacios_temporalesCountAggregateInputType = {
   horario_inicio?: true
   horario_fin?: true
   estado?: true
+  asignacion_manual?: true
   creado_por?: true
   creado_en?: true
   _all?: true
@@ -240,6 +246,7 @@ export type Espacios_temporalesGroupByOutputType = {
   horario_inicio: Date | null
   horario_fin: Date | null
   estado: $Enums.estado_espacio
+  asignacion_manual: boolean
   creado_por: bigint | null
   creado_en: Date
   _count: Espacios_temporalesCountAggregateOutputType | null
@@ -278,6 +285,7 @@ export type espacios_temporalesWhereInput = {
   horario_inicio?: Prisma.DateTimeNullableFilter<"espacios_temporales"> | Date | string | null
   horario_fin?: Prisma.DateTimeNullableFilter<"espacios_temporales"> | Date | string | null
   estado?: Prisma.Enumestado_espacioFilter<"espacios_temporales"> | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFilter<"espacios_temporales"> | boolean
   creado_por?: Prisma.BigIntNullableFilter<"espacios_temporales"> | bigint | number | null
   creado_en?: Prisma.DateTimeFilter<"espacios_temporales"> | Date | string
   espacio_bloqueos?: Prisma.Espacio_bloqueosListRelationFilter
@@ -298,6 +306,7 @@ export type espacios_temporalesOrderByWithRelationInput = {
   horario_inicio?: Prisma.SortOrderInput | Prisma.SortOrder
   horario_fin?: Prisma.SortOrderInput | Prisma.SortOrder
   estado?: Prisma.SortOrder
+  asignacion_manual?: Prisma.SortOrder
   creado_por?: Prisma.SortOrderInput | Prisma.SortOrder
   creado_en?: Prisma.SortOrder
   espacio_bloqueos?: Prisma.espacio_bloqueosOrderByRelationAggregateInput
@@ -321,6 +330,7 @@ export type espacios_temporalesWhereUniqueInput = Prisma.AtLeast<{
   horario_inicio?: Prisma.DateTimeNullableFilter<"espacios_temporales"> | Date | string | null
   horario_fin?: Prisma.DateTimeNullableFilter<"espacios_temporales"> | Date | string | null
   estado?: Prisma.Enumestado_espacioFilter<"espacios_temporales"> | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFilter<"espacios_temporales"> | boolean
   creado_por?: Prisma.BigIntNullableFilter<"espacios_temporales"> | bigint | number | null
   creado_en?: Prisma.DateTimeFilter<"espacios_temporales"> | Date | string
   espacio_bloqueos?: Prisma.Espacio_bloqueosListRelationFilter
@@ -341,6 +351,7 @@ export type espacios_temporalesOrderByWithAggregationInput = {
   horario_inicio?: Prisma.SortOrderInput | Prisma.SortOrder
   horario_fin?: Prisma.SortOrderInput | Prisma.SortOrder
   estado?: Prisma.SortOrder
+  asignacion_manual?: Prisma.SortOrder
   creado_por?: Prisma.SortOrderInput | Prisma.SortOrder
   creado_en?: Prisma.SortOrder
   _count?: Prisma.espacios_temporalesCountOrderByAggregateInput
@@ -364,6 +375,7 @@ export type espacios_temporalesScalarWhereWithAggregatesInput = {
   horario_inicio?: Prisma.DateTimeNullableWithAggregatesFilter<"espacios_temporales"> | Date | string | null
   horario_fin?: Prisma.DateTimeNullableWithAggregatesFilter<"espacios_temporales"> | Date | string | null
   estado?: Prisma.Enumestado_espacioWithAggregatesFilter<"espacios_temporales"> | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolWithAggregatesFilter<"espacios_temporales"> | boolean
   creado_por?: Prisma.BigIntNullableWithAggregatesFilter<"espacios_temporales"> | bigint | number | null
   creado_en?: Prisma.DateTimeWithAggregatesFilter<"espacios_temporales"> | Date | string
 }
@@ -378,6 +390,7 @@ export type espacios_temporalesUpdateInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutEspacios_temporalesNestedInput
   usuarios?: Prisma.usuariosUpdateOneWithoutEspacios_temporalesNestedInput
@@ -397,6 +410,7 @@ export type espacios_temporalesUncheckedUpdateInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutEspacios_temporalesNestedInput
@@ -414,6 +428,7 @@ export type espacios_temporalesUpdateManyMutationInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -428,6 +443,7 @@ export type espacios_temporalesUncheckedUpdateManyInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -448,6 +464,7 @@ export type espacios_temporalesCountOrderByAggregateInput = {
   horario_inicio?: Prisma.SortOrder
   horario_fin?: Prisma.SortOrder
   estado?: Prisma.SortOrder
+  asignacion_manual?: Prisma.SortOrder
   creado_por?: Prisma.SortOrder
   creado_en?: Prisma.SortOrder
 }
@@ -469,6 +486,7 @@ export type espacios_temporalesMaxOrderByAggregateInput = {
   horario_inicio?: Prisma.SortOrder
   horario_fin?: Prisma.SortOrder
   estado?: Prisma.SortOrder
+  asignacion_manual?: Prisma.SortOrder
   creado_por?: Prisma.SortOrder
   creado_en?: Prisma.SortOrder
 }
@@ -484,6 +502,7 @@ export type espacios_temporalesMinOrderByAggregateInput = {
   horario_inicio?: Prisma.SortOrder
   horario_fin?: Prisma.SortOrder
   estado?: Prisma.SortOrder
+  asignacion_manual?: Prisma.SortOrder
   creado_por?: Prisma.SortOrder
   creado_en?: Prisma.SortOrder
 }
@@ -524,6 +543,10 @@ export type Enumtipo_espacioFieldUpdateOperationsInput = {
 
 export type Enumestado_espacioFieldUpdateOperationsInput = {
   set?: $Enums.estado_espacio
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
 export type espacios_temporalesCreateNestedOneWithoutPermisosInput = {
@@ -611,6 +634,7 @@ export type espacios_temporalesUpdateWithoutEspacio_bloqueosInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usuarios?: Prisma.usuariosUpdateOneWithoutEspacios_temporalesNestedInput
   zonas?: Prisma.zonasUpdateOneWithoutEspacios_temporalesNestedInput
@@ -629,6 +653,7 @@ export type espacios_temporalesUncheckedUpdateWithoutEspacio_bloqueosInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutEspacios_temporalesNestedInput
@@ -650,6 +675,7 @@ export type espacios_temporalesUpdateWithoutPermisosInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutEspacios_temporalesNestedInput
   usuarios?: Prisma.usuariosUpdateOneWithoutEspacios_temporalesNestedInput
@@ -668,6 +694,7 @@ export type espacios_temporalesUncheckedUpdateWithoutPermisosInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutEspacios_temporalesNestedInput
@@ -689,6 +716,7 @@ export type espacios_temporalesUpdateWithoutSolicitudesInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutEspacios_temporalesNestedInput
   usuarios?: Prisma.usuariosUpdateOneWithoutEspacios_temporalesNestedInput
@@ -707,6 +735,7 @@ export type espacios_temporalesUncheckedUpdateWithoutSolicitudesInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutEspacios_temporalesNestedInput
@@ -737,6 +766,7 @@ export type espacios_temporalesScalarWhereInput = {
   horario_inicio?: Prisma.DateTimeNullableFilter<"espacios_temporales"> | Date | string | null
   horario_fin?: Prisma.DateTimeNullableFilter<"espacios_temporales"> | Date | string | null
   estado?: Prisma.Enumestado_espacioFilter<"espacios_temporales"> | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFilter<"espacios_temporales"> | boolean
   creado_por?: Prisma.BigIntNullableFilter<"espacios_temporales"> | bigint | number | null
   creado_en?: Prisma.DateTimeFilter<"espacios_temporales"> | Date | string
 }
@@ -761,6 +791,7 @@ export type espacios_temporalesUpdateWithoutUsuariosInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutEspacios_temporalesNestedInput
   zonas?: Prisma.zonasUpdateOneWithoutEspacios_temporalesNestedInput
@@ -779,6 +810,7 @@ export type espacios_temporalesUncheckedUpdateWithoutUsuariosInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutEspacios_temporalesNestedInput
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutEspacios_temporalesNestedInput
@@ -796,6 +828,7 @@ export type espacios_temporalesUncheckedUpdateManyWithoutUsuariosInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -809,6 +842,7 @@ export type espacios_temporalesUpdateWithoutZonasInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutEspacios_temporalesNestedInput
   usuarios?: Prisma.usuariosUpdateOneWithoutEspacios_temporalesNestedInput
@@ -826,6 +860,7 @@ export type espacios_temporalesUncheckedUpdateWithoutZonasInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutEspacios_temporalesNestedInput
@@ -843,6 +878,7 @@ export type espacios_temporalesUncheckedUpdateManyWithoutZonasInput = {
   horario_inicio?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horario_fin?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estado?: Prisma.Enumestado_espacioFieldUpdateOperationsInput | $Enums.estado_espacio
+  asignacion_manual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -907,6 +943,7 @@ export type espacios_temporalesSelect<ExtArgs extends runtime.Types.Extensions.I
   horario_inicio?: boolean
   horario_fin?: boolean
   estado?: boolean
+  asignacion_manual?: boolean
   creado_por?: boolean
   creado_en?: boolean
   espacio_bloqueos?: boolean | Prisma.espacios_temporales$espacio_bloqueosArgs<ExtArgs>
@@ -929,6 +966,7 @@ export type espacios_temporalesSelectUpdateManyAndReturn<ExtArgs extends runtime
   horario_inicio?: boolean
   horario_fin?: boolean
   estado?: boolean
+  asignacion_manual?: boolean
   creado_por?: boolean
   creado_en?: boolean
   usuarios?: boolean | Prisma.espacios_temporales$usuariosArgs<ExtArgs>
@@ -946,11 +984,12 @@ export type espacios_temporalesSelectScalar = {
   horario_inicio?: boolean
   horario_fin?: boolean
   estado?: boolean
+  asignacion_manual?: boolean
   creado_por?: boolean
   creado_en?: boolean
 }
 
-export type espacios_temporalesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "tipo" | "sector" | "dimensiones" | "zona_id" | "actividad_permitida" | "horario_inicio" | "horario_fin" | "estado" | "creado_por" | "creado_en", ExtArgs["result"]["espacios_temporales"]>
+export type espacios_temporalesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "tipo" | "sector" | "dimensiones" | "zona_id" | "actividad_permitida" | "horario_inicio" | "horario_fin" | "estado" | "asignacion_manual" | "creado_por" | "creado_en", ExtArgs["result"]["espacios_temporales"]>
 export type espacios_temporalesInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   espacio_bloqueos?: boolean | Prisma.espacios_temporales$espacio_bloqueosArgs<ExtArgs>
   usuarios?: boolean | Prisma.espacios_temporales$usuariosArgs<ExtArgs>
@@ -984,6 +1023,7 @@ export type $espacios_temporalesPayload<ExtArgs extends runtime.Types.Extensions
     horario_inicio: Date | null
     horario_fin: Date | null
     estado: $Enums.estado_espacio
+    asignacion_manual: boolean
     creado_por: bigint | null
     creado_en: Date
   }, ExtArgs["result"]["espacios_temporales"]>
@@ -1353,6 +1393,7 @@ export interface espacios_temporalesFieldRefs {
   readonly horario_inicio: Prisma.FieldRef<"espacios_temporales", 'DateTime'>
   readonly horario_fin: Prisma.FieldRef<"espacios_temporales", 'DateTime'>
   readonly estado: Prisma.FieldRef<"espacios_temporales", 'estado_espacio'>
+  readonly asignacion_manual: Prisma.FieldRef<"espacios_temporales", 'Boolean'>
   readonly creado_por: Prisma.FieldRef<"espacios_temporales", 'BigInt'>
   readonly creado_en: Prisma.FieldRef<"espacios_temporales", 'DateTime'>
 }
