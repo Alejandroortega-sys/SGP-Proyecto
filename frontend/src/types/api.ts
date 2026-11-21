@@ -1219,3 +1219,136 @@ export interface ConfirmacionImportacion {
   rechazados: RechazadoImportacion[];
   reporte: ReporteImportacionInfo;
 }
+
+/* ------------------------------------------------------------------ */
+/* Solicitudes de ubicación temporal (HU-16)                           */
+/* ------------------------------------------------------------------ */
+
+export type EstadoSolicitud =
+  | "borrador"
+  | "radicada"
+  | "en_revision"
+  | "devuelta"
+  | "aprobada"
+  | "rechazada"
+  | "cancelada";
+
+export interface EspacioSolicitudResumen {
+  id: string;
+  nombre: string;
+  sector: string | null;
+  tipo: string | null;
+  actividadPermitida: string | null;
+}
+
+export interface ProductoSolicitud {
+  id: string;
+  nombre: string;
+}
+
+export type EstadoDocumentoSolicitud = "pendiente" | "validado" | "observado";
+
+export interface DocumentoSolicitud {
+  id: string;
+  tipoDocumento: string;
+  nombreOriginal: string | null;
+  mimeType: string | null;
+  tamanoBytes: number | null;
+  estado: EstadoDocumentoSolicitud;
+  observacion: string | null;
+  cargadoEn: string;
+  url: string;
+}
+
+export interface ActorSolicitud {
+  id: string;
+  nombre: string;
+  apellido: string | null;
+}
+
+export interface HistorialSolicitud {
+  id: string;
+  estadoAnterior: EstadoSolicitud | null;
+  estadoNuevo: EstadoSolicitud;
+  observacion: string | null;
+  creadoEn: string;
+  actor: ActorSolicitud | null;
+}
+
+export interface SolicitudTemporalListado {
+  id: string;
+  numeroRadicado: string;
+  estado: EstadoSolicitud;
+  actividad: string;
+  fechaInicio: string;
+  fechaFin: string;
+  horaInicio: string;
+  horaFin: string;
+  radicadaEn: string | null;
+  creadoEn: string;
+  espacio: EspacioSolicitudResumen | null;
+  productos: ProductoSolicitud[];
+  documentos: DocumentoSolicitud[];
+}
+
+export interface SolicitudTemporalDetalle extends SolicitudTemporalListado {
+  decididaEn: string | null;
+  motivoRechazo: string | null;
+  actualizadoEn: string;
+  historial: HistorialSolicitud[];
+}
+
+export interface ListarSolicitudesResponse {
+  datos: SolicitudTemporalListado[];
+  paginacion: Paginacion;
+}
+
+export interface FiltrosSolicitudes {
+  estado?: EstadoSolicitud;
+  pagina?: number;
+  limite?: number;
+}
+
+export interface RequisitoDocumental {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
+  obligatorio: boolean;
+  tipoActividad: string | null;
+  orden: number;
+}
+
+export interface RequisitosSolicitudResponse {
+  actividad: string | null;
+  requisitos: RequisitoDocumental[];
+}
+
+export interface DisponibilidadSolicitud {
+  disponible: boolean;
+  motivo: string | null;
+  espacio: { id: string; nombre: string };
+}
+
+export interface DatosRadicacionSolicitud {
+  espacioId: string;
+  actividad: string;
+  productoIds: string[];
+  fechaInicio: string;
+  fechaFin: string;
+  horaInicio: string;
+  horaFin: string;
+}
+
+export interface DocumentoAdjuntoRadicacion {
+  requisitoId: string;
+  archivo: File;
+}
+
+export interface RespuestaRadicacion {
+  id: string;
+  numeroRadicado: string;
+  estado: EstadoSolicitud;
+  mensaje: string;
+  correoEnviado: boolean;
+  mensajeCorreo: string | null;
+}

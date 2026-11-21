@@ -47,8 +47,12 @@
 | `espacios` | `/espacios`, `/gestor/espacios` | Consulta y administración de espacios (Sprint 2) |
 | `productos` | `/productos` | Catálogo maestro de productos (Sprint 2) |
 | `importaciones` | `/importaciones` | Importación de GeoJSON y CSV (Sprint 2) |
+| `solicitudes` | `/solicitudes` | Radicación, documentos, disponibilidad e historial (HU-16) |
 | `correo` | — | Envío de códigos, credenciales temporales y avisos |
 | `common` | — | Filtro de errores, auditoría, parseo de IDs y serialización de BigInt |
+
+> **Sprint 3 en curso:** el módulo `solicitudes` (HU-16) ya está implementado.
+> Su contrato completo está en [`docs/Uso_solicitudes.md`](Uso_solicitudes.md).
 
 ### 1.3 Cobertura funcional del Sprint 1
 

@@ -418,3 +418,18 @@ jest.config.ts                                            (excluye frontend de J
 - Responsive desde 360 px; el calendario se complementa con una lista de bloqueos.
 - Pruebas Vitest de validaciones y calendario; Playwright de alta, edición, bloqueos, solapes, estados, permisos y responsive.
 - Detalle: [`docs/Uso_espacios.md`](Uso_espacios.md) §10.
+
+## 11. Radicación de solicitudes de ubicación temporal (HU-16)
+
+- Rutas: `/comerciante/solicitudes`, `/comerciante/solicitudes/nueva`, `/comerciante/solicitudes/[id]` y `/comerciante/solicitudes/[id]/confirmacion`.
+- Enlace **Mis solicitudes** en el menú del comerciante y botón **Solicitar este espacio** en la ficha del espacio.
+- Formulario por pasos: ubicación → actividad → documentos → horario → resumen.
+- Selección del espacio desde el mapa de Leaflet, con lista accesible alternativa.
+- Catálogo de productos filtrado por los productos permitidos de la zona.
+- Documentos obligatorios y opcionales con validación de PDF/JPG/PNG y máximo 5 MB.
+- Verificación de disponibilidad antes de radicar y validación definitiva en el backend.
+- Borrador local con `sessionStorage` para los campos e `IndexedDB` para los archivos. Se elimina al cerrar sesión.
+- Pantalla de confirmación con número de radicado y resumen.
+- Detalle con documentos descargables e historial de estados.
+- Pruebas Vitest de validaciones, estados y borrador local; Playwright del flujo completo, borrador, error de horario y confirmación.
+- Detalle: [`docs/Uso_solicitudes.md`](Uso_solicitudes.md).

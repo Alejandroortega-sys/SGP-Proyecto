@@ -30,12 +30,16 @@ export type Solicitud_documentosAvgAggregateOutputType = {
   id: number | null
   solicitud_id: number | null
   reemplaza_a: number | null
+  requisito_id: number | null
+  tamano_bytes: number | null
 }
 
 export type Solicitud_documentosSumAggregateOutputType = {
   id: bigint | null
   solicitud_id: bigint | null
   reemplaza_a: bigint | null
+  requisito_id: bigint | null
+  tamano_bytes: number | null
 }
 
 export type Solicitud_documentosMinAggregateOutputType = {
@@ -47,6 +51,10 @@ export type Solicitud_documentosMinAggregateOutputType = {
   observacion: string | null
   reemplaza_a: bigint | null
   cargado_en: Date | null
+  requisito_id: bigint | null
+  nombre_original: string | null
+  mime_type: string | null
+  tamano_bytes: number | null
 }
 
 export type Solicitud_documentosMaxAggregateOutputType = {
@@ -58,6 +66,10 @@ export type Solicitud_documentosMaxAggregateOutputType = {
   observacion: string | null
   reemplaza_a: bigint | null
   cargado_en: Date | null
+  requisito_id: bigint | null
+  nombre_original: string | null
+  mime_type: string | null
+  tamano_bytes: number | null
 }
 
 export type Solicitud_documentosCountAggregateOutputType = {
@@ -69,6 +81,10 @@ export type Solicitud_documentosCountAggregateOutputType = {
   observacion: number
   reemplaza_a: number
   cargado_en: number
+  requisito_id: number
+  nombre_original: number
+  mime_type: number
+  tamano_bytes: number
   _all: number
 }
 
@@ -77,12 +93,16 @@ export type Solicitud_documentosAvgAggregateInputType = {
   id?: true
   solicitud_id?: true
   reemplaza_a?: true
+  requisito_id?: true
+  tamano_bytes?: true
 }
 
 export type Solicitud_documentosSumAggregateInputType = {
   id?: true
   solicitud_id?: true
   reemplaza_a?: true
+  requisito_id?: true
+  tamano_bytes?: true
 }
 
 export type Solicitud_documentosMinAggregateInputType = {
@@ -94,6 +114,10 @@ export type Solicitud_documentosMinAggregateInputType = {
   observacion?: true
   reemplaza_a?: true
   cargado_en?: true
+  requisito_id?: true
+  nombre_original?: true
+  mime_type?: true
+  tamano_bytes?: true
 }
 
 export type Solicitud_documentosMaxAggregateInputType = {
@@ -105,6 +129,10 @@ export type Solicitud_documentosMaxAggregateInputType = {
   observacion?: true
   reemplaza_a?: true
   cargado_en?: true
+  requisito_id?: true
+  nombre_original?: true
+  mime_type?: true
+  tamano_bytes?: true
 }
 
 export type Solicitud_documentosCountAggregateInputType = {
@@ -116,6 +144,10 @@ export type Solicitud_documentosCountAggregateInputType = {
   observacion?: true
   reemplaza_a?: true
   cargado_en?: true
+  requisito_id?: true
+  nombre_original?: true
+  mime_type?: true
+  tamano_bytes?: true
   _all?: true
 }
 
@@ -214,6 +246,10 @@ export type Solicitud_documentosGroupByOutputType = {
   observacion: string | null
   reemplaza_a: bigint | null
   cargado_en: Date
+  requisito_id: bigint | null
+  nombre_original: string | null
+  mime_type: string | null
+  tamano_bytes: number | null
   _count: Solicitud_documentosCountAggregateOutputType | null
   _avg: Solicitud_documentosAvgAggregateOutputType | null
   _sum: Solicitud_documentosSumAggregateOutputType | null
@@ -248,9 +284,14 @@ export type solicitud_documentosWhereInput = {
   observacion?: Prisma.StringNullableFilter<"solicitud_documentos"> | string | null
   reemplaza_a?: Prisma.BigIntNullableFilter<"solicitud_documentos"> | bigint | number | null
   cargado_en?: Prisma.DateTimeFilter<"solicitud_documentos"> | Date | string
+  requisito_id?: Prisma.BigIntNullableFilter<"solicitud_documentos"> | bigint | number | null
+  nombre_original?: Prisma.StringNullableFilter<"solicitud_documentos"> | string | null
+  mime_type?: Prisma.StringNullableFilter<"solicitud_documentos"> | string | null
+  tamano_bytes?: Prisma.IntNullableFilter<"solicitud_documentos"> | number | null
   solicitud_documentos?: Prisma.XOR<Prisma.Solicitud_documentosNullableScalarRelationFilter, Prisma.solicitud_documentosWhereInput> | null
   other_solicitud_documentos?: Prisma.Solicitud_documentosListRelationFilter
   solicitudes?: Prisma.XOR<Prisma.SolicitudesScalarRelationFilter, Prisma.solicitudesWhereInput>
+  requisitos_documentales?: Prisma.XOR<Prisma.Requisitos_documentalesNullableScalarRelationFilter, Prisma.requisitos_documentalesWhereInput> | null
 }
 
 export type solicitud_documentosOrderByWithRelationInput = {
@@ -262,9 +303,14 @@ export type solicitud_documentosOrderByWithRelationInput = {
   observacion?: Prisma.SortOrderInput | Prisma.SortOrder
   reemplaza_a?: Prisma.SortOrderInput | Prisma.SortOrder
   cargado_en?: Prisma.SortOrder
+  requisito_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  nombre_original?: Prisma.SortOrderInput | Prisma.SortOrder
+  mime_type?: Prisma.SortOrderInput | Prisma.SortOrder
+  tamano_bytes?: Prisma.SortOrderInput | Prisma.SortOrder
   solicitud_documentos?: Prisma.solicitud_documentosOrderByWithRelationInput
   other_solicitud_documentos?: Prisma.solicitud_documentosOrderByRelationAggregateInput
   solicitudes?: Prisma.solicitudesOrderByWithRelationInput
+  requisitos_documentales?: Prisma.requisitos_documentalesOrderByWithRelationInput
 }
 
 export type solicitud_documentosWhereUniqueInput = Prisma.AtLeast<{
@@ -279,9 +325,14 @@ export type solicitud_documentosWhereUniqueInput = Prisma.AtLeast<{
   observacion?: Prisma.StringNullableFilter<"solicitud_documentos"> | string | null
   reemplaza_a?: Prisma.BigIntNullableFilter<"solicitud_documentos"> | bigint | number | null
   cargado_en?: Prisma.DateTimeFilter<"solicitud_documentos"> | Date | string
+  requisito_id?: Prisma.BigIntNullableFilter<"solicitud_documentos"> | bigint | number | null
+  nombre_original?: Prisma.StringNullableFilter<"solicitud_documentos"> | string | null
+  mime_type?: Prisma.StringNullableFilter<"solicitud_documentos"> | string | null
+  tamano_bytes?: Prisma.IntNullableFilter<"solicitud_documentos"> | number | null
   solicitud_documentos?: Prisma.XOR<Prisma.Solicitud_documentosNullableScalarRelationFilter, Prisma.solicitud_documentosWhereInput> | null
   other_solicitud_documentos?: Prisma.Solicitud_documentosListRelationFilter
   solicitudes?: Prisma.XOR<Prisma.SolicitudesScalarRelationFilter, Prisma.solicitudesWhereInput>
+  requisitos_documentales?: Prisma.XOR<Prisma.Requisitos_documentalesNullableScalarRelationFilter, Prisma.requisitos_documentalesWhereInput> | null
 }, "id">
 
 export type solicitud_documentosOrderByWithAggregationInput = {
@@ -293,6 +344,10 @@ export type solicitud_documentosOrderByWithAggregationInput = {
   observacion?: Prisma.SortOrderInput | Prisma.SortOrder
   reemplaza_a?: Prisma.SortOrderInput | Prisma.SortOrder
   cargado_en?: Prisma.SortOrder
+  requisito_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  nombre_original?: Prisma.SortOrderInput | Prisma.SortOrder
+  mime_type?: Prisma.SortOrderInput | Prisma.SortOrder
+  tamano_bytes?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.solicitud_documentosCountOrderByAggregateInput
   _avg?: Prisma.solicitud_documentosAvgOrderByAggregateInput
   _max?: Prisma.solicitud_documentosMaxOrderByAggregateInput
@@ -312,6 +367,10 @@ export type solicitud_documentosScalarWhereWithAggregatesInput = {
   observacion?: Prisma.StringNullableWithAggregatesFilter<"solicitud_documentos"> | string | null
   reemplaza_a?: Prisma.BigIntNullableWithAggregatesFilter<"solicitud_documentos"> | bigint | number | null
   cargado_en?: Prisma.DateTimeWithAggregatesFilter<"solicitud_documentos"> | Date | string
+  requisito_id?: Prisma.BigIntNullableWithAggregatesFilter<"solicitud_documentos"> | bigint | number | null
+  nombre_original?: Prisma.StringNullableWithAggregatesFilter<"solicitud_documentos"> | string | null
+  mime_type?: Prisma.StringNullableWithAggregatesFilter<"solicitud_documentos"> | string | null
+  tamano_bytes?: Prisma.IntNullableWithAggregatesFilter<"solicitud_documentos"> | number | null
 }
 
 export type solicitud_documentosCreateInput = {
@@ -321,9 +380,13 @@ export type solicitud_documentosCreateInput = {
   estado?: $Enums.estado_documento
   observacion?: string | null
   cargado_en?: Date | string
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
   solicitud_documentos?: Prisma.solicitud_documentosCreateNestedOneWithoutOther_solicitud_documentosInput
   other_solicitud_documentos?: Prisma.solicitud_documentosCreateNestedManyWithoutSolicitud_documentosInput
   solicitudes: Prisma.solicitudesCreateNestedOneWithoutSolicitud_documentosInput
+  requisitos_documentales?: Prisma.requisitos_documentalesCreateNestedOneWithoutSolicitud_documentosInput
 }
 
 export type solicitud_documentosUncheckedCreateInput = {
@@ -335,6 +398,10 @@ export type solicitud_documentosUncheckedCreateInput = {
   observacion?: string | null
   reemplaza_a?: bigint | number | null
   cargado_en?: Date | string
+  requisito_id?: bigint | number | null
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
   other_solicitud_documentos?: Prisma.solicitud_documentosUncheckedCreateNestedManyWithoutSolicitud_documentosInput
 }
 
@@ -345,9 +412,13 @@ export type solicitud_documentosUpdateInput = {
   estado?: Prisma.Enumestado_documentoFieldUpdateOperationsInput | $Enums.estado_documento
   observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   solicitud_documentos?: Prisma.solicitud_documentosUpdateOneWithoutOther_solicitud_documentosNestedInput
   other_solicitud_documentos?: Prisma.solicitud_documentosUpdateManyWithoutSolicitud_documentosNestedInput
   solicitudes?: Prisma.solicitudesUpdateOneRequiredWithoutSolicitud_documentosNestedInput
+  requisitos_documentales?: Prisma.requisitos_documentalesUpdateOneWithoutSolicitud_documentosNestedInput
 }
 
 export type solicitud_documentosUncheckedUpdateInput = {
@@ -359,6 +430,10 @@ export type solicitud_documentosUncheckedUpdateInput = {
   observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reemplaza_a?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  requisito_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   other_solicitud_documentos?: Prisma.solicitud_documentosUncheckedUpdateManyWithoutSolicitud_documentosNestedInput
 }
 
@@ -371,6 +446,10 @@ export type solicitud_documentosCreateManyInput = {
   observacion?: string | null
   reemplaza_a?: bigint | number | null
   cargado_en?: Date | string
+  requisito_id?: bigint | number | null
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
 }
 
 export type solicitud_documentosUpdateManyMutationInput = {
@@ -380,6 +459,9 @@ export type solicitud_documentosUpdateManyMutationInput = {
   estado?: Prisma.Enumestado_documentoFieldUpdateOperationsInput | $Enums.estado_documento
   observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type solicitud_documentosUncheckedUpdateManyInput = {
@@ -391,6 +473,10 @@ export type solicitud_documentosUncheckedUpdateManyInput = {
   observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reemplaza_a?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  requisito_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type Solicitud_documentosNullableScalarRelationFilter = {
@@ -417,12 +503,18 @@ export type solicitud_documentosCountOrderByAggregateInput = {
   observacion?: Prisma.SortOrder
   reemplaza_a?: Prisma.SortOrder
   cargado_en?: Prisma.SortOrder
+  requisito_id?: Prisma.SortOrder
+  nombre_original?: Prisma.SortOrder
+  mime_type?: Prisma.SortOrder
+  tamano_bytes?: Prisma.SortOrder
 }
 
 export type solicitud_documentosAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   solicitud_id?: Prisma.SortOrder
   reemplaza_a?: Prisma.SortOrder
+  requisito_id?: Prisma.SortOrder
+  tamano_bytes?: Prisma.SortOrder
 }
 
 export type solicitud_documentosMaxOrderByAggregateInput = {
@@ -434,6 +526,10 @@ export type solicitud_documentosMaxOrderByAggregateInput = {
   observacion?: Prisma.SortOrder
   reemplaza_a?: Prisma.SortOrder
   cargado_en?: Prisma.SortOrder
+  requisito_id?: Prisma.SortOrder
+  nombre_original?: Prisma.SortOrder
+  mime_type?: Prisma.SortOrder
+  tamano_bytes?: Prisma.SortOrder
 }
 
 export type solicitud_documentosMinOrderByAggregateInput = {
@@ -445,12 +541,18 @@ export type solicitud_documentosMinOrderByAggregateInput = {
   observacion?: Prisma.SortOrder
   reemplaza_a?: Prisma.SortOrder
   cargado_en?: Prisma.SortOrder
+  requisito_id?: Prisma.SortOrder
+  nombre_original?: Prisma.SortOrder
+  mime_type?: Prisma.SortOrder
+  tamano_bytes?: Prisma.SortOrder
 }
 
 export type solicitud_documentosSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   solicitud_id?: Prisma.SortOrder
   reemplaza_a?: Prisma.SortOrder
+  requisito_id?: Prisma.SortOrder
+  tamano_bytes?: Prisma.SortOrder
 }
 
 export type solicitud_documentosCreateNestedOneWithoutOther_solicitud_documentosInput = {
@@ -475,6 +577,14 @@ export type solicitud_documentosUncheckedCreateNestedManyWithoutSolicitud_docume
 
 export type Enumestado_documentoFieldUpdateOperationsInput = {
   set?: $Enums.estado_documento
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type solicitud_documentosUpdateOneWithoutOther_solicitud_documentosNestedInput = {
@@ -512,6 +622,48 @@ export type solicitud_documentosUncheckedUpdateManyWithoutSolicitud_documentosNe
   connect?: Prisma.solicitud_documentosWhereUniqueInput | Prisma.solicitud_documentosWhereUniqueInput[]
   update?: Prisma.solicitud_documentosUpdateWithWhereUniqueWithoutSolicitud_documentosInput | Prisma.solicitud_documentosUpdateWithWhereUniqueWithoutSolicitud_documentosInput[]
   updateMany?: Prisma.solicitud_documentosUpdateManyWithWhereWithoutSolicitud_documentosInput | Prisma.solicitud_documentosUpdateManyWithWhereWithoutSolicitud_documentosInput[]
+  deleteMany?: Prisma.solicitud_documentosScalarWhereInput | Prisma.solicitud_documentosScalarWhereInput[]
+}
+
+export type solicitud_documentosCreateNestedManyWithoutRequisitos_documentalesInput = {
+  create?: Prisma.XOR<Prisma.solicitud_documentosCreateWithoutRequisitos_documentalesInput, Prisma.solicitud_documentosUncheckedCreateWithoutRequisitos_documentalesInput> | Prisma.solicitud_documentosCreateWithoutRequisitos_documentalesInput[] | Prisma.solicitud_documentosUncheckedCreateWithoutRequisitos_documentalesInput[]
+  connectOrCreate?: Prisma.solicitud_documentosCreateOrConnectWithoutRequisitos_documentalesInput | Prisma.solicitud_documentosCreateOrConnectWithoutRequisitos_documentalesInput[]
+  createMany?: Prisma.solicitud_documentosCreateManyRequisitos_documentalesInputEnvelope
+  connect?: Prisma.solicitud_documentosWhereUniqueInput | Prisma.solicitud_documentosWhereUniqueInput[]
+}
+
+export type solicitud_documentosUncheckedCreateNestedManyWithoutRequisitos_documentalesInput = {
+  create?: Prisma.XOR<Prisma.solicitud_documentosCreateWithoutRequisitos_documentalesInput, Prisma.solicitud_documentosUncheckedCreateWithoutRequisitos_documentalesInput> | Prisma.solicitud_documentosCreateWithoutRequisitos_documentalesInput[] | Prisma.solicitud_documentosUncheckedCreateWithoutRequisitos_documentalesInput[]
+  connectOrCreate?: Prisma.solicitud_documentosCreateOrConnectWithoutRequisitos_documentalesInput | Prisma.solicitud_documentosCreateOrConnectWithoutRequisitos_documentalesInput[]
+  createMany?: Prisma.solicitud_documentosCreateManyRequisitos_documentalesInputEnvelope
+  connect?: Prisma.solicitud_documentosWhereUniqueInput | Prisma.solicitud_documentosWhereUniqueInput[]
+}
+
+export type solicitud_documentosUpdateManyWithoutRequisitos_documentalesNestedInput = {
+  create?: Prisma.XOR<Prisma.solicitud_documentosCreateWithoutRequisitos_documentalesInput, Prisma.solicitud_documentosUncheckedCreateWithoutRequisitos_documentalesInput> | Prisma.solicitud_documentosCreateWithoutRequisitos_documentalesInput[] | Prisma.solicitud_documentosUncheckedCreateWithoutRequisitos_documentalesInput[]
+  connectOrCreate?: Prisma.solicitud_documentosCreateOrConnectWithoutRequisitos_documentalesInput | Prisma.solicitud_documentosCreateOrConnectWithoutRequisitos_documentalesInput[]
+  upsert?: Prisma.solicitud_documentosUpsertWithWhereUniqueWithoutRequisitos_documentalesInput | Prisma.solicitud_documentosUpsertWithWhereUniqueWithoutRequisitos_documentalesInput[]
+  createMany?: Prisma.solicitud_documentosCreateManyRequisitos_documentalesInputEnvelope
+  set?: Prisma.solicitud_documentosWhereUniqueInput | Prisma.solicitud_documentosWhereUniqueInput[]
+  disconnect?: Prisma.solicitud_documentosWhereUniqueInput | Prisma.solicitud_documentosWhereUniqueInput[]
+  delete?: Prisma.solicitud_documentosWhereUniqueInput | Prisma.solicitud_documentosWhereUniqueInput[]
+  connect?: Prisma.solicitud_documentosWhereUniqueInput | Prisma.solicitud_documentosWhereUniqueInput[]
+  update?: Prisma.solicitud_documentosUpdateWithWhereUniqueWithoutRequisitos_documentalesInput | Prisma.solicitud_documentosUpdateWithWhereUniqueWithoutRequisitos_documentalesInput[]
+  updateMany?: Prisma.solicitud_documentosUpdateManyWithWhereWithoutRequisitos_documentalesInput | Prisma.solicitud_documentosUpdateManyWithWhereWithoutRequisitos_documentalesInput[]
+  deleteMany?: Prisma.solicitud_documentosScalarWhereInput | Prisma.solicitud_documentosScalarWhereInput[]
+}
+
+export type solicitud_documentosUncheckedUpdateManyWithoutRequisitos_documentalesNestedInput = {
+  create?: Prisma.XOR<Prisma.solicitud_documentosCreateWithoutRequisitos_documentalesInput, Prisma.solicitud_documentosUncheckedCreateWithoutRequisitos_documentalesInput> | Prisma.solicitud_documentosCreateWithoutRequisitos_documentalesInput[] | Prisma.solicitud_documentosUncheckedCreateWithoutRequisitos_documentalesInput[]
+  connectOrCreate?: Prisma.solicitud_documentosCreateOrConnectWithoutRequisitos_documentalesInput | Prisma.solicitud_documentosCreateOrConnectWithoutRequisitos_documentalesInput[]
+  upsert?: Prisma.solicitud_documentosUpsertWithWhereUniqueWithoutRequisitos_documentalesInput | Prisma.solicitud_documentosUpsertWithWhereUniqueWithoutRequisitos_documentalesInput[]
+  createMany?: Prisma.solicitud_documentosCreateManyRequisitos_documentalesInputEnvelope
+  set?: Prisma.solicitud_documentosWhereUniqueInput | Prisma.solicitud_documentosWhereUniqueInput[]
+  disconnect?: Prisma.solicitud_documentosWhereUniqueInput | Prisma.solicitud_documentosWhereUniqueInput[]
+  delete?: Prisma.solicitud_documentosWhereUniqueInput | Prisma.solicitud_documentosWhereUniqueInput[]
+  connect?: Prisma.solicitud_documentosWhereUniqueInput | Prisma.solicitud_documentosWhereUniqueInput[]
+  update?: Prisma.solicitud_documentosUpdateWithWhereUniqueWithoutRequisitos_documentalesInput | Prisma.solicitud_documentosUpdateWithWhereUniqueWithoutRequisitos_documentalesInput[]
+  updateMany?: Prisma.solicitud_documentosUpdateManyWithWhereWithoutRequisitos_documentalesInput | Prisma.solicitud_documentosUpdateManyWithWhereWithoutRequisitos_documentalesInput[]
   deleteMany?: Prisma.solicitud_documentosScalarWhereInput | Prisma.solicitud_documentosScalarWhereInput[]
 }
 
@@ -564,8 +716,12 @@ export type solicitud_documentosCreateWithoutOther_solicitud_documentosInput = {
   estado?: $Enums.estado_documento
   observacion?: string | null
   cargado_en?: Date | string
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
   solicitud_documentos?: Prisma.solicitud_documentosCreateNestedOneWithoutOther_solicitud_documentosInput
   solicitudes: Prisma.solicitudesCreateNestedOneWithoutSolicitud_documentosInput
+  requisitos_documentales?: Prisma.requisitos_documentalesCreateNestedOneWithoutSolicitud_documentosInput
 }
 
 export type solicitud_documentosUncheckedCreateWithoutOther_solicitud_documentosInput = {
@@ -577,6 +733,10 @@ export type solicitud_documentosUncheckedCreateWithoutOther_solicitud_documentos
   observacion?: string | null
   reemplaza_a?: bigint | number | null
   cargado_en?: Date | string
+  requisito_id?: bigint | number | null
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
 }
 
 export type solicitud_documentosCreateOrConnectWithoutOther_solicitud_documentosInput = {
@@ -591,8 +751,12 @@ export type solicitud_documentosCreateWithoutSolicitud_documentosInput = {
   estado?: $Enums.estado_documento
   observacion?: string | null
   cargado_en?: Date | string
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
   other_solicitud_documentos?: Prisma.solicitud_documentosCreateNestedManyWithoutSolicitud_documentosInput
   solicitudes: Prisma.solicitudesCreateNestedOneWithoutSolicitud_documentosInput
+  requisitos_documentales?: Prisma.requisitos_documentalesCreateNestedOneWithoutSolicitud_documentosInput
 }
 
 export type solicitud_documentosUncheckedCreateWithoutSolicitud_documentosInput = {
@@ -603,6 +767,10 @@ export type solicitud_documentosUncheckedCreateWithoutSolicitud_documentosInput 
   estado?: $Enums.estado_documento
   observacion?: string | null
   cargado_en?: Date | string
+  requisito_id?: bigint | number | null
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
   other_solicitud_documentos?: Prisma.solicitud_documentosUncheckedCreateNestedManyWithoutSolicitud_documentosInput
 }
 
@@ -634,8 +802,12 @@ export type solicitud_documentosUpdateWithoutOther_solicitud_documentosInput = {
   estado?: Prisma.Enumestado_documentoFieldUpdateOperationsInput | $Enums.estado_documento
   observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   solicitud_documentos?: Prisma.solicitud_documentosUpdateOneWithoutOther_solicitud_documentosNestedInput
   solicitudes?: Prisma.solicitudesUpdateOneRequiredWithoutSolicitud_documentosNestedInput
+  requisitos_documentales?: Prisma.requisitos_documentalesUpdateOneWithoutSolicitud_documentosNestedInput
 }
 
 export type solicitud_documentosUncheckedUpdateWithoutOther_solicitud_documentosInput = {
@@ -647,6 +819,10 @@ export type solicitud_documentosUncheckedUpdateWithoutOther_solicitud_documentos
   observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reemplaza_a?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  requisito_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type solicitud_documentosUpsertWithWhereUniqueWithoutSolicitud_documentosInput = {
@@ -677,6 +853,66 @@ export type solicitud_documentosScalarWhereInput = {
   observacion?: Prisma.StringNullableFilter<"solicitud_documentos"> | string | null
   reemplaza_a?: Prisma.BigIntNullableFilter<"solicitud_documentos"> | bigint | number | null
   cargado_en?: Prisma.DateTimeFilter<"solicitud_documentos"> | Date | string
+  requisito_id?: Prisma.BigIntNullableFilter<"solicitud_documentos"> | bigint | number | null
+  nombre_original?: Prisma.StringNullableFilter<"solicitud_documentos"> | string | null
+  mime_type?: Prisma.StringNullableFilter<"solicitud_documentos"> | string | null
+  tamano_bytes?: Prisma.IntNullableFilter<"solicitud_documentos"> | number | null
+}
+
+export type solicitud_documentosCreateWithoutRequisitos_documentalesInput = {
+  id?: bigint | number
+  tipo_documento: string
+  archivo_url: string
+  estado?: $Enums.estado_documento
+  observacion?: string | null
+  cargado_en?: Date | string
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
+  solicitud_documentos?: Prisma.solicitud_documentosCreateNestedOneWithoutOther_solicitud_documentosInput
+  other_solicitud_documentos?: Prisma.solicitud_documentosCreateNestedManyWithoutSolicitud_documentosInput
+  solicitudes: Prisma.solicitudesCreateNestedOneWithoutSolicitud_documentosInput
+}
+
+export type solicitud_documentosUncheckedCreateWithoutRequisitos_documentalesInput = {
+  id?: bigint | number
+  solicitud_id: bigint | number
+  tipo_documento: string
+  archivo_url: string
+  estado?: $Enums.estado_documento
+  observacion?: string | null
+  reemplaza_a?: bigint | number | null
+  cargado_en?: Date | string
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
+  other_solicitud_documentos?: Prisma.solicitud_documentosUncheckedCreateNestedManyWithoutSolicitud_documentosInput
+}
+
+export type solicitud_documentosCreateOrConnectWithoutRequisitos_documentalesInput = {
+  where: Prisma.solicitud_documentosWhereUniqueInput
+  create: Prisma.XOR<Prisma.solicitud_documentosCreateWithoutRequisitos_documentalesInput, Prisma.solicitud_documentosUncheckedCreateWithoutRequisitos_documentalesInput>
+}
+
+export type solicitud_documentosCreateManyRequisitos_documentalesInputEnvelope = {
+  data: Prisma.solicitud_documentosCreateManyRequisitos_documentalesInput | Prisma.solicitud_documentosCreateManyRequisitos_documentalesInput[]
+  skipDuplicates?: boolean
+}
+
+export type solicitud_documentosUpsertWithWhereUniqueWithoutRequisitos_documentalesInput = {
+  where: Prisma.solicitud_documentosWhereUniqueInput
+  update: Prisma.XOR<Prisma.solicitud_documentosUpdateWithoutRequisitos_documentalesInput, Prisma.solicitud_documentosUncheckedUpdateWithoutRequisitos_documentalesInput>
+  create: Prisma.XOR<Prisma.solicitud_documentosCreateWithoutRequisitos_documentalesInput, Prisma.solicitud_documentosUncheckedCreateWithoutRequisitos_documentalesInput>
+}
+
+export type solicitud_documentosUpdateWithWhereUniqueWithoutRequisitos_documentalesInput = {
+  where: Prisma.solicitud_documentosWhereUniqueInput
+  data: Prisma.XOR<Prisma.solicitud_documentosUpdateWithoutRequisitos_documentalesInput, Prisma.solicitud_documentosUncheckedUpdateWithoutRequisitos_documentalesInput>
+}
+
+export type solicitud_documentosUpdateManyWithWhereWithoutRequisitos_documentalesInput = {
+  where: Prisma.solicitud_documentosScalarWhereInput
+  data: Prisma.XOR<Prisma.solicitud_documentosUpdateManyMutationInput, Prisma.solicitud_documentosUncheckedUpdateManyWithoutRequisitos_documentalesInput>
 }
 
 export type solicitud_documentosCreateWithoutSolicitudesInput = {
@@ -686,8 +922,12 @@ export type solicitud_documentosCreateWithoutSolicitudesInput = {
   estado?: $Enums.estado_documento
   observacion?: string | null
   cargado_en?: Date | string
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
   solicitud_documentos?: Prisma.solicitud_documentosCreateNestedOneWithoutOther_solicitud_documentosInput
   other_solicitud_documentos?: Prisma.solicitud_documentosCreateNestedManyWithoutSolicitud_documentosInput
+  requisitos_documentales?: Prisma.requisitos_documentalesCreateNestedOneWithoutSolicitud_documentosInput
 }
 
 export type solicitud_documentosUncheckedCreateWithoutSolicitudesInput = {
@@ -698,6 +938,10 @@ export type solicitud_documentosUncheckedCreateWithoutSolicitudesInput = {
   observacion?: string | null
   reemplaza_a?: bigint | number | null
   cargado_en?: Date | string
+  requisito_id?: bigint | number | null
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
   other_solicitud_documentos?: Prisma.solicitud_documentosUncheckedCreateNestedManyWithoutSolicitud_documentosInput
 }
 
@@ -735,6 +979,10 @@ export type solicitud_documentosCreateManySolicitud_documentosInput = {
   estado?: $Enums.estado_documento
   observacion?: string | null
   cargado_en?: Date | string
+  requisito_id?: bigint | number | null
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
 }
 
 export type solicitud_documentosUpdateWithoutSolicitud_documentosInput = {
@@ -744,8 +992,12 @@ export type solicitud_documentosUpdateWithoutSolicitud_documentosInput = {
   estado?: Prisma.Enumestado_documentoFieldUpdateOperationsInput | $Enums.estado_documento
   observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   other_solicitud_documentos?: Prisma.solicitud_documentosUpdateManyWithoutSolicitud_documentosNestedInput
   solicitudes?: Prisma.solicitudesUpdateOneRequiredWithoutSolicitud_documentosNestedInput
+  requisitos_documentales?: Prisma.requisitos_documentalesUpdateOneWithoutSolicitud_documentosNestedInput
 }
 
 export type solicitud_documentosUncheckedUpdateWithoutSolicitud_documentosInput = {
@@ -756,6 +1008,10 @@ export type solicitud_documentosUncheckedUpdateWithoutSolicitud_documentosInput 
   estado?: Prisma.Enumestado_documentoFieldUpdateOperationsInput | $Enums.estado_documento
   observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  requisito_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   other_solicitud_documentos?: Prisma.solicitud_documentosUncheckedUpdateManyWithoutSolicitud_documentosNestedInput
 }
 
@@ -767,6 +1023,68 @@ export type solicitud_documentosUncheckedUpdateManyWithoutSolicitud_documentosIn
   estado?: Prisma.Enumestado_documentoFieldUpdateOperationsInput | $Enums.estado_documento
   observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  requisito_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+}
+
+export type solicitud_documentosCreateManyRequisitos_documentalesInput = {
+  id?: bigint | number
+  solicitud_id: bigint | number
+  tipo_documento: string
+  archivo_url: string
+  estado?: $Enums.estado_documento
+  observacion?: string | null
+  reemplaza_a?: bigint | number | null
+  cargado_en?: Date | string
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
+}
+
+export type solicitud_documentosUpdateWithoutRequisitos_documentalesInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  tipo_documento?: Prisma.StringFieldUpdateOperationsInput | string
+  archivo_url?: Prisma.StringFieldUpdateOperationsInput | string
+  estado?: Prisma.Enumestado_documentoFieldUpdateOperationsInput | $Enums.estado_documento
+  observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  solicitud_documentos?: Prisma.solicitud_documentosUpdateOneWithoutOther_solicitud_documentosNestedInput
+  other_solicitud_documentos?: Prisma.solicitud_documentosUpdateManyWithoutSolicitud_documentosNestedInput
+  solicitudes?: Prisma.solicitudesUpdateOneRequiredWithoutSolicitud_documentosNestedInput
+}
+
+export type solicitud_documentosUncheckedUpdateWithoutRequisitos_documentalesInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  solicitud_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  tipo_documento?: Prisma.StringFieldUpdateOperationsInput | string
+  archivo_url?: Prisma.StringFieldUpdateOperationsInput | string
+  estado?: Prisma.Enumestado_documentoFieldUpdateOperationsInput | $Enums.estado_documento
+  observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reemplaza_a?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  other_solicitud_documentos?: Prisma.solicitud_documentosUncheckedUpdateManyWithoutSolicitud_documentosNestedInput
+}
+
+export type solicitud_documentosUncheckedUpdateManyWithoutRequisitos_documentalesInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  solicitud_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  tipo_documento?: Prisma.StringFieldUpdateOperationsInput | string
+  archivo_url?: Prisma.StringFieldUpdateOperationsInput | string
+  estado?: Prisma.Enumestado_documentoFieldUpdateOperationsInput | $Enums.estado_documento
+  observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reemplaza_a?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type solicitud_documentosCreateManySolicitudesInput = {
@@ -777,6 +1095,10 @@ export type solicitud_documentosCreateManySolicitudesInput = {
   observacion?: string | null
   reemplaza_a?: bigint | number | null
   cargado_en?: Date | string
+  requisito_id?: bigint | number | null
+  nombre_original?: string | null
+  mime_type?: string | null
+  tamano_bytes?: number | null
 }
 
 export type solicitud_documentosUpdateWithoutSolicitudesInput = {
@@ -786,8 +1108,12 @@ export type solicitud_documentosUpdateWithoutSolicitudesInput = {
   estado?: Prisma.Enumestado_documentoFieldUpdateOperationsInput | $Enums.estado_documento
   observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   solicitud_documentos?: Prisma.solicitud_documentosUpdateOneWithoutOther_solicitud_documentosNestedInput
   other_solicitud_documentos?: Prisma.solicitud_documentosUpdateManyWithoutSolicitud_documentosNestedInput
+  requisitos_documentales?: Prisma.requisitos_documentalesUpdateOneWithoutSolicitud_documentosNestedInput
 }
 
 export type solicitud_documentosUncheckedUpdateWithoutSolicitudesInput = {
@@ -798,6 +1124,10 @@ export type solicitud_documentosUncheckedUpdateWithoutSolicitudesInput = {
   observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reemplaza_a?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  requisito_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   other_solicitud_documentos?: Prisma.solicitud_documentosUncheckedUpdateManyWithoutSolicitud_documentosNestedInput
 }
 
@@ -809,6 +1139,10 @@ export type solicitud_documentosUncheckedUpdateManyWithoutSolicitudesInput = {
   observacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   reemplaza_a?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   cargado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  requisito_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  nombre_original?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mime_type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tamano_bytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 
@@ -851,9 +1185,14 @@ export type solicitud_documentosSelect<ExtArgs extends runtime.Types.Extensions.
   observacion?: boolean
   reemplaza_a?: boolean
   cargado_en?: boolean
+  requisito_id?: boolean
+  nombre_original?: boolean
+  mime_type?: boolean
+  tamano_bytes?: boolean
   solicitud_documentos?: boolean | Prisma.solicitud_documentos$solicitud_documentosArgs<ExtArgs>
   other_solicitud_documentos?: boolean | Prisma.solicitud_documentos$other_solicitud_documentosArgs<ExtArgs>
   solicitudes?: boolean | Prisma.solicitudesDefaultArgs<ExtArgs>
+  requisitos_documentales?: boolean | Prisma.solicitud_documentos$requisitos_documentalesArgs<ExtArgs>
   _count?: boolean | Prisma.Solicitud_documentosCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["solicitud_documentos"]>
 
@@ -866,8 +1205,13 @@ export type solicitud_documentosSelectCreateManyAndReturn<ExtArgs extends runtim
   observacion?: boolean
   reemplaza_a?: boolean
   cargado_en?: boolean
+  requisito_id?: boolean
+  nombre_original?: boolean
+  mime_type?: boolean
+  tamano_bytes?: boolean
   solicitud_documentos?: boolean | Prisma.solicitud_documentos$solicitud_documentosArgs<ExtArgs>
   solicitudes?: boolean | Prisma.solicitudesDefaultArgs<ExtArgs>
+  requisitos_documentales?: boolean | Prisma.solicitud_documentos$requisitos_documentalesArgs<ExtArgs>
 }, ExtArgs["result"]["solicitud_documentos"]>
 
 export type solicitud_documentosSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -879,8 +1223,13 @@ export type solicitud_documentosSelectUpdateManyAndReturn<ExtArgs extends runtim
   observacion?: boolean
   reemplaza_a?: boolean
   cargado_en?: boolean
+  requisito_id?: boolean
+  nombre_original?: boolean
+  mime_type?: boolean
+  tamano_bytes?: boolean
   solicitud_documentos?: boolean | Prisma.solicitud_documentos$solicitud_documentosArgs<ExtArgs>
   solicitudes?: boolean | Prisma.solicitudesDefaultArgs<ExtArgs>
+  requisitos_documentales?: boolean | Prisma.solicitud_documentos$requisitos_documentalesArgs<ExtArgs>
 }, ExtArgs["result"]["solicitud_documentos"]>
 
 export type solicitud_documentosSelectScalar = {
@@ -892,22 +1241,29 @@ export type solicitud_documentosSelectScalar = {
   observacion?: boolean
   reemplaza_a?: boolean
   cargado_en?: boolean
+  requisito_id?: boolean
+  nombre_original?: boolean
+  mime_type?: boolean
+  tamano_bytes?: boolean
 }
 
-export type solicitud_documentosOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "solicitud_id" | "tipo_documento" | "archivo_url" | "estado" | "observacion" | "reemplaza_a" | "cargado_en", ExtArgs["result"]["solicitud_documentos"]>
+export type solicitud_documentosOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "solicitud_id" | "tipo_documento" | "archivo_url" | "estado" | "observacion" | "reemplaza_a" | "cargado_en" | "requisito_id" | "nombre_original" | "mime_type" | "tamano_bytes", ExtArgs["result"]["solicitud_documentos"]>
 export type solicitud_documentosInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   solicitud_documentos?: boolean | Prisma.solicitud_documentos$solicitud_documentosArgs<ExtArgs>
   other_solicitud_documentos?: boolean | Prisma.solicitud_documentos$other_solicitud_documentosArgs<ExtArgs>
   solicitudes?: boolean | Prisma.solicitudesDefaultArgs<ExtArgs>
+  requisitos_documentales?: boolean | Prisma.solicitud_documentos$requisitos_documentalesArgs<ExtArgs>
   _count?: boolean | Prisma.Solicitud_documentosCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type solicitud_documentosIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   solicitud_documentos?: boolean | Prisma.solicitud_documentos$solicitud_documentosArgs<ExtArgs>
   solicitudes?: boolean | Prisma.solicitudesDefaultArgs<ExtArgs>
+  requisitos_documentales?: boolean | Prisma.solicitud_documentos$requisitos_documentalesArgs<ExtArgs>
 }
 export type solicitud_documentosIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   solicitud_documentos?: boolean | Prisma.solicitud_documentos$solicitud_documentosArgs<ExtArgs>
   solicitudes?: boolean | Prisma.solicitudesDefaultArgs<ExtArgs>
+  requisitos_documentales?: boolean | Prisma.solicitud_documentos$requisitos_documentalesArgs<ExtArgs>
 }
 
 export type $solicitud_documentosPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -916,6 +1272,7 @@ export type $solicitud_documentosPayload<ExtArgs extends runtime.Types.Extension
     solicitud_documentos: Prisma.$solicitud_documentosPayload<ExtArgs> | null
     other_solicitud_documentos: Prisma.$solicitud_documentosPayload<ExtArgs>[]
     solicitudes: Prisma.$solicitudesPayload<ExtArgs>
+    requisitos_documentales: Prisma.$requisitos_documentalesPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: bigint
@@ -926,6 +1283,10 @@ export type $solicitud_documentosPayload<ExtArgs extends runtime.Types.Extension
     observacion: string | null
     reemplaza_a: bigint | null
     cargado_en: Date
+    requisito_id: bigint | null
+    nombre_original: string | null
+    mime_type: string | null
+    tamano_bytes: number | null
   }, ExtArgs["result"]["solicitud_documentos"]>
   composites: {}
 }
@@ -1323,6 +1684,7 @@ export interface Prisma__solicitud_documentosClient<T, Null = never, ExtArgs ext
   solicitud_documentos<T extends Prisma.solicitud_documentos$solicitud_documentosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.solicitud_documentos$solicitud_documentosArgs<ExtArgs>>): Prisma.Prisma__solicitud_documentosClient<runtime.Types.Result.GetResult<Prisma.$solicitud_documentosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   other_solicitud_documentos<T extends Prisma.solicitud_documentos$other_solicitud_documentosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.solicitud_documentos$other_solicitud_documentosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$solicitud_documentosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   solicitudes<T extends Prisma.solicitudesDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.solicitudesDefaultArgs<ExtArgs>>): Prisma.Prisma__solicitudesClient<runtime.Types.Result.GetResult<Prisma.$solicitudesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  requisitos_documentales<T extends Prisma.solicitud_documentos$requisitos_documentalesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.solicitud_documentos$requisitos_documentalesArgs<ExtArgs>>): Prisma.Prisma__requisitos_documentalesClient<runtime.Types.Result.GetResult<Prisma.$requisitos_documentalesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1360,6 +1722,10 @@ export interface solicitud_documentosFieldRefs {
   readonly observacion: Prisma.FieldRef<"solicitud_documentos", 'String'>
   readonly reemplaza_a: Prisma.FieldRef<"solicitud_documentos", 'BigInt'>
   readonly cargado_en: Prisma.FieldRef<"solicitud_documentos", 'DateTime'>
+  readonly requisito_id: Prisma.FieldRef<"solicitud_documentos", 'BigInt'>
+  readonly nombre_original: Prisma.FieldRef<"solicitud_documentos", 'String'>
+  readonly mime_type: Prisma.FieldRef<"solicitud_documentos", 'String'>
+  readonly tamano_bytes: Prisma.FieldRef<"solicitud_documentos", 'Int'>
 }
     
 
@@ -1801,6 +2167,25 @@ export type solicitud_documentos$other_solicitud_documentosArgs<ExtArgs extends 
   take?: number
   skip?: number
   distinct?: Prisma.Solicitud_documentosScalarFieldEnum | Prisma.Solicitud_documentosScalarFieldEnum[]
+}
+
+/**
+ * solicitud_documentos.requisitos_documentales
+ */
+export type solicitud_documentos$requisitos_documentalesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the requisitos_documentales
+   */
+  select?: Prisma.requisitos_documentalesSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the requisitos_documentales
+   */
+  omit?: Prisma.requisitos_documentalesOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.requisitos_documentalesInclude<ExtArgs> | null
+  where?: Prisma.requisitos_documentalesWhereInput
 }
 
 /**

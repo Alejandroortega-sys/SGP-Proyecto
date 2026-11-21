@@ -73,6 +73,8 @@ export const ModelName = {
   productos: 'productos',
   solicitud_documentos: 'solicitud_documentos',
   solicitud_productos: 'solicitud_productos',
+  requisitos_documentales: 'requisitos_documentales',
+  solicitud_historial: 'solicitud_historial',
   solicitudes: 'solicitudes',
   spatial_ref_sys: 'spatial_ref_sys',
   tarifas: 'tarifas',
@@ -370,7 +372,11 @@ export const Solicitud_documentosScalarFieldEnum = {
   estado: 'estado',
   observacion: 'observacion',
   reemplaza_a: 'reemplaza_a',
-  cargado_en: 'cargado_en'
+  cargado_en: 'cargado_en',
+  requisito_id: 'requisito_id',
+  nombre_original: 'nombre_original',
+  mime_type: 'mime_type',
+  tamano_bytes: 'tamano_bytes'
 } as const
 
 export type Solicitud_documentosScalarFieldEnum = (typeof Solicitud_documentosScalarFieldEnum)[keyof typeof Solicitud_documentosScalarFieldEnum]
@@ -382,6 +388,33 @@ export const Solicitud_productosScalarFieldEnum = {
 } as const
 
 export type Solicitud_productosScalarFieldEnum = (typeof Solicitud_productosScalarFieldEnum)[keyof typeof Solicitud_productosScalarFieldEnum]
+
+
+export const Requisitos_documentalesScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  descripcion: 'descripcion',
+  obligatorio: 'obligatorio',
+  activo: 'activo',
+  tipo_actividad: 'tipo_actividad',
+  orden: 'orden',
+  creado_en: 'creado_en'
+} as const
+
+export type Requisitos_documentalesScalarFieldEnum = (typeof Requisitos_documentalesScalarFieldEnum)[keyof typeof Requisitos_documentalesScalarFieldEnum]
+
+
+export const Solicitud_historialScalarFieldEnum = {
+  id: 'id',
+  solicitud_id: 'solicitud_id',
+  estado_anterior: 'estado_anterior',
+  estado_nuevo: 'estado_nuevo',
+  actor_id: 'actor_id',
+  observacion: 'observacion',
+  creado_en: 'creado_en'
+} as const
+
+export type Solicitud_historialScalarFieldEnum = (typeof Solicitud_historialScalarFieldEnum)[keyof typeof Solicitud_historialScalarFieldEnum]
 
 
 export const SolicitudesScalarFieldEnum = {

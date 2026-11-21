@@ -306,6 +306,7 @@ export type usuariosWhereInput = {
   parametros_motor?: Prisma.Parametros_motorListRelationFilter
   permiso_eventos?: Prisma.Permiso_eventosListRelationFilter
   sesiones?: Prisma.SesionesListRelationFilter
+  solicitud_historial?: Prisma.Solicitud_historialListRelationFilter
   tokens_seguridad?: Prisma.Tokens_seguridadListRelationFilter
   zona_versiones?: Prisma.Zona_versionesListRelationFilter
   zonas?: Prisma.ZonasListRelationFilter
@@ -339,6 +340,7 @@ export type usuariosOrderByWithRelationInput = {
   parametros_motor?: Prisma.parametros_motorOrderByRelationAggregateInput
   permiso_eventos?: Prisma.permiso_eventosOrderByRelationAggregateInput
   sesiones?: Prisma.sesionesOrderByRelationAggregateInput
+  solicitud_historial?: Prisma.solicitud_historialOrderByRelationAggregateInput
   tokens_seguridad?: Prisma.tokens_seguridadOrderByRelationAggregateInput
   zona_versiones?: Prisma.zona_versionesOrderByRelationAggregateInput
   zonas?: Prisma.zonasOrderByRelationAggregateInput
@@ -375,6 +377,7 @@ export type usuariosWhereUniqueInput = Prisma.AtLeast<{
   parametros_motor?: Prisma.Parametros_motorListRelationFilter
   permiso_eventos?: Prisma.Permiso_eventosListRelationFilter
   sesiones?: Prisma.SesionesListRelationFilter
+  solicitud_historial?: Prisma.Solicitud_historialListRelationFilter
   tokens_seguridad?: Prisma.Tokens_seguridadListRelationFilter
   zona_versiones?: Prisma.Zona_versionesListRelationFilter
   zonas?: Prisma.ZonasListRelationFilter
@@ -450,6 +453,7 @@ export type usuariosCreateInput = {
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -483,6 +487,7 @@ export type usuariosUncheckedCreateInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -516,6 +521,7 @@ export type usuariosUpdateInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -549,6 +555,7 @@ export type usuariosUncheckedUpdateInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -842,6 +849,22 @@ export type usuariosUpdateOneWithoutPermiso_eventosNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.usuariosUpdateToOneWithWhereWithoutPermiso_eventosInput, Prisma.usuariosUpdateWithoutPermiso_eventosInput>, Prisma.usuariosUncheckedUpdateWithoutPermiso_eventosInput>
 }
 
+export type usuariosCreateNestedOneWithoutSolicitud_historialInput = {
+  create?: Prisma.XOR<Prisma.usuariosCreateWithoutSolicitud_historialInput, Prisma.usuariosUncheckedCreateWithoutSolicitud_historialInput>
+  connectOrCreate?: Prisma.usuariosCreateOrConnectWithoutSolicitud_historialInput
+  connect?: Prisma.usuariosWhereUniqueInput
+}
+
+export type usuariosUpdateOneWithoutSolicitud_historialNestedInput = {
+  create?: Prisma.XOR<Prisma.usuariosCreateWithoutSolicitud_historialInput, Prisma.usuariosUncheckedCreateWithoutSolicitud_historialInput>
+  connectOrCreate?: Prisma.usuariosCreateOrConnectWithoutSolicitud_historialInput
+  upsert?: Prisma.usuariosUpsertWithoutSolicitud_historialInput
+  disconnect?: Prisma.usuariosWhereInput | boolean
+  delete?: Prisma.usuariosWhereInput | boolean
+  connect?: Prisma.usuariosWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.usuariosUpdateToOneWithWhereWithoutSolicitud_historialInput, Prisma.usuariosUpdateWithoutSolicitud_historialInput>, Prisma.usuariosUncheckedUpdateWithoutSolicitud_historialInput>
+}
+
 export type usuariosCreateNestedOneWithoutTokens_seguridadInput = {
   create?: Prisma.XOR<Prisma.usuariosCreateWithoutTokens_seguridadInput, Prisma.usuariosUncheckedCreateWithoutTokens_seguridadInput>
   connectOrCreate?: Prisma.usuariosCreateOrConnectWithoutTokens_seguridadInput
@@ -925,6 +948,7 @@ export type usuariosCreateWithoutAuditoriaInput = {
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -957,6 +981,7 @@ export type usuariosUncheckedCreateWithoutAuditoriaInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -1005,6 +1030,7 @@ export type usuariosUpdateWithoutAuditoriaInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -1037,6 +1063,7 @@ export type usuariosUncheckedUpdateWithoutAuditoriaInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -1069,6 +1096,7 @@ export type usuariosCreateWithoutComerciantesInput = {
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -1101,6 +1129,7 @@ export type usuariosUncheckedCreateWithoutComerciantesInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -1149,6 +1178,7 @@ export type usuariosUpdateWithoutComerciantesInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -1181,6 +1211,7 @@ export type usuariosUncheckedUpdateWithoutComerciantesInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -1213,6 +1244,7 @@ export type usuariosCreateWithoutEspacio_bloqueosInput = {
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -1245,6 +1277,7 @@ export type usuariosUncheckedCreateWithoutEspacio_bloqueosInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -1293,6 +1326,7 @@ export type usuariosUpdateWithoutEspacio_bloqueosInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -1325,6 +1359,7 @@ export type usuariosUncheckedUpdateWithoutEspacio_bloqueosInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -1357,6 +1392,7 @@ export type usuariosCreateWithoutEspacios_temporalesInput = {
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -1389,6 +1425,7 @@ export type usuariosUncheckedCreateWithoutEspacios_temporalesInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -1437,6 +1474,7 @@ export type usuariosUpdateWithoutEspacios_temporalesInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -1469,6 +1507,7 @@ export type usuariosUncheckedUpdateWithoutEspacios_temporalesInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -1501,6 +1540,7 @@ export type usuariosCreateWithoutGestores_gestores_creado_porTousuariosInput = {
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -1533,6 +1573,7 @@ export type usuariosUncheckedCreateWithoutGestores_gestores_creado_porTousuarios
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -1570,6 +1611,7 @@ export type usuariosCreateWithoutGestores_gestores_usuario_idTousuariosInput = {
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -1602,6 +1644,7 @@ export type usuariosUncheckedCreateWithoutGestores_gestores_usuario_idTousuarios
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -1650,6 +1693,7 @@ export type usuariosUpdateWithoutGestores_gestores_creado_porTousuariosInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -1682,6 +1726,7 @@ export type usuariosUncheckedUpdateWithoutGestores_gestores_creado_porTousuarios
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -1725,6 +1770,7 @@ export type usuariosUpdateWithoutGestores_gestores_usuario_idTousuariosInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -1757,6 +1803,7 @@ export type usuariosUncheckedUpdateWithoutGestores_gestores_usuario_idTousuarios
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -1789,6 +1836,7 @@ export type usuariosCreateWithoutModulosInput = {
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -1821,6 +1869,7 @@ export type usuariosUncheckedCreateWithoutModulosInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -1869,6 +1918,7 @@ export type usuariosUpdateWithoutModulosInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -1901,6 +1951,7 @@ export type usuariosUncheckedUpdateWithoutModulosInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -1933,6 +1984,7 @@ export type usuariosCreateWithoutNotificacionesInput = {
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -1965,6 +2017,7 @@ export type usuariosUncheckedCreateWithoutNotificacionesInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -2013,6 +2066,7 @@ export type usuariosUpdateWithoutNotificacionesInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -2045,6 +2099,7 @@ export type usuariosUncheckedUpdateWithoutNotificacionesInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -2077,6 +2132,7 @@ export type usuariosCreateWithoutOrganizadores_organizadores_usuario_idTousuario
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -2109,6 +2165,7 @@ export type usuariosUncheckedCreateWithoutOrganizadores_organizadores_usuario_id
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -2146,6 +2203,7 @@ export type usuariosCreateWithoutOrganizadores_organizadores_validado_porTousuar
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -2178,6 +2236,7 @@ export type usuariosUncheckedCreateWithoutOrganizadores_organizadores_validado_p
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -2226,6 +2285,7 @@ export type usuariosUpdateWithoutOrganizadores_organizadores_usuario_idTousuario
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -2258,6 +2318,7 @@ export type usuariosUncheckedUpdateWithoutOrganizadores_organizadores_usuario_id
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -2301,6 +2362,7 @@ export type usuariosUpdateWithoutOrganizadores_organizadores_validado_porTousuar
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -2333,6 +2395,7 @@ export type usuariosUncheckedUpdateWithoutOrganizadores_organizadores_validado_p
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -2365,6 +2428,7 @@ export type usuariosCreateWithoutParametros_motorInput = {
   organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresCreateNestedManyWithoutUsuarios_organizadores_validado_porTousuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -2397,6 +2461,7 @@ export type usuariosUncheckedCreateWithoutParametros_motorInput = {
   organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresUncheckedCreateNestedManyWithoutUsuarios_organizadores_validado_porTousuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -2445,6 +2510,7 @@ export type usuariosUpdateWithoutParametros_motorInput = {
   organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresUpdateManyWithoutUsuarios_organizadores_validado_porTousuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -2477,6 +2543,7 @@ export type usuariosUncheckedUpdateWithoutParametros_motorInput = {
   organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresUncheckedUpdateManyWithoutUsuarios_organizadores_validado_porTousuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -2509,6 +2576,7 @@ export type usuariosCreateWithoutPermiso_eventosInput = {
   organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresCreateNestedManyWithoutUsuarios_organizadores_validado_porTousuariosInput
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -2541,6 +2609,7 @@ export type usuariosUncheckedCreateWithoutPermiso_eventosInput = {
   organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresUncheckedCreateNestedManyWithoutUsuarios_organizadores_validado_porTousuariosInput
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -2589,6 +2658,7 @@ export type usuariosUpdateWithoutPermiso_eventosInput = {
   organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresUpdateManyWithoutUsuarios_organizadores_validado_porTousuariosNestedInput
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -2620,6 +2690,155 @@ export type usuariosUncheckedUpdateWithoutPermiso_eventosInput = {
   organizadores_organizadores_usuario_idTousuarios?: Prisma.organizadoresUncheckedUpdateOneWithoutUsuarios_organizadores_usuario_idTousuariosNestedInput
   organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresUncheckedUpdateManyWithoutUsuarios_organizadores_validado_porTousuariosNestedInput
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
+  sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
+  tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
+  zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
+}
+
+export type usuariosCreateWithoutSolicitud_historialInput = {
+  id?: bigint | number
+  rol: $Enums.rol_usuario
+  nombre: string
+  apellido?: string | null
+  tipo_documento?: string | null
+  documento?: string | null
+  telefono?: string | null
+  correo: string
+  password_hash?: string | null
+  estado?: $Enums.estado_usuario
+  intentos_fallidos?: number
+  bloqueado_hasta?: Date | string | null
+  creado_en?: Date | string
+  actualizado_en?: Date | string
+  auditoria?: Prisma.auditoriaCreateNestedManyWithoutUsuariosInput
+  comerciantes?: Prisma.comerciantesCreateNestedOneWithoutUsuariosInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosCreateNestedManyWithoutUsuariosInput
+  espacios_temporales?: Prisma.espacios_temporalesCreateNestedManyWithoutUsuariosInput
+  gestores_gestores_creado_porTousuarios?: Prisma.gestoresCreateNestedManyWithoutUsuarios_gestores_creado_porTousuariosInput
+  gestores_gestores_usuario_idTousuarios?: Prisma.gestoresCreateNestedOneWithoutUsuarios_gestores_usuario_idTousuariosInput
+  modulos?: Prisma.modulosCreateNestedManyWithoutUsuariosInput
+  notificaciones?: Prisma.notificacionesCreateNestedManyWithoutUsuariosInput
+  organizadores_organizadores_usuario_idTousuarios?: Prisma.organizadoresCreateNestedOneWithoutUsuarios_organizadores_usuario_idTousuariosInput
+  organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresCreateNestedManyWithoutUsuarios_organizadores_validado_porTousuariosInput
+  parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
+  permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
+  sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
+  zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
+  zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
+}
+
+export type usuariosUncheckedCreateWithoutSolicitud_historialInput = {
+  id?: bigint | number
+  rol: $Enums.rol_usuario
+  nombre: string
+  apellido?: string | null
+  tipo_documento?: string | null
+  documento?: string | null
+  telefono?: string | null
+  correo: string
+  password_hash?: string | null
+  estado?: $Enums.estado_usuario
+  intentos_fallidos?: number
+  bloqueado_hasta?: Date | string | null
+  creado_en?: Date | string
+  actualizado_en?: Date | string
+  auditoria?: Prisma.auditoriaUncheckedCreateNestedManyWithoutUsuariosInput
+  comerciantes?: Prisma.comerciantesUncheckedCreateNestedOneWithoutUsuariosInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedCreateNestedManyWithoutUsuariosInput
+  espacios_temporales?: Prisma.espacios_temporalesUncheckedCreateNestedManyWithoutUsuariosInput
+  gestores_gestores_creado_porTousuarios?: Prisma.gestoresUncheckedCreateNestedManyWithoutUsuarios_gestores_creado_porTousuariosInput
+  gestores_gestores_usuario_idTousuarios?: Prisma.gestoresUncheckedCreateNestedOneWithoutUsuarios_gestores_usuario_idTousuariosInput
+  modulos?: Prisma.modulosUncheckedCreateNestedManyWithoutUsuariosInput
+  notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutUsuariosInput
+  organizadores_organizadores_usuario_idTousuarios?: Prisma.organizadoresUncheckedCreateNestedOneWithoutUsuarios_organizadores_usuario_idTousuariosInput
+  organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresUncheckedCreateNestedManyWithoutUsuarios_organizadores_validado_porTousuariosInput
+  parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
+  permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
+  sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
+  zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
+  zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
+}
+
+export type usuariosCreateOrConnectWithoutSolicitud_historialInput = {
+  where: Prisma.usuariosWhereUniqueInput
+  create: Prisma.XOR<Prisma.usuariosCreateWithoutSolicitud_historialInput, Prisma.usuariosUncheckedCreateWithoutSolicitud_historialInput>
+}
+
+export type usuariosUpsertWithoutSolicitud_historialInput = {
+  update: Prisma.XOR<Prisma.usuariosUpdateWithoutSolicitud_historialInput, Prisma.usuariosUncheckedUpdateWithoutSolicitud_historialInput>
+  create: Prisma.XOR<Prisma.usuariosCreateWithoutSolicitud_historialInput, Prisma.usuariosUncheckedCreateWithoutSolicitud_historialInput>
+  where?: Prisma.usuariosWhereInput
+}
+
+export type usuariosUpdateToOneWithWhereWithoutSolicitud_historialInput = {
+  where?: Prisma.usuariosWhereInput
+  data: Prisma.XOR<Prisma.usuariosUpdateWithoutSolicitud_historialInput, Prisma.usuariosUncheckedUpdateWithoutSolicitud_historialInput>
+}
+
+export type usuariosUpdateWithoutSolicitud_historialInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  rol?: Prisma.Enumrol_usuarioFieldUpdateOperationsInput | $Enums.rol_usuario
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tipo_documento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  correo?: Prisma.StringFieldUpdateOperationsInput | string
+  password_hash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.Enumestado_usuarioFieldUpdateOperationsInput | $Enums.estado_usuario
+  intentos_fallidos?: Prisma.IntFieldUpdateOperationsInput | number
+  bloqueado_hasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  auditoria?: Prisma.auditoriaUpdateManyWithoutUsuariosNestedInput
+  comerciantes?: Prisma.comerciantesUpdateOneWithoutUsuariosNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutUsuariosNestedInput
+  espacios_temporales?: Prisma.espacios_temporalesUpdateManyWithoutUsuariosNestedInput
+  gestores_gestores_creado_porTousuarios?: Prisma.gestoresUpdateManyWithoutUsuarios_gestores_creado_porTousuariosNestedInput
+  gestores_gestores_usuario_idTousuarios?: Prisma.gestoresUpdateOneWithoutUsuarios_gestores_usuario_idTousuariosNestedInput
+  modulos?: Prisma.modulosUpdateManyWithoutUsuariosNestedInput
+  notificaciones?: Prisma.notificacionesUpdateManyWithoutUsuariosNestedInput
+  organizadores_organizadores_usuario_idTousuarios?: Prisma.organizadoresUpdateOneWithoutUsuarios_organizadores_usuario_idTousuariosNestedInput
+  organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresUpdateManyWithoutUsuarios_organizadores_validado_porTousuariosNestedInput
+  parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
+  permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
+  sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
+  zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
+  zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
+}
+
+export type usuariosUncheckedUpdateWithoutSolicitud_historialInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  rol?: Prisma.Enumrol_usuarioFieldUpdateOperationsInput | $Enums.rol_usuario
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tipo_documento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  correo?: Prisma.StringFieldUpdateOperationsInput | string
+  password_hash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.Enumestado_usuarioFieldUpdateOperationsInput | $Enums.estado_usuario
+  intentos_fallidos?: Prisma.IntFieldUpdateOperationsInput | number
+  bloqueado_hasta?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  auditoria?: Prisma.auditoriaUncheckedUpdateManyWithoutUsuariosNestedInput
+  comerciantes?: Prisma.comerciantesUncheckedUpdateOneWithoutUsuariosNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutUsuariosNestedInput
+  espacios_temporales?: Prisma.espacios_temporalesUncheckedUpdateManyWithoutUsuariosNestedInput
+  gestores_gestores_creado_porTousuarios?: Prisma.gestoresUncheckedUpdateManyWithoutUsuarios_gestores_creado_porTousuariosNestedInput
+  gestores_gestores_usuario_idTousuarios?: Prisma.gestoresUncheckedUpdateOneWithoutUsuarios_gestores_usuario_idTousuariosNestedInput
+  modulos?: Prisma.modulosUncheckedUpdateManyWithoutUsuariosNestedInput
+  notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  organizadores_organizadores_usuario_idTousuarios?: Prisma.organizadoresUncheckedUpdateOneWithoutUsuarios_organizadores_usuario_idTousuariosNestedInput
+  organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresUncheckedUpdateManyWithoutUsuarios_organizadores_validado_porTousuariosNestedInput
+  parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
+  permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -2654,6 +2873,7 @@ export type usuariosCreateWithoutTokens_seguridadInput = {
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
 }
@@ -2686,6 +2906,7 @@ export type usuariosUncheckedCreateWithoutTokens_seguridadInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
 }
@@ -2734,6 +2955,7 @@ export type usuariosUpdateWithoutTokens_seguridadInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
 }
@@ -2766,6 +2988,7 @@ export type usuariosUncheckedUpdateWithoutTokens_seguridadInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
 }
@@ -2798,6 +3021,7 @@ export type usuariosCreateWithoutZonasInput = {
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
 }
@@ -2830,6 +3054,7 @@ export type usuariosUncheckedCreateWithoutZonasInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
 }
@@ -2878,6 +3103,7 @@ export type usuariosUpdateWithoutZonasInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
 }
@@ -2910,6 +3136,7 @@ export type usuariosUncheckedUpdateWithoutZonasInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
 }
@@ -2941,6 +3168,7 @@ export type usuariosCreateWithoutSesionesInput = {
   organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresCreateNestedManyWithoutUsuarios_organizadores_validado_porTousuariosInput
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
@@ -2973,6 +3201,7 @@ export type usuariosUncheckedCreateWithoutSesionesInput = {
   organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresUncheckedCreateNestedManyWithoutUsuarios_organizadores_validado_porTousuariosInput
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zona_versiones?: Prisma.zona_versionesUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
@@ -3021,6 +3250,7 @@ export type usuariosUpdateWithoutSesionesInput = {
   organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresUpdateManyWithoutUsuarios_organizadores_validado_porTousuariosNestedInput
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
@@ -3053,6 +3283,7 @@ export type usuariosUncheckedUpdateWithoutSesionesInput = {
   organizadores_organizadores_validado_porTousuarios?: Prisma.organizadoresUncheckedUpdateManyWithoutUsuarios_organizadores_validado_porTousuariosNestedInput
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zona_versiones?: Prisma.zona_versionesUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
@@ -3086,6 +3317,7 @@ export type usuariosCreateWithoutZona_versionesInput = {
   parametros_motor?: Prisma.parametros_motorCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasCreateNestedManyWithoutUsuariosInput
 }
@@ -3118,6 +3350,7 @@ export type usuariosUncheckedCreateWithoutZona_versionesInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedCreateNestedManyWithoutUsuariosInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedCreateNestedManyWithoutUsuariosInput
   sesiones?: Prisma.sesionesUncheckedCreateNestedManyWithoutUsuariosInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutUsuariosInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedCreateNestedManyWithoutUsuariosInput
   zonas?: Prisma.zonasUncheckedCreateNestedManyWithoutUsuariosInput
 }
@@ -3166,6 +3399,7 @@ export type usuariosUpdateWithoutZona_versionesInput = {
   parametros_motor?: Prisma.parametros_motorUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUpdateManyWithoutUsuariosNestedInput
 }
@@ -3198,6 +3432,7 @@ export type usuariosUncheckedUpdateWithoutZona_versionesInput = {
   parametros_motor?: Prisma.parametros_motorUncheckedUpdateManyWithoutUsuariosNestedInput
   permiso_eventos?: Prisma.permiso_eventosUncheckedUpdateManyWithoutUsuariosNestedInput
   sesiones?: Prisma.sesionesUncheckedUpdateManyWithoutUsuariosNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutUsuariosNestedInput
   tokens_seguridad?: Prisma.tokens_seguridadUncheckedUpdateManyWithoutUsuariosNestedInput
   zonas?: Prisma.zonasUncheckedUpdateManyWithoutUsuariosNestedInput
 }
@@ -3218,6 +3453,7 @@ export type UsuariosCountOutputType = {
   parametros_motor: number
   permiso_eventos: number
   sesiones: number
+  solicitud_historial: number
   tokens_seguridad: number
   zona_versiones: number
   zonas: number
@@ -3234,6 +3470,7 @@ export type UsuariosCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensio
   parametros_motor?: boolean | UsuariosCountOutputTypeCountParametros_motorArgs
   permiso_eventos?: boolean | UsuariosCountOutputTypeCountPermiso_eventosArgs
   sesiones?: boolean | UsuariosCountOutputTypeCountSesionesArgs
+  solicitud_historial?: boolean | UsuariosCountOutputTypeCountSolicitud_historialArgs
   tokens_seguridad?: boolean | UsuariosCountOutputTypeCountTokens_seguridadArgs
   zona_versiones?: boolean | UsuariosCountOutputTypeCountZona_versionesArgs
   zonas?: boolean | UsuariosCountOutputTypeCountZonasArgs
@@ -3322,6 +3559,13 @@ export type UsuariosCountOutputTypeCountSesionesArgs<ExtArgs extends runtime.Typ
 /**
  * UsuariosCountOutputType without action
  */
+export type UsuariosCountOutputTypeCountSolicitud_historialArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.solicitud_historialWhereInput
+}
+
+/**
+ * UsuariosCountOutputType without action
+ */
 export type UsuariosCountOutputTypeCountTokens_seguridadArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.tokens_seguridadWhereInput
 }
@@ -3369,6 +3613,7 @@ export type usuariosSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   parametros_motor?: boolean | Prisma.usuarios$parametros_motorArgs<ExtArgs>
   permiso_eventos?: boolean | Prisma.usuarios$permiso_eventosArgs<ExtArgs>
   sesiones?: boolean | Prisma.usuarios$sesionesArgs<ExtArgs>
+  solicitud_historial?: boolean | Prisma.usuarios$solicitud_historialArgs<ExtArgs>
   tokens_seguridad?: boolean | Prisma.usuarios$tokens_seguridadArgs<ExtArgs>
   zona_versiones?: boolean | Prisma.usuarios$zona_versionesArgs<ExtArgs>
   zonas?: boolean | Prisma.usuarios$zonasArgs<ExtArgs>
@@ -3441,6 +3686,7 @@ export type usuariosInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   parametros_motor?: boolean | Prisma.usuarios$parametros_motorArgs<ExtArgs>
   permiso_eventos?: boolean | Prisma.usuarios$permiso_eventosArgs<ExtArgs>
   sesiones?: boolean | Prisma.usuarios$sesionesArgs<ExtArgs>
+  solicitud_historial?: boolean | Prisma.usuarios$solicitud_historialArgs<ExtArgs>
   tokens_seguridad?: boolean | Prisma.usuarios$tokens_seguridadArgs<ExtArgs>
   zona_versiones?: boolean | Prisma.usuarios$zona_versionesArgs<ExtArgs>
   zonas?: boolean | Prisma.usuarios$zonasArgs<ExtArgs>
@@ -3465,6 +3711,7 @@ export type $usuariosPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     parametros_motor: Prisma.$parametros_motorPayload<ExtArgs>[]
     permiso_eventos: Prisma.$permiso_eventosPayload<ExtArgs>[]
     sesiones: Prisma.$sesionesPayload<ExtArgs>[]
+    solicitud_historial: Prisma.$solicitud_historialPayload<ExtArgs>[]
     tokens_seguridad: Prisma.$tokens_seguridadPayload<ExtArgs>[]
     zona_versiones: Prisma.$zona_versionesPayload<ExtArgs>[]
     zonas: Prisma.$zonasPayload<ExtArgs>[]
@@ -3891,6 +4138,7 @@ export interface Prisma__usuariosClient<T, Null = never, ExtArgs extends runtime
   parametros_motor<T extends Prisma.usuarios$parametros_motorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$parametros_motorArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$parametros_motorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   permiso_eventos<T extends Prisma.usuarios$permiso_eventosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$permiso_eventosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$permiso_eventosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sesiones<T extends Prisma.usuarios$sesionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$sesionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$sesionesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  solicitud_historial<T extends Prisma.usuarios$solicitud_historialArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$solicitud_historialArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$solicitud_historialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tokens_seguridad<T extends Prisma.usuarios$tokens_seguridadArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$tokens_seguridadArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$tokens_seguridadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   zona_versiones<T extends Prisma.usuarios$zona_versionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$zona_versionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$zona_versionesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   zonas<T extends Prisma.usuarios$zonasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuarios$zonasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$zonasPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4624,6 +4872,30 @@ export type usuarios$sesionesArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.SesionesScalarFieldEnum | Prisma.SesionesScalarFieldEnum[]
+}
+
+/**
+ * usuarios.solicitud_historial
+ */
+export type usuarios$solicitud_historialArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the solicitud_historial
+   */
+  select?: Prisma.solicitud_historialSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the solicitud_historial
+   */
+  omit?: Prisma.solicitud_historialOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.solicitud_historialInclude<ExtArgs> | null
+  where?: Prisma.solicitud_historialWhereInput
+  orderBy?: Prisma.solicitud_historialOrderByWithRelationInput | Prisma.solicitud_historialOrderByWithRelationInput[]
+  cursor?: Prisma.solicitud_historialWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.Solicitud_historialScalarFieldEnum | Prisma.Solicitud_historialScalarFieldEnum[]
 }
 
 /**

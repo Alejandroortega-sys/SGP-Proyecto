@@ -419,6 +419,8 @@ export const ModelName = {
   productos: 'productos',
   solicitud_documentos: 'solicitud_documentos',
   solicitud_productos: 'solicitud_productos',
+  requisitos_documentales: 'requisitos_documentales',
+  solicitud_historial: 'solicitud_historial',
   solicitudes: 'solicitudes',
   spatial_ref_sys: 'spatial_ref_sys',
   tarifas: 'tarifas',
@@ -444,7 +446,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "alertas_saturacion" | "auditoria" | "cobros" | "comerciantes" | "espacio_bloqueos" | "espacios_temporales" | "evaluacion_reglas" | "evaluaciones_factibilidad" | "excepciones_factibilidad" | "feria_productos" | "feria_vendedores" | "ferias" | "gestores" | "modulos" | "notificaciones" | "organizadores" | "parametros_motor" | "permiso_eventos" | "permisos" | "productos" | "solicitud_documentos" | "solicitud_productos" | "solicitudes" | "spatial_ref_sys" | "tarifas" | "tokens_seguridad" | "usuarios" | "verificaciones_qr" | "zona_productos" | "zonas" | "sesiones" | "zona_versiones"
+    modelProps: "alertas_saturacion" | "auditoria" | "cobros" | "comerciantes" | "espacio_bloqueos" | "espacios_temporales" | "evaluacion_reglas" | "evaluaciones_factibilidad" | "excepciones_factibilidad" | "feria_productos" | "feria_vendedores" | "ferias" | "gestores" | "modulos" | "notificaciones" | "organizadores" | "parametros_motor" | "permiso_eventos" | "permisos" | "productos" | "solicitud_documentos" | "solicitud_productos" | "requisitos_documentales" | "solicitud_historial" | "solicitudes" | "spatial_ref_sys" | "tarifas" | "tokens_seguridad" | "usuarios" | "verificaciones_qr" | "zona_productos" | "zonas" | "sesiones" | "zona_versiones"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2028,6 +2030,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    requisitos_documentales: {
+      payload: Prisma.$requisitos_documentalesPayload<ExtArgs>
+      fields: Prisma.requisitos_documentalesFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.requisitos_documentalesFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$requisitos_documentalesPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.requisitos_documentalesFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$requisitos_documentalesPayload>
+        }
+        findFirst: {
+          args: Prisma.requisitos_documentalesFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$requisitos_documentalesPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.requisitos_documentalesFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$requisitos_documentalesPayload>
+        }
+        findMany: {
+          args: Prisma.requisitos_documentalesFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$requisitos_documentalesPayload>[]
+        }
+        create: {
+          args: Prisma.requisitos_documentalesCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$requisitos_documentalesPayload>
+        }
+        createMany: {
+          args: Prisma.requisitos_documentalesCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.requisitos_documentalesCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$requisitos_documentalesPayload>[]
+        }
+        delete: {
+          args: Prisma.requisitos_documentalesDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$requisitos_documentalesPayload>
+        }
+        update: {
+          args: Prisma.requisitos_documentalesUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$requisitos_documentalesPayload>
+        }
+        deleteMany: {
+          args: Prisma.requisitos_documentalesDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.requisitos_documentalesUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.requisitos_documentalesUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$requisitos_documentalesPayload>[]
+        }
+        upsert: {
+          args: Prisma.requisitos_documentalesUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$requisitos_documentalesPayload>
+        }
+        aggregate: {
+          args: Prisma.Requisitos_documentalesAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRequisitos_documentales>
+        }
+        groupBy: {
+          args: Prisma.requisitos_documentalesGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Requisitos_documentalesGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.requisitos_documentalesCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Requisitos_documentalesCountAggregateOutputType> | number
+        }
+      }
+    }
+    solicitud_historial: {
+      payload: Prisma.$solicitud_historialPayload<ExtArgs>
+      fields: Prisma.solicitud_historialFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.solicitud_historialFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_historialPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.solicitud_historialFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_historialPayload>
+        }
+        findFirst: {
+          args: Prisma.solicitud_historialFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_historialPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.solicitud_historialFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_historialPayload>
+        }
+        findMany: {
+          args: Prisma.solicitud_historialFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_historialPayload>[]
+        }
+        create: {
+          args: Prisma.solicitud_historialCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_historialPayload>
+        }
+        createMany: {
+          args: Prisma.solicitud_historialCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.solicitud_historialCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_historialPayload>[]
+        }
+        delete: {
+          args: Prisma.solicitud_historialDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_historialPayload>
+        }
+        update: {
+          args: Prisma.solicitud_historialUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_historialPayload>
+        }
+        deleteMany: {
+          args: Prisma.solicitud_historialDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.solicitud_historialUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.solicitud_historialUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_historialPayload>[]
+        }
+        upsert: {
+          args: Prisma.solicitud_historialUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_historialPayload>
+        }
+        aggregate: {
+          args: Prisma.Solicitud_historialAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSolicitud_historial>
+        }
+        groupBy: {
+          args: Prisma.solicitud_historialGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Solicitud_historialGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.solicitud_historialCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Solicitud_historialCountAggregateOutputType> | number
+        }
+      }
+    }
     solicitudes: {
       payload: Prisma.$solicitudesPayload<ExtArgs>
       fields: Prisma.solicitudesFieldRefs
@@ -3044,7 +3194,11 @@ export const Solicitud_documentosScalarFieldEnum = {
   estado: 'estado',
   observacion: 'observacion',
   reemplaza_a: 'reemplaza_a',
-  cargado_en: 'cargado_en'
+  cargado_en: 'cargado_en',
+  requisito_id: 'requisito_id',
+  nombre_original: 'nombre_original',
+  mime_type: 'mime_type',
+  tamano_bytes: 'tamano_bytes'
 } as const
 
 export type Solicitud_documentosScalarFieldEnum = (typeof Solicitud_documentosScalarFieldEnum)[keyof typeof Solicitud_documentosScalarFieldEnum]
@@ -3056,6 +3210,33 @@ export const Solicitud_productosScalarFieldEnum = {
 } as const
 
 export type Solicitud_productosScalarFieldEnum = (typeof Solicitud_productosScalarFieldEnum)[keyof typeof Solicitud_productosScalarFieldEnum]
+
+
+export const Requisitos_documentalesScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  descripcion: 'descripcion',
+  obligatorio: 'obligatorio',
+  activo: 'activo',
+  tipo_actividad: 'tipo_actividad',
+  orden: 'orden',
+  creado_en: 'creado_en'
+} as const
+
+export type Requisitos_documentalesScalarFieldEnum = (typeof Requisitos_documentalesScalarFieldEnum)[keyof typeof Requisitos_documentalesScalarFieldEnum]
+
+
+export const Solicitud_historialScalarFieldEnum = {
+  id: 'id',
+  solicitud_id: 'solicitud_id',
+  estado_anterior: 'estado_anterior',
+  estado_nuevo: 'estado_nuevo',
+  actor_id: 'actor_id',
+  observacion: 'observacion',
+  creado_en: 'creado_en'
+} as const
+
+export type Solicitud_historialScalarFieldEnum = (typeof Solicitud_historialScalarFieldEnum)[keyof typeof Solicitud_historialScalarFieldEnum]
 
 
 export const SolicitudesScalarFieldEnum = {
@@ -3772,6 +3953,8 @@ export type GlobalOmitConfig = {
   productos?: Prisma.productosOmit
   solicitud_documentos?: Prisma.solicitud_documentosOmit
   solicitud_productos?: Prisma.solicitud_productosOmit
+  requisitos_documentales?: Prisma.requisitos_documentalesOmit
+  solicitud_historial?: Prisma.solicitud_historialOmit
   solicitudes?: Prisma.solicitudesOmit
   spatial_ref_sys?: Prisma.spatial_ref_sysOmit
   tarifas?: Prisma.tarifasOmit

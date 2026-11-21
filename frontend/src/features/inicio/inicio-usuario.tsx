@@ -125,12 +125,20 @@ export function InicioUsuario({ rol }: { rol: "comerciante" | "organizador" }) {
           </TarjetaEncabezado>
           <TarjetaCuerpo className="flex flex-col gap-2 text-sm">
             {!esOrganizador ? (
-              <Link
-                href="/comerciante/espacios"
-                className="rounded-lg border border-primario bg-primario-suave px-3 py-2 font-semibold text-primario hover:bg-primario-suave/80"
-              >
-                Consultar espacios disponibles
-              </Link>
+              <>
+                <Link
+                  href="/comerciante/espacios"
+                  className="rounded-lg border border-primario bg-primario-suave px-3 py-2 font-semibold text-primario hover:bg-primario-suave/80"
+                >
+                  Consultar espacios disponibles
+                </Link>
+                <Link
+                  href="/comerciante/solicitudes"
+                  className="rounded-lg border border-borde px-3 py-2 font-medium text-titulo hover:bg-fondo"
+                >
+                  Ver mis solicitudes
+                </Link>
+              </>
             ) : null}
             <Link
               href={esOrganizador ? "/organizador/perfil" : "/comerciante/perfil"}
@@ -156,10 +164,11 @@ export function InicioUsuario({ rol }: { rol: "comerciante" | "organizador" }) {
 
       <Tarjeta>
         <TarjetaCuerpo className="flex flex-col gap-2 text-sm text-texto">
-          <p className="font-semibold text-titulo">Próximamente</p>
+          <p className="font-semibold text-titulo">Trámites disponibles</p>
           <p>
-            La solicitud de espacios, el calendario de ferias, los permisos con QR
-            y los cobros estarán disponibles en los siguientes sprints.
+            Ya puedes radicar solicitudes de uso temporal desde «Mis
+            solicitudes». El calendario de ferias, los permisos con QR y los
+            cobros estarán disponibles en los siguientes sprints.
           </p>
         </TarjetaCuerpo>
       </Tarjeta>

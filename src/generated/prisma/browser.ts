@@ -136,6 +136,16 @@ export type solicitud_documentos = Prisma.solicitud_documentosModel
  */
 export type solicitud_productos = Prisma.solicitud_productosModel
 /**
+ * Model requisitos_documentales
+ * Catálogo de documentos exigidos por actividad (HU-16/HU-17).
+ */
+export type requisitos_documentales = Prisma.requisitos_documentalesModel
+/**
+ * Model solicitud_historial
+ * Línea de tiempo del trámite: cada transición de estado (HU-16 a HU-20).
+ */
+export type solicitud_historial = Prisma.solicitud_historialModel
+/**
  * Model solicitudes
  * This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
  * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments

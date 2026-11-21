@@ -338,19 +338,25 @@ model productos {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model solicitud_documentos {
-  id                         BigInt                 @id @default(autoincrement())
+  id                         BigInt                   @id @default(autoincrement())
   solicitud_id               BigInt
-  tipo_documento             String                 @db.VarChar(100)
+  tipo_documento             String                   @db.VarChar(100)
   archivo_url                String
-  estado                     estado_documento       @default(pendiente)
+  estado                     estado_documento         @default(pendiente)
   observacion                String?
   reemplaza_a                BigInt?
-  cargado_en                 DateTime               @default(now()) @db.Timestamptz(6)
-  solicitud_documentos       solicitud_documentos?  @relation("solicitud_documentosTosolicitud_documentos", fields: [reemplaza_a], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  other_solicitud_documentos solicitud_documentos[] @relation("solicitud_documentosTosolicitud_documentos")
-  solicitudes                solicitudes            @relation(fields: [solicitud_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  cargado_en                 DateTime                 @default(now()) @db.Timestamptz(6)
+  requisito_id               BigInt?
+  nombre_original            String?                  @db.VarChar(255)
+  mime_type                  String?                  @db.VarChar(100)
+  tamano_bytes               Int?
+  solicitud_documentos       solicitud_documentos?    @relation("solicitud_documentosTosolicitud_documentos", fields: [reemplaza_a], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_solicitud_documentos solicitud_documentos[]   @relation("solicitud_documentosTosolicitud_documentos")
+  solicitudes                solicitudes              @relation(fields: [solicitud_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  requisitos_documentales    requisitos_documentales? @relation(fields: [requisito_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([solicitud_id], map: "idx_documentos_solicitud")
+  @@index([solicitud_id, requisito_id], map: "idx_documentos_requisito")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -363,11 +369,41 @@ model solicitud_productos {
   @@id([solicitud_id, producto_id])
 }
 
+/// Catálogo de documentos exigidos por actividad (HU-16/HU-17).
+model requisitos_documentales {
+  id                   BigInt                 @id @default(autoincrement())
+  nombre               String                 @db.VarChar(100)
+  descripcion          String?                @db.VarChar(300)
+  obligatorio          Boolean                @default(false)
+  activo               Boolean                @default(true)
+  tipo_actividad       String?                @db.VarChar(100)
+  orden                Int                    @default(0)
+  creado_en            DateTime               @default(now()) @db.Timestamptz(6)
+  solicitud_documentos solicitud_documentos[]
+
+  @@index([tipo_actividad, orden], map: "idx_requisitos_documentales_actividad")
+}
+
+/// Línea de tiempo del trámite: cada transición de estado (HU-16 a HU-20).
+model solicitud_historial {
+  id              BigInt            @id @default(autoincrement())
+  solicitud_id    BigInt
+  estado_anterior estado_solicitud?
+  estado_nuevo    estado_solicitud
+  actor_id        BigInt?
+  observacion     String?
+  creado_en       DateTime          @default(now()) @db.Timestamptz(6)
+  solicitudes     solicitudes       @relation(fields: [solicitud_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios        usuarios?         @relation(fields: [actor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([solicitud_id, creado_en], map: "idx_solicitud_historial_solicitud")
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model solicitudes {
   id                        BigInt                      @id @default(autoincrement())
-  numero_radicado           String                      @unique @default(dbgenerated("('SOL-2026-'::text || lpad((nextval('seq_radicado_solicitud'::regclass))::text, 5, '0'::text))")) @db.VarChar(30)
+  numero_radicado           String                      @unique @default(dbgenerated("fn_numero_radicado_solicitud()")) @db.VarChar(30)
   comerciante_id            BigInt
   espacio_id                BigInt?
   ubicacion_solicitada      Unsupported("geometry")?
@@ -386,6 +422,7 @@ model solicitudes {
   evaluaciones_factibilidad evaluaciones_factibilidad[]
   permisos                  permisos?
   solicitud_documentos      solicitud_documentos[]
+  solicitud_historial       solicitud_historial[]
   solicitud_productos       solicitud_productos[]
   comerciantes              comerciantes                @relation(fields: [comerciante_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
   espacios_temporales       espacios_temporales?        @relation(fields: [espacio_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -462,6 +499,7 @@ model usuarios {
   parametros_motor                                   parametros_motor[]
   permiso_eventos                                    permiso_eventos[]
   sesiones                                           sesiones[]
+  solicitud_historial                                solicitud_historial[]
   tokens_seguridad                                   tokens_seguridad[]
   zona_versiones                                     zona_versiones[]
   zonas                                              zonas[]

@@ -320,6 +320,7 @@ export type solicitudesWhereInput = {
   evaluaciones_factibilidad?: Prisma.Evaluaciones_factibilidadListRelationFilter
   permisos?: Prisma.XOR<Prisma.PermisosNullableScalarRelationFilter, Prisma.permisosWhereInput> | null
   solicitud_documentos?: Prisma.Solicitud_documentosListRelationFilter
+  solicitud_historial?: Prisma.Solicitud_historialListRelationFilter
   solicitud_productos?: Prisma.Solicitud_productosListRelationFilter
   comerciantes?: Prisma.XOR<Prisma.ComerciantesScalarRelationFilter, Prisma.comerciantesWhereInput>
   espacios_temporales?: Prisma.XOR<Prisma.Espacios_temporalesNullableScalarRelationFilter, Prisma.espacios_temporalesWhereInput> | null
@@ -346,6 +347,7 @@ export type solicitudesOrderByWithRelationInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadOrderByRelationAggregateInput
   permisos?: Prisma.permisosOrderByWithRelationInput
   solicitud_documentos?: Prisma.solicitud_documentosOrderByRelationAggregateInput
+  solicitud_historial?: Prisma.solicitud_historialOrderByRelationAggregateInput
   solicitud_productos?: Prisma.solicitud_productosOrderByRelationAggregateInput
   comerciantes?: Prisma.comerciantesOrderByWithRelationInput
   espacios_temporales?: Prisma.espacios_temporalesOrderByWithRelationInput
@@ -375,6 +377,7 @@ export type solicitudesWhereUniqueInput = Prisma.AtLeast<{
   evaluaciones_factibilidad?: Prisma.Evaluaciones_factibilidadListRelationFilter
   permisos?: Prisma.XOR<Prisma.PermisosNullableScalarRelationFilter, Prisma.permisosWhereInput> | null
   solicitud_documentos?: Prisma.Solicitud_documentosListRelationFilter
+  solicitud_historial?: Prisma.Solicitud_historialListRelationFilter
   solicitud_productos?: Prisma.Solicitud_productosListRelationFilter
   comerciantes?: Prisma.XOR<Prisma.ComerciantesScalarRelationFilter, Prisma.comerciantesWhereInput>
   espacios_temporales?: Prisma.XOR<Prisma.Espacios_temporalesNullableScalarRelationFilter, Prisma.espacios_temporalesWhereInput> | null
@@ -444,6 +447,7 @@ export type solicitudesCreateInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadCreateNestedManyWithoutSolicitudesInput
   permisos?: Prisma.permisosCreateNestedOneWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosCreateNestedManyWithoutSolicitudesInput
   comerciantes: Prisma.comerciantesCreateNestedOneWithoutSolicitudesInput
   espacios_temporales?: Prisma.espacios_temporalesCreateNestedOneWithoutSolicitudesInput
@@ -470,6 +474,7 @@ export type solicitudesUncheckedCreateInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedCreateNestedManyWithoutSolicitudesInput
   permisos?: Prisma.permisosUncheckedCreateNestedOneWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedCreateNestedManyWithoutSolicitudesInput
 }
 
@@ -490,6 +495,7 @@ export type solicitudesUpdateInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUpdateManyWithoutSolicitudesNestedInput
   permisos?: Prisma.permisosUpdateOneWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUpdateManyWithoutSolicitudesNestedInput
   comerciantes?: Prisma.comerciantesUpdateOneRequiredWithoutSolicitudesNestedInput
   espacios_temporales?: Prisma.espacios_temporalesUpdateOneWithoutSolicitudesNestedInput
@@ -516,6 +522,7 @@ export type solicitudesUncheckedUpdateInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedUpdateManyWithoutSolicitudesNestedInput
   permisos?: Prisma.permisosUncheckedUpdateOneWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedUpdateManyWithoutSolicitudesNestedInput
 }
 
@@ -828,8 +835,18 @@ export type solicitudesUpdateOneRequiredWithoutSolicitud_productosNestedInput = 
   update?: Prisma.XOR<Prisma.XOR<Prisma.solicitudesUpdateToOneWithWhereWithoutSolicitud_productosInput, Prisma.solicitudesUpdateWithoutSolicitud_productosInput>, Prisma.solicitudesUncheckedUpdateWithoutSolicitud_productosInput>
 }
 
-export type Enumestado_solicitudFieldUpdateOperationsInput = {
-  set?: $Enums.estado_solicitud
+export type solicitudesCreateNestedOneWithoutSolicitud_historialInput = {
+  create?: Prisma.XOR<Prisma.solicitudesCreateWithoutSolicitud_historialInput, Prisma.solicitudesUncheckedCreateWithoutSolicitud_historialInput>
+  connectOrCreate?: Prisma.solicitudesCreateOrConnectWithoutSolicitud_historialInput
+  connect?: Prisma.solicitudesWhereUniqueInput
+}
+
+export type solicitudesUpdateOneRequiredWithoutSolicitud_historialNestedInput = {
+  create?: Prisma.XOR<Prisma.solicitudesCreateWithoutSolicitud_historialInput, Prisma.solicitudesUncheckedCreateWithoutSolicitud_historialInput>
+  connectOrCreate?: Prisma.solicitudesCreateOrConnectWithoutSolicitud_historialInput
+  upsert?: Prisma.solicitudesUpsertWithoutSolicitud_historialInput
+  connect?: Prisma.solicitudesWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.solicitudesUpdateToOneWithWhereWithoutSolicitud_historialInput, Prisma.solicitudesUpdateWithoutSolicitud_historialInput>, Prisma.solicitudesUncheckedUpdateWithoutSolicitud_historialInput>
 }
 
 export type solicitudesCreateWithoutComerciantesInput = {
@@ -849,6 +866,7 @@ export type solicitudesCreateWithoutComerciantesInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadCreateNestedManyWithoutSolicitudesInput
   permisos?: Prisma.permisosCreateNestedOneWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosCreateNestedManyWithoutSolicitudesInput
   espacios_temporales?: Prisma.espacios_temporalesCreateNestedOneWithoutSolicitudesInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutSolicitudesInput
@@ -873,6 +891,7 @@ export type solicitudesUncheckedCreateWithoutComerciantesInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedCreateNestedManyWithoutSolicitudesInput
   permisos?: Prisma.permisosUncheckedCreateNestedOneWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedCreateNestedManyWithoutSolicitudesInput
 }
 
@@ -941,6 +960,7 @@ export type solicitudesCreateWithoutEspacios_temporalesInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadCreateNestedManyWithoutSolicitudesInput
   permisos?: Prisma.permisosCreateNestedOneWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosCreateNestedManyWithoutSolicitudesInput
   comerciantes: Prisma.comerciantesCreateNestedOneWithoutSolicitudesInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutSolicitudesInput
@@ -965,6 +985,7 @@ export type solicitudesUncheckedCreateWithoutEspacios_temporalesInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedCreateNestedManyWithoutSolicitudesInput
   permisos?: Prisma.permisosUncheckedCreateNestedOneWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedCreateNestedManyWithoutSolicitudesInput
 }
 
@@ -1010,6 +1031,7 @@ export type solicitudesCreateWithoutEvaluaciones_factibilidadInput = {
   actualizado_en?: Date | string
   permisos?: Prisma.permisosCreateNestedOneWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosCreateNestedManyWithoutSolicitudesInput
   comerciantes: Prisma.comerciantesCreateNestedOneWithoutSolicitudesInput
   espacios_temporales?: Prisma.espacios_temporalesCreateNestedOneWithoutSolicitudesInput
@@ -1035,6 +1057,7 @@ export type solicitudesUncheckedCreateWithoutEvaluaciones_factibilidadInput = {
   actualizado_en?: Date | string
   permisos?: Prisma.permisosUncheckedCreateNestedOneWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedCreateNestedManyWithoutSolicitudesInput
 }
 
@@ -1070,6 +1093,7 @@ export type solicitudesUpdateWithoutEvaluaciones_factibilidadInput = {
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permisos?: Prisma.permisosUpdateOneWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUpdateManyWithoutSolicitudesNestedInput
   comerciantes?: Prisma.comerciantesUpdateOneRequiredWithoutSolicitudesNestedInput
   espacios_temporales?: Prisma.espacios_temporalesUpdateOneWithoutSolicitudesNestedInput
@@ -1095,6 +1119,7 @@ export type solicitudesUncheckedUpdateWithoutEvaluaciones_factibilidadInput = {
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   permisos?: Prisma.permisosUncheckedUpdateOneWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedUpdateManyWithoutSolicitudesNestedInput
 }
 
@@ -1115,6 +1140,7 @@ export type solicitudesCreateWithoutGestoresInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadCreateNestedManyWithoutSolicitudesInput
   permisos?: Prisma.permisosCreateNestedOneWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosCreateNestedManyWithoutSolicitudesInput
   comerciantes: Prisma.comerciantesCreateNestedOneWithoutSolicitudesInput
   espacios_temporales?: Prisma.espacios_temporalesCreateNestedOneWithoutSolicitudesInput
@@ -1139,6 +1165,7 @@ export type solicitudesUncheckedCreateWithoutGestoresInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedCreateNestedManyWithoutSolicitudesInput
   permisos?: Prisma.permisosUncheckedCreateNestedOneWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedCreateNestedManyWithoutSolicitudesInput
 }
 
@@ -1184,6 +1211,7 @@ export type solicitudesCreateWithoutPermisosInput = {
   actualizado_en?: Date | string
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadCreateNestedManyWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosCreateNestedManyWithoutSolicitudesInput
   comerciantes: Prisma.comerciantesCreateNestedOneWithoutSolicitudesInput
   espacios_temporales?: Prisma.espacios_temporalesCreateNestedOneWithoutSolicitudesInput
@@ -1209,6 +1237,7 @@ export type solicitudesUncheckedCreateWithoutPermisosInput = {
   actualizado_en?: Date | string
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedCreateNestedManyWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedCreateNestedManyWithoutSolicitudesInput
 }
 
@@ -1244,6 +1273,7 @@ export type solicitudesUpdateWithoutPermisosInput = {
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUpdateManyWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUpdateManyWithoutSolicitudesNestedInput
   comerciantes?: Prisma.comerciantesUpdateOneRequiredWithoutSolicitudesNestedInput
   espacios_temporales?: Prisma.espacios_temporalesUpdateOneWithoutSolicitudesNestedInput
@@ -1269,6 +1299,7 @@ export type solicitudesUncheckedUpdateWithoutPermisosInput = {
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedUpdateManyWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedUpdateManyWithoutSolicitudesNestedInput
 }
 
@@ -1288,6 +1319,7 @@ export type solicitudesCreateWithoutSolicitud_documentosInput = {
   actualizado_en?: Date | string
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadCreateNestedManyWithoutSolicitudesInput
   permisos?: Prisma.permisosCreateNestedOneWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosCreateNestedManyWithoutSolicitudesInput
   comerciantes: Prisma.comerciantesCreateNestedOneWithoutSolicitudesInput
   espacios_temporales?: Prisma.espacios_temporalesCreateNestedOneWithoutSolicitudesInput
@@ -1313,6 +1345,7 @@ export type solicitudesUncheckedCreateWithoutSolicitud_documentosInput = {
   actualizado_en?: Date | string
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedCreateNestedManyWithoutSolicitudesInput
   permisos?: Prisma.permisosUncheckedCreateNestedOneWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutSolicitudesInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedCreateNestedManyWithoutSolicitudesInput
 }
 
@@ -1348,6 +1381,7 @@ export type solicitudesUpdateWithoutSolicitud_documentosInput = {
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUpdateManyWithoutSolicitudesNestedInput
   permisos?: Prisma.permisosUpdateOneWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUpdateManyWithoutSolicitudesNestedInput
   comerciantes?: Prisma.comerciantesUpdateOneRequiredWithoutSolicitudesNestedInput
   espacios_temporales?: Prisma.espacios_temporalesUpdateOneWithoutSolicitudesNestedInput
@@ -1373,6 +1407,7 @@ export type solicitudesUncheckedUpdateWithoutSolicitud_documentosInput = {
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedUpdateManyWithoutSolicitudesNestedInput
   permisos?: Prisma.permisosUncheckedUpdateOneWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedUpdateManyWithoutSolicitudesNestedInput
 }
 
@@ -1393,6 +1428,7 @@ export type solicitudesCreateWithoutSolicitud_productosInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadCreateNestedManyWithoutSolicitudesInput
   permisos?: Prisma.permisosCreateNestedOneWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialCreateNestedManyWithoutSolicitudesInput
   comerciantes: Prisma.comerciantesCreateNestedOneWithoutSolicitudesInput
   espacios_temporales?: Prisma.espacios_temporalesCreateNestedOneWithoutSolicitudesInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutSolicitudesInput
@@ -1418,6 +1454,7 @@ export type solicitudesUncheckedCreateWithoutSolicitud_productosInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedCreateNestedManyWithoutSolicitudesInput
   permisos?: Prisma.permisosUncheckedCreateNestedOneWithoutSolicitudesInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedCreateNestedManyWithoutSolicitudesInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedCreateNestedManyWithoutSolicitudesInput
 }
 
 export type solicitudesCreateOrConnectWithoutSolicitud_productosInput = {
@@ -1453,6 +1490,7 @@ export type solicitudesUpdateWithoutSolicitud_productosInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUpdateManyWithoutSolicitudesNestedInput
   permisos?: Prisma.permisosUpdateOneWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutSolicitudesNestedInput
   comerciantes?: Prisma.comerciantesUpdateOneRequiredWithoutSolicitudesNestedInput
   espacios_temporales?: Prisma.espacios_temporalesUpdateOneWithoutSolicitudesNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutSolicitudesNestedInput
@@ -1478,6 +1516,115 @@ export type solicitudesUncheckedUpdateWithoutSolicitud_productosInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedUpdateManyWithoutSolicitudesNestedInput
   permisos?: Prisma.permisosUncheckedUpdateOneWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutSolicitudesNestedInput
+}
+
+export type solicitudesCreateWithoutSolicitud_historialInput = {
+  id?: bigint | number
+  numero_radicado?: string
+  actividad: string
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  hora_inicio: Date | string
+  hora_fin: Date | string
+  estado?: $Enums.estado_solicitud
+  motivo_rechazo?: string | null
+  radicada_en?: Date | string | null
+  decidida_en?: Date | string | null
+  creado_en?: Date | string
+  actualizado_en?: Date | string
+  evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadCreateNestedManyWithoutSolicitudesInput
+  permisos?: Prisma.permisosCreateNestedOneWithoutSolicitudesInput
+  solicitud_documentos?: Prisma.solicitud_documentosCreateNestedManyWithoutSolicitudesInput
+  solicitud_productos?: Prisma.solicitud_productosCreateNestedManyWithoutSolicitudesInput
+  comerciantes: Prisma.comerciantesCreateNestedOneWithoutSolicitudesInput
+  espacios_temporales?: Prisma.espacios_temporalesCreateNestedOneWithoutSolicitudesInput
+  gestores?: Prisma.gestoresCreateNestedOneWithoutSolicitudesInput
+}
+
+export type solicitudesUncheckedCreateWithoutSolicitud_historialInput = {
+  id?: bigint | number
+  numero_radicado?: string
+  comerciante_id: bigint | number
+  espacio_id?: bigint | number | null
+  actividad: string
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  hora_inicio: Date | string
+  hora_fin: Date | string
+  estado?: $Enums.estado_solicitud
+  revisor_id?: bigint | number | null
+  motivo_rechazo?: string | null
+  radicada_en?: Date | string | null
+  decidida_en?: Date | string | null
+  creado_en?: Date | string
+  actualizado_en?: Date | string
+  evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedCreateNestedManyWithoutSolicitudesInput
+  permisos?: Prisma.permisosUncheckedCreateNestedOneWithoutSolicitudesInput
+  solicitud_documentos?: Prisma.solicitud_documentosUncheckedCreateNestedManyWithoutSolicitudesInput
+  solicitud_productos?: Prisma.solicitud_productosUncheckedCreateNestedManyWithoutSolicitudesInput
+}
+
+export type solicitudesCreateOrConnectWithoutSolicitud_historialInput = {
+  where: Prisma.solicitudesWhereUniqueInput
+  create: Prisma.XOR<Prisma.solicitudesCreateWithoutSolicitud_historialInput, Prisma.solicitudesUncheckedCreateWithoutSolicitud_historialInput>
+}
+
+export type solicitudesUpsertWithoutSolicitud_historialInput = {
+  update: Prisma.XOR<Prisma.solicitudesUpdateWithoutSolicitud_historialInput, Prisma.solicitudesUncheckedUpdateWithoutSolicitud_historialInput>
+  create: Prisma.XOR<Prisma.solicitudesCreateWithoutSolicitud_historialInput, Prisma.solicitudesUncheckedCreateWithoutSolicitud_historialInput>
+  where?: Prisma.solicitudesWhereInput
+}
+
+export type solicitudesUpdateToOneWithWhereWithoutSolicitud_historialInput = {
+  where?: Prisma.solicitudesWhereInput
+  data: Prisma.XOR<Prisma.solicitudesUpdateWithoutSolicitud_historialInput, Prisma.solicitudesUncheckedUpdateWithoutSolicitud_historialInput>
+}
+
+export type solicitudesUpdateWithoutSolicitud_historialInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  numero_radicado?: Prisma.StringFieldUpdateOperationsInput | string
+  actividad?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  hora_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  hora_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.Enumestado_solicitudFieldUpdateOperationsInput | $Enums.estado_solicitud
+  motivo_rechazo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  radicada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  decidida_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUpdateManyWithoutSolicitudesNestedInput
+  permisos?: Prisma.permisosUpdateOneWithoutSolicitudesNestedInput
+  solicitud_documentos?: Prisma.solicitud_documentosUpdateManyWithoutSolicitudesNestedInput
+  solicitud_productos?: Prisma.solicitud_productosUpdateManyWithoutSolicitudesNestedInput
+  comerciantes?: Prisma.comerciantesUpdateOneRequiredWithoutSolicitudesNestedInput
+  espacios_temporales?: Prisma.espacios_temporalesUpdateOneWithoutSolicitudesNestedInput
+  gestores?: Prisma.gestoresUpdateOneWithoutSolicitudesNestedInput
+}
+
+export type solicitudesUncheckedUpdateWithoutSolicitud_historialInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  numero_radicado?: Prisma.StringFieldUpdateOperationsInput | string
+  comerciante_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  espacio_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actividad?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  hora_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  hora_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.Enumestado_solicitudFieldUpdateOperationsInput | $Enums.estado_solicitud
+  revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  motivo_rechazo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  radicada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  decidida_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedUpdateManyWithoutSolicitudesNestedInput
+  permisos?: Prisma.permisosUncheckedUpdateOneWithoutSolicitudesNestedInput
+  solicitud_documentos?: Prisma.solicitud_documentosUncheckedUpdateManyWithoutSolicitudesNestedInput
+  solicitud_productos?: Prisma.solicitud_productosUncheckedUpdateManyWithoutSolicitudesNestedInput
 }
 
 export type solicitudesCreateManyComerciantesInput = {
@@ -1515,6 +1662,7 @@ export type solicitudesUpdateWithoutComerciantesInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUpdateManyWithoutSolicitudesNestedInput
   permisos?: Prisma.permisosUpdateOneWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUpdateManyWithoutSolicitudesNestedInput
   espacios_temporales?: Prisma.espacios_temporalesUpdateOneWithoutSolicitudesNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutSolicitudesNestedInput
@@ -1539,6 +1687,7 @@ export type solicitudesUncheckedUpdateWithoutComerciantesInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedUpdateManyWithoutSolicitudesNestedInput
   permisos?: Prisma.permisosUncheckedUpdateOneWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedUpdateManyWithoutSolicitudesNestedInput
 }
 
@@ -1577,6 +1726,7 @@ export type solicitudesUpdateWithoutEspacios_temporalesInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUpdateManyWithoutSolicitudesNestedInput
   permisos?: Prisma.permisosUpdateOneWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUpdateManyWithoutSolicitudesNestedInput
   comerciantes?: Prisma.comerciantesUpdateOneRequiredWithoutSolicitudesNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutSolicitudesNestedInput
@@ -1601,6 +1751,7 @@ export type solicitudesUncheckedUpdateWithoutEspacios_temporalesInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedUpdateManyWithoutSolicitudesNestedInput
   permisos?: Prisma.permisosUncheckedUpdateOneWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedUpdateManyWithoutSolicitudesNestedInput
 }
 
@@ -1675,6 +1826,7 @@ export type solicitudesUpdateWithoutGestoresInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUpdateManyWithoutSolicitudesNestedInput
   permisos?: Prisma.permisosUpdateOneWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUpdateManyWithoutSolicitudesNestedInput
   comerciantes?: Prisma.comerciantesUpdateOneRequiredWithoutSolicitudesNestedInput
   espacios_temporales?: Prisma.espacios_temporalesUpdateOneWithoutSolicitudesNestedInput
@@ -1699,6 +1851,7 @@ export type solicitudesUncheckedUpdateWithoutGestoresInput = {
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedUpdateManyWithoutSolicitudesNestedInput
   permisos?: Prisma.permisosUncheckedUpdateOneWithoutSolicitudesNestedInput
   solicitud_documentos?: Prisma.solicitud_documentosUncheckedUpdateManyWithoutSolicitudesNestedInput
+  solicitud_historial?: Prisma.solicitud_historialUncheckedUpdateManyWithoutSolicitudesNestedInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedUpdateManyWithoutSolicitudesNestedInput
 }
 
@@ -1728,12 +1881,14 @@ export type solicitudesUncheckedUpdateManyWithoutGestoresInput = {
 export type SolicitudesCountOutputType = {
   evaluaciones_factibilidad: number
   solicitud_documentos: number
+  solicitud_historial: number
   solicitud_productos: number
 }
 
 export type SolicitudesCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   evaluaciones_factibilidad?: boolean | SolicitudesCountOutputTypeCountEvaluaciones_factibilidadArgs
   solicitud_documentos?: boolean | SolicitudesCountOutputTypeCountSolicitud_documentosArgs
+  solicitud_historial?: boolean | SolicitudesCountOutputTypeCountSolicitud_historialArgs
   solicitud_productos?: boolean | SolicitudesCountOutputTypeCountSolicitud_productosArgs
 }
 
@@ -1764,6 +1919,13 @@ export type SolicitudesCountOutputTypeCountSolicitud_documentosArgs<ExtArgs exte
 /**
  * SolicitudesCountOutputType without action
  */
+export type SolicitudesCountOutputTypeCountSolicitud_historialArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.solicitud_historialWhereInput
+}
+
+/**
+ * SolicitudesCountOutputType without action
+ */
 export type SolicitudesCountOutputTypeCountSolicitud_productosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.solicitud_productosWhereInput
 }
@@ -1789,6 +1951,7 @@ export type solicitudesSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   evaluaciones_factibilidad?: boolean | Prisma.solicitudes$evaluaciones_factibilidadArgs<ExtArgs>
   permisos?: boolean | Prisma.solicitudes$permisosArgs<ExtArgs>
   solicitud_documentos?: boolean | Prisma.solicitudes$solicitud_documentosArgs<ExtArgs>
+  solicitud_historial?: boolean | Prisma.solicitudes$solicitud_historialArgs<ExtArgs>
   solicitud_productos?: boolean | Prisma.solicitudes$solicitud_productosArgs<ExtArgs>
   comerciantes?: boolean | Prisma.comerciantesDefaultArgs<ExtArgs>
   espacios_temporales?: boolean | Prisma.solicitudes$espacios_temporalesArgs<ExtArgs>
@@ -1864,6 +2027,7 @@ export type solicitudesInclude<ExtArgs extends runtime.Types.Extensions.Internal
   evaluaciones_factibilidad?: boolean | Prisma.solicitudes$evaluaciones_factibilidadArgs<ExtArgs>
   permisos?: boolean | Prisma.solicitudes$permisosArgs<ExtArgs>
   solicitud_documentos?: boolean | Prisma.solicitudes$solicitud_documentosArgs<ExtArgs>
+  solicitud_historial?: boolean | Prisma.solicitudes$solicitud_historialArgs<ExtArgs>
   solicitud_productos?: boolean | Prisma.solicitudes$solicitud_productosArgs<ExtArgs>
   comerciantes?: boolean | Prisma.comerciantesDefaultArgs<ExtArgs>
   espacios_temporales?: boolean | Prisma.solicitudes$espacios_temporalesArgs<ExtArgs>
@@ -1887,6 +2051,7 @@ export type $solicitudesPayload<ExtArgs extends runtime.Types.Extensions.Interna
     evaluaciones_factibilidad: Prisma.$evaluaciones_factibilidadPayload<ExtArgs>[]
     permisos: Prisma.$permisosPayload<ExtArgs> | null
     solicitud_documentos: Prisma.$solicitud_documentosPayload<ExtArgs>[]
+    solicitud_historial: Prisma.$solicitud_historialPayload<ExtArgs>[]
     solicitud_productos: Prisma.$solicitud_productosPayload<ExtArgs>[]
     comerciantes: Prisma.$comerciantesPayload<ExtArgs>
     espacios_temporales: Prisma.$espacios_temporalesPayload<ExtArgs> | null
@@ -2306,6 +2471,7 @@ export interface Prisma__solicitudesClient<T, Null = never, ExtArgs extends runt
   evaluaciones_factibilidad<T extends Prisma.solicitudes$evaluaciones_factibilidadArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.solicitudes$evaluaciones_factibilidadArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$evaluaciones_factibilidadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   permisos<T extends Prisma.solicitudes$permisosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.solicitudes$permisosArgs<ExtArgs>>): Prisma.Prisma__permisosClient<runtime.Types.Result.GetResult<Prisma.$permisosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   solicitud_documentos<T extends Prisma.solicitudes$solicitud_documentosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.solicitudes$solicitud_documentosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$solicitud_documentosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  solicitud_historial<T extends Prisma.solicitudes$solicitud_historialArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.solicitudes$solicitud_historialArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$solicitud_historialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   solicitud_productos<T extends Prisma.solicitudes$solicitud_productosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.solicitudes$solicitud_productosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$solicitud_productosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   comerciantes<T extends Prisma.comerciantesDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.comerciantesDefaultArgs<ExtArgs>>): Prisma.Prisma__comerciantesClient<runtime.Types.Result.GetResult<Prisma.$comerciantesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   espacios_temporales<T extends Prisma.solicitudes$espacios_temporalesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.solicitudes$espacios_temporalesArgs<ExtArgs>>): Prisma.Prisma__espacios_temporalesClient<runtime.Types.Result.GetResult<Prisma.$espacios_temporalesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -2820,6 +2986,30 @@ export type solicitudes$solicitud_documentosArgs<ExtArgs extends runtime.Types.E
   take?: number
   skip?: number
   distinct?: Prisma.Solicitud_documentosScalarFieldEnum | Prisma.Solicitud_documentosScalarFieldEnum[]
+}
+
+/**
+ * solicitudes.solicitud_historial
+ */
+export type solicitudes$solicitud_historialArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the solicitud_historial
+   */
+  select?: Prisma.solicitud_historialSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the solicitud_historial
+   */
+  omit?: Prisma.solicitud_historialOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.solicitud_historialInclude<ExtArgs> | null
+  where?: Prisma.solicitud_historialWhereInput
+  orderBy?: Prisma.solicitud_historialOrderByWithRelationInput | Prisma.solicitud_historialOrderByWithRelationInput[]
+  cursor?: Prisma.solicitud_historialWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.Solicitud_historialScalarFieldEnum | Prisma.Solicitud_historialScalarFieldEnum[]
 }
 
 /**

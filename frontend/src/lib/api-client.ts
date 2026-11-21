@@ -4,6 +4,9 @@ import type {
   ConfirmacionImportacion,
   BloqueoEspacioGestor,
   CuerpoError,
+  DatosRadicacionSolicitud,
+  DisponibilidadSolicitud,
+  DocumentoAdjuntoRadicacion,
   EspacioDetalle,
   EspacioGestorDetalle,
   FiltrosAuditoria,
@@ -11,6 +14,7 @@ import type {
   FiltrosEspacios,
   FiltrosEspaciosGestor,
   FiltrosNotificaciones,
+  FiltrosSolicitudes,
   FiltrosHistorialZona,
   FiltrosModulos,
   FiltrosOrganizaciones,
@@ -25,6 +29,7 @@ import type {
   ListarModulosResponse,
   ListarNotificacionesResponse,
   ListarProductosResponse,
+  ListarSolicitudesResponse,
   ListarZonasResponse,
   ModuloDetalle,
   ModuloHistorial,
@@ -47,11 +52,14 @@ import type {
   RespuestaEstadoZona,
   RespuestaLogin,
   RespuestaMensaje,
+  RespuestaRadicacion,
+  RequisitosSolicitudResponse,
   RespuestaRegistroComerciante,
   RespuestaRegistroOrganizador,
   RespuestaZonaContenedora,
   SolicitudActivacion,
   SolicitudActualizarPerfil,
+  SolicitudTemporalDetalle,
   SolicitudActualizarPerfilGestor,
   SolicitudCambioEstadoUsuario,
   SolicitudCambiarPassword,
@@ -235,11 +243,12 @@ interface RespuestaArchivo {
 async function peticionArchivo(
   ruta: string,
   reintento = false,
+  accept = "text/csv",
 ): Promise<RespuestaArchivo> {
   const token = obtenerAccessToken();
   const habiaSesion = token !== null || obtenerRefreshToken() !== null;
 
-  const cabeceras: Record<string, string> = { Accept: "text/csv" };
+  const cabeceras: Record<string, string> = { Accept: accept };
   if (token) cabeceras.Authorization = `Bearer ${token}`;
 
   let respuesta: Response;
@@ -267,7 +276,7 @@ async function peticionArchivo(
   if (respuesta.status === 401 && habiaSesion) {
     if (!reintento) {
       const accessToken = await rotarSesion();
-      if (accessToken) return peticionArchivo(ruta, true);
+      if (accessToken) return peticionArchivo(ruta, true, accept);
     }
     limpiarSesion();
     redirigirALogin();
@@ -1105,4 +1114,88 @@ export function descargarReporteImportacion(
   token: string,
 ): Promise<RespuestaArchivo> {
   return peticionArchivo(`/importaciones/${token}/reporte`);
+}
+
+/* ------------------------------------------------------------------ */
+/* Solicitudes de ubicación temporal (HU-16)                           */
+/* ------------------------------------------------------------------ */
+
+/** Lista las solicitudes radicadas del comerciante autenticado. */
+export function listarMisSolicitudes(
+  filtros: FiltrosSolicitudes = {},
+): Promise<ListarSolicitudesResponse> {
+  return peticion<ListarSolicitudesResponse>(
+    conParametros("/solicitudes/mias", {
+      estado: filtros.estado,
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
+}
+
+/** Devuelve el detalle de una solicitud propia, con documentos e historial. */
+export function obtenerMiSolicitud(
+  id: string,
+): Promise<SolicitudTemporalDetalle> {
+  return peticion<SolicitudTemporalDetalle>(`/solicitudes/${id}`);
+}
+
+/** Requisitos documentales globales y los específicos de una actividad. */
+export function obtenerRequisitosSolicitud(
+  actividad?: string | null,
+): Promise<RequisitosSolicitudResponse> {
+  return peticion<RequisitosSolicitudResponse>(
+    conParametros("/solicitudes/requisitos", { actividad }),
+  );
+}
+
+/** Consulta la disponibilidad de un espacio para el rango solicitado. */
+export function consultarDisponibilidadSolicitud(datos: {
+  espacioId: string;
+  fechaInicio: string;
+  fechaFin: string;
+  horaInicio: string;
+  horaFin: string;
+}): Promise<DisponibilidadSolicitud> {
+  return peticion<DisponibilidadSolicitud>(
+    conParametros("/solicitudes/disponibilidad", datos),
+  );
+}
+
+/** Radica una solicitud completa con sus documentos en una sola petición. */
+export function radicarSolicitud(
+  datos: DatosRadicacionSolicitud,
+  documentos: DocumentoAdjuntoRadicacion[] = [],
+): Promise<RespuestaRadicacion> {
+  const formulario = new FormData();
+  formulario.append("datos", JSON.stringify(datos));
+  formulario.append(
+    "documentosMeta",
+    JSON.stringify(
+      documentos.map((documento) => ({
+        requisitoId: documento.requisitoId,
+        nombreOriginal: documento.archivo.name,
+      })),
+    ),
+  );
+  for (const documento of documentos) {
+    formulario.append("documentos", documento.archivo, documento.archivo.name);
+  }
+
+  return peticion<RespuestaRadicacion>("/solicitudes", {
+    method: "POST",
+    formulario,
+  });
+}
+
+/** Descarga un documento de una solicitud propia. */
+export function descargarDocumentoSolicitud(
+  solicitudId: string,
+  documentoId: string,
+): Promise<RespuestaArchivo> {
+  return peticionArchivo(
+    `/solicitudes/${solicitudId}/documentos/${documentoId}/archivo`,
+    false,
+    "application/pdf,image/jpeg,image/png,application/octet-stream",
+  );
 }

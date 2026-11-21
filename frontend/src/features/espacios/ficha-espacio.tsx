@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
@@ -235,10 +236,18 @@ export function FichaEspacio({
             ) : null}
 
             {espacio.disponible ? (
-              <p className="text-xs leading-relaxed text-tenue">
-                La solicitud formal de este espacio estará disponible en el
-                Sprint 3.
-              </p>
+              <div className="flex flex-col gap-2">
+                <Link
+                  href={`/comerciante/solicitudes/nueva?espacioId=${encodeURIComponent(espacio.id)}`}
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
+                >
+                  Solicitar este espacio
+                </Link>
+                <p className="text-xs leading-relaxed text-tenue">
+                  Podrás elegir fechas, horario, productos y adjuntar los
+                  documentos exigidos.
+                </p>
+              </div>
             ) : (
               <p className="text-xs leading-relaxed text-tenue">
                 Consulta otro espacio disponible para continuar.

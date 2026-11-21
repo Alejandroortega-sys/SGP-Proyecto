@@ -4,6 +4,7 @@ import type {
   SesionPrimerAcceso,
   UsuarioSesion,
 } from "@/types/api";
+import { limpiarTodosLosBorradores } from "./borrador-solicitud";
 
 const CLAVE_ACCESS_TOKEN = "sgp.accessToken";
 const CLAVE_REFRESH_TOKEN = "sgp.refreshToken";
@@ -57,6 +58,7 @@ export function limpiarSesion(): void {
   borrar(CLAVE_ACCESS_TOKEN);
   borrar(CLAVE_REFRESH_TOKEN);
   borrar(CLAVE_USUARIO);
+  limpiarTodosLosBorradores();
 }
 
 export function guardarCorreoPendiente(correo: string): void {

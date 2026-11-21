@@ -51,6 +51,7 @@ lerna-debug.log*
 
 # Fotos subidas por el censo de módulos (HU-13)
 /uploads
+/uploads-privados
 
 # Runtime data
 pids

@@ -3,6 +3,27 @@ import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
 import type { perfil_gestor } from '../generated/prisma/client';
 
+/** Datos mínimos para la confirmación de una solicitud radicada. */
+export interface DatosConfirmacionRadicacion {
+  numeroRadicado: string;
+  espacio: string;
+  actividad: string;
+  productos: string[];
+  fechaInicio: string;
+  fechaFin: string;
+  horaInicio: string;
+  horaFin: string;
+  documentos: string[];
+}
+
+/** Convierte una fecha `YYYY-MM-DD` a `DD/MM/YYYY`. */
+function fechaCorta(fecha: string): string {
+  const partes = fecha.slice(0, 10).split('-');
+  if (partes.length !== 3) return fecha;
+  const [anio, mes, dia] = partes;
+  return `${dia}/${mes}/${anio}`;
+}
+
 /**
  * Servicio de envío de correos vía SMTP (nodemailer).
  *
@@ -331,6 +352,70 @@ export class CorreoService {
       html,
       `SMTP no configurado: aviso de cambio de contraseña de ${destino} ` +
         '(el cambio ya quedó aplicado; esto es solo el aviso por correo)',
+    );
+  }
+
+  /**
+   * Envía la confirmación de una solicitud de ubicación temporal radicada.
+   *
+   * @param destino Correo del comerciante autenticado.
+   * @param nombre Nombre del comerciante.
+   * @param datos Radicado, espacio, actividad, productos, fechas y documentos.
+   * @throws Error si no hay SMTP en producción o si el envío falla.
+   */
+  async enviarConfirmacionRadicacion(
+    destino: string,
+    nombre: string,
+    datos: DatosConfirmacionRadicacion,
+  ): Promise<void> {
+    const asunto = `Solicitud radicada ${datos.numeroRadicado} — SGP Tuluá`;
+    const rango = `del ${fechaCorta(datos.fechaInicio)} al ${fechaCorta(datos.fechaFin)}`;
+    const productos =
+      datos.productos.length > 0
+        ? datos.productos.join(', ')
+        : 'Sin productos registrados';
+    const documentos =
+      datos.documentos.length > 0
+        ? datos.documentos.join(', ')
+        : 'Sin documentos adjuntos';
+
+    const texto =
+      `Hola ${nombre},\n\n` +
+      `Tu solicitud de uso temporal del espacio público quedó radicada.\n\n` +
+      `Número de radicado: ${datos.numeroRadicado}\n` +
+      `Espacio: ${datos.espacio}\n` +
+      `Actividad: ${datos.actividad}\n` +
+      `Productos: ${productos}\n` +
+      `Fechas: ${rango}\n` +
+      `Horario: ${datos.horaInicio} a ${datos.horaFin}\n` +
+      `Documentos adjuntos: ${documentos}\n\n` +
+      `El gestor municipal revisará tu solicitud. Puedes consultar el estado ` +
+      `en la sección «Mis solicitudes» de la plataforma.\n\n` +
+      `Secretaría de Gobierno — Municipio de Tuluá`;
+
+    const html =
+      `<p>Hola <strong>${nombre}</strong>,</p>` +
+      `<p>Tu solicitud de uso temporal del espacio público quedó radicada.</p>` +
+      `<p style="font-size:20px;font-weight:bold;">${datos.numeroRadicado}</p>` +
+      `<ul>` +
+      `<li><strong>Espacio:</strong> ${datos.espacio}</li>` +
+      `<li><strong>Actividad:</strong> ${datos.actividad}</li>` +
+      `<li><strong>Productos:</strong> ${productos}</li>` +
+      `<li><strong>Fechas:</strong> ${rango}</li>` +
+      `<li><strong>Horario:</strong> ${datos.horaInicio} a ${datos.horaFin}</li>` +
+      `<li><strong>Documentos adjuntos:</strong> ${documentos}</li>` +
+      `</ul>` +
+      `<p>El gestor municipal revisará tu solicitud. Puedes consultar el estado ` +
+      `en la sección «Mis solicitudes» de la plataforma.</p>` +
+      `<p>Secretaría de Gobierno — Municipio de Tuluá</p>`;
+
+    await this.enviar(
+      destino,
+      asunto,
+      texto,
+      html,
+      `SMTP no configurado: solicitud ${datos.numeroRadicado} radicada para ` +
+        `${destino} (${datos.espacio}, ${rango}, ${datos.horaInicio}-${datos.horaFin})`,
     );
   }
 }
