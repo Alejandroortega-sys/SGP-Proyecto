@@ -18,6 +18,8 @@ Este módulo permite al **comerciante autenticado** radicar una solicitud de uso
 | `GET` | `/solicitudes/requisitos` | Comerciante | Requisitos documentales de la actividad |
 | `GET` | `/solicitudes/disponibilidad` | Comerciante | Verifica fechas, horario, ocupación y duplicados |
 | `POST` | `/solicitudes` | Comerciante | Radica la solicitud con sus documentos |
+| `GET` | `/solicitudes/:id/requisitos` | Comerciante dueño | Requisitos, estado, versión vigente e historial de versiones |
+| `POST` | `/solicitudes/:id/documentos` | Comerciante dueño | Carga o reemplaza un documento de un requisito |
 | `GET` | `/solicitudes/:id/documentos/:documentoId/archivo` | Comerciante dueño / Gestor | Descarga autenticada de un documento |
 
 ---
@@ -102,9 +104,30 @@ Seed inicial:
 
 La tabla `solicitud_documentos` conserva `nombre_original`, `mime_type`, `tamano_bytes` y `requisito_id`.
 
+### 3.3 Carga, reemplazo y versionado (HU-17)
+
+- El comerciante dueño puede cargar o reemplazar documentos mientras la solicitud esté en `radicada` o `devuelta`.
+- Cada reemplazo crea una fila nueva con `reemplaza_a` apuntando a la versión anterior. La fila anterior y su archivo se conservan.
+- Solo puede existir una versión vigente por requisito. La versión vigente es la que no fue reemplazada por otra.
+- El estado visible del requisito se calcula así:
+
+| Situación | Estado |
+|---|---|
+| Sin documento vigente | `faltante` |
+| Documento vigente `pendiente` | `cargado` |
+| Documento vigente `validado` | `cumple` |
+| Documento vigente `observado` | `no_cumple` |
+
+- En estado `devuelta`, la solicitud vuelve a `en_revision` cuando **todos** los requisitos que tenían un documento `observado` ya tienen una versión nueva. La transición registra historial y notificación en la plataforma (`solicitud_en_revision`).
+- Si la solicitud estaba en `devuelta` pero no había documentos observados, se mantiene en ese estado.
+- Los documentos vigentes sin `requisito_id` o que no pertenecen al catálogo actual se devuelven en `otrosDocumentos` para no ocultar información existente.
+- La transacción bloquea la fila de la solicitud (`FOR UPDATE`) para impedir dos reemplazos simultáneos.
+
 ---
 
-## 4. Contrato de radicación
+## 4. Contratos
+
+### 4.1 Radicación
 
 `POST /solicitudes` usa `multipart/form-data`:
 
@@ -152,6 +175,75 @@ Errores principales:
 | `409` | Espacio no disponible, bloqueado, ocupado o solicitud duplicada |
 | `413` | Archivo que supera el límite de Multer |
 
+### 4.2 Carga y reemplazo de documentos
+
+**`GET /solicitudes/:id/requisitos`** devuelve:
+
+```json
+{
+  "solicitudId": "12",
+  "numeroRadicado": "SOL-2026-00012",
+  "estado": "devuelta",
+  "actividad": "Artesanías",
+  "puedeCargar": true,
+  "motivoBloqueo": null,
+  "faltantes": ["RUT"],
+  "requisitos": [
+    {
+      "id": "1",
+      "nombre": "Documento de identidad",
+      "descripcion": "Copia legible...",
+      "obligatorio": true,
+      "tipoActividad": null,
+      "orden": 10,
+      "estado": "cumple",
+      "documentoActual": {
+        "id": "8",
+        "numeroVersion": 2,
+        "esActual": true,
+        "reemplazaA": "5",
+        "estado": "validado",
+        "url": "/solicitudes/12/documentos/8/archivo"
+      },
+      "versiones": []
+    }
+  ],
+  "otrosDocumentos": []
+}
+```
+
+**`POST /solicitudes/:id/documentos`** usa `multipart/form-data`:
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `requisitoId` | texto | Requisito del catálogo |
+| `archivo` | archivo | Un PDF/JPG/PNG de máximo 5 MB |
+
+Respuesta `201`:
+
+```json
+{
+  "mensaje": "Documento reemplazado correctamente.",
+  "estadoSolicitud": "en_revision",
+  "volvioARevision": true,
+  "requisito": { "...": "estado actualizado del requisito" },
+  "faltantes": []
+}
+```
+
+Errores principales:
+
+| HTTP | Causa |
+|---|---|
+| `400` | Archivo vacío o inválido, requisito inexistente o de otra actividad |
+| `401` | Sin token o sesión revocada |
+| `403` | Rol distinto de comerciante |
+| `404` | Solicitud ajena o inexistente |
+| `409` | Estado que no admite cambios (`en_revision`, `aprobada`, etc.) |
+| `413` | Archivo que supera el límite de Multer |
+
+La descarga y la vista previa usan el endpoint autenticado existente. El archivo nunca se sirve como recurso estático público.
+
 ---
 
 ## 5. Interfaz del comerciante
@@ -172,6 +264,16 @@ Errores principales:
 3. **Documentos:** requisitos obligatorios y opcionales con validación de tipo y tamaño.
 4. **Horario:** fechas y horas con verificación de disponibilidad en el servidor.
 5. **Resumen:** revisión final y radicación.
+
+### Detalle y corrección de documentos
+
+- El detalle muestra cada requisito con su estado (`Faltante`, `Cargado`, `Cumple`, `No cumple`).
+- El comerciante puede ver la vista previa y descargar la versión vigente.
+- Las versiones anteriores quedan en un bloque desplegable con su número de versión y fecha.
+- La carga usa un selector de archivo, validación en el cliente, vista previa local y una barra de progreso real por bytes.
+- Si la operación falla, el archivo seleccionado se conserva para reintentar.
+- En estados no editables se oculta la acción de carga y se muestra el motivo.
+- Los documentos antiguos sin requisito asociado se muestran aparte para no ocultarlos.
 
 ### Borrador local
 
@@ -200,7 +302,7 @@ pnpm test:e2e -- --runInBand test/solicitudes.e2e-spec.ts
 # Frontend
 cd frontend
 pnpm test
-pnpm test:e2e e2e/solicitudes.spec.ts
+pnpm test:e2e e2e/solicitudes.spec.ts e2e/solicitudes-documentos.spec.ts
 ```
 
 Cubren:
@@ -210,8 +312,10 @@ Cubren:
 - Radicación válida, faltantes de documentos, horario inválido, fechas pasadas y duplicados.
 - Listado, detalle, requisitos y disponibilidad.
 - Roles: comerciante permitido; gestor y anónimo rechazados en la radicación.
+- Carga, reemplazo y versionado de documentos; transición `devuelta → en_revision`.
+- Límites de tipo y tamaño, requisitos faltantes y acceso no autorizado a archivos.
 - Borrador local: guardar, recuperar y descartar.
-- Flujo Playwright completo con documentos reales y confirmación.
+- Flujo Playwright completo con documentos reales, progreso, vista previa y versiones.
 
 ---
 
@@ -219,16 +323,19 @@ Cubren:
 
 ```powershell
 psql -U postgres -d "sgp_tulua" -f dataBase/09_solicitudes_hu16.sql
+psql -U postgres -d "sgp_tulua" -f dataBase/10_solicitudes_hu17.sql
 pnpm exec prisma generate
 ```
 
-La migración es idempotente y agrega:
+Las migraciones son idempotentes. La 09 agrega:
 
 - `requisitos_documentales` y su seed.
 - Metadatos de documentos en `solicitud_documentos`.
 - `solicitud_historial` y su historial inicial.
 - `fn_numero_radicado_solicitud()` y sincronización de la secuencia.
 - Índices de duplicados, historial y documentos.
+
+La 10 agrega el índice de versiones documentales. La columna `reemplaza_a` ya existe desde `01_creacion_bd.sql`.
 
 ---
 
@@ -241,4 +348,7 @@ La migración es idempotente y agrega:
 5. Completar actividad, productos, documentos y un horario dentro de `08:00–18:00`.
 6. Verificar la disponibilidad y radicar.
 7. Comprobar el número de radicado, el correo en el log (sin SMTP) y la notificación en la plataforma.
-8. Repetir la misma solicitud para comprobar el rechazo por duplicado.
+8. Abrir el detalle, comprobar el estado de cada requisito y usar **Vista previa**.
+9. Reemplazar un documento con un PDF y comprobar la barra de progreso y el bloque **Versiones anteriores**.
+10. Intentar subir un `.txt` o un archivo de más de 5 MB y comprobar el mensaje de rechazo.
+11. Repetir la misma solicitud para comprobar el rechazo por duplicado.

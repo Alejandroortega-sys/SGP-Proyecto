@@ -1,20 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
-import { Boton } from "@/components/ui/boton";
 import { Cargando } from "@/components/ui/estado-vacio";
 import { useConsultaApi } from "@/hooks/use-consulta-api";
-import {
-  comoApiError,
-  descargarDocumentoSolicitud,
-  obtenerMiSolicitud,
-} from "@/lib/api-client";
+import { obtenerMiSolicitud } from "@/lib/api-client";
 import { formatearFecha, formatearFechaHora, nombreCompleto } from "@/lib/formato";
 import { formatearRangoFechas } from "@/features/espacios/estilos-espacio";
-import type { DocumentoSolicitud } from "@/types/api";
+import { DocumentosSolicitud } from "./documentos-solicitud";
 import {
   ETIQUETAS_ESTADO_SOLICITUD,
   DESCRIPCIONES_ESTADO_SOLICITUD,
@@ -25,44 +19,16 @@ interface DetalleSolicitudProps {
   id: string;
 }
 
-function formatearDocumento(documento: DocumentoSolicitud): string {
-  if (documento.nombreOriginal) return documento.nombreOriginal;
-  return documento.tipoDocumento;
-}
-
 /** Detalle de una solicitud radicada, con documentos e historial. */
 export function DetalleSolicitud({ id }: DetalleSolicitudProps) {
   const { datos: solicitud, cargando, error, recargar } = useConsultaApi(
     () => obtenerMiSolicitud(id),
     [id],
   );
-  const [errorDescarga, setErrorDescarga] = useState<string | null>(null);
-  const [descargando, setDescargando] = useState<string | null>(null);
 
-  async function descargar(documento: DocumentoSolicitud): Promise<void> {
-    setErrorDescarga(null);
-    setDescargando(documento.id);
-    try {
-      const { blob, nombreArchivo } = await descargarDocumentoSolicitud(
-        id,
-        documento.id,
-      );
-      const url = URL.createObjectURL(blob);
-      const enlace = document.createElement("a");
-      enlace.href = url;
-      enlace.download = nombreArchivo || formatearDocumento(documento);
-      document.body.appendChild(enlace);
-      enlace.click();
-      enlace.remove();
-      URL.revokeObjectURL(url);
-    } catch (fallo) {
-      setErrorDescarga(comoApiError(fallo).mensaje);
-    } finally {
-      setDescargando(null);
-    }
+  if (cargando && !solicitud) {
+    return <Cargando texto="Cargando el detalle de la solicitud…" />;
   }
-
-  if (cargando) return <Cargando texto="Cargando el detalle de la solicitud…" />;
   if (error) return <BloqueError error={error} onReintentar={recargar} />;
   if (!solicitud) return null;
 
@@ -102,76 +68,35 @@ export function DetalleSolicitud({ id }: DetalleSolicitudProps) {
         </Alerta>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-xl border border-borde bg-superficie p-4">
-          <h2 className="text-sm font-bold text-titulo">Espacio solicitado</h2>
-          <p className="mt-2 font-semibold text-titulo">
-            {solicitud.espacio?.nombre ?? "Espacio no disponible"}
-          </p>
-          <p className="text-sm text-texto">
-            {solicitud.espacio?.sector ?? "Sin sector registrado"}
-          </p>
-          <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
-            <dt className="font-semibold text-titulo">Actividad</dt>
-            <dd>{solicitud.actividad}</dd>
-            <dt className="font-semibold text-titulo">Productos</dt>
-            <dd>
-              {solicitud.productos.length > 0
-                ? solicitud.productos.map((producto) => producto.nombre).join(", ")
-                : "Sin productos registrados"}
-            </dd>
-            <dt className="font-semibold text-titulo">Fechas</dt>
-            <dd>
-              {formatearRangoFechas(
-                solicitud.fechaInicio,
-                solicitud.fechaFin,
-              )}
-            </dd>
-            <dt className="font-semibold text-titulo">Horario</dt>
-            <dd>
-              {solicitud.horaInicio} a {solicitud.horaFin}
-            </dd>
-          </dl>
-        </section>
+      <section className="rounded-xl border border-borde bg-superficie p-4">
+        <h2 className="text-sm font-bold text-titulo">Espacio solicitado</h2>
+        <p className="mt-2 font-semibold text-titulo">
+          {solicitud.espacio?.nombre ?? "Espacio no disponible"}
+        </p>
+        <p className="text-sm text-texto">
+          {solicitud.espacio?.sector ?? "Sin sector registrado"}
+        </p>
+        <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
+          <dt className="font-semibold text-titulo">Actividad</dt>
+          <dd>{solicitud.actividad}</dd>
+          <dt className="font-semibold text-titulo">Productos</dt>
+          <dd>
+            {solicitud.productos.length > 0
+              ? solicitud.productos.map((producto) => producto.nombre).join(", ")
+              : "Sin productos registrados"}
+          </dd>
+          <dt className="font-semibold text-titulo">Fechas</dt>
+          <dd>
+            {formatearRangoFechas(solicitud.fechaInicio, solicitud.fechaFin)}
+          </dd>
+          <dt className="font-semibold text-titulo">Horario</dt>
+          <dd>
+            {solicitud.horaInicio} a {solicitud.horaFin}
+          </dd>
+        </dl>
+      </section>
 
-        <section className="rounded-xl border border-borde bg-superficie p-4">
-          <h2 className="text-sm font-bold text-titulo">Documentos</h2>
-          {solicitud.documentos.length === 0 ? (
-            <p className="mt-2 text-sm text-tenue">
-              No hay documentos asociados a esta solicitud.
-            </p>
-          ) : (
-            <ul className="mt-2 flex flex-col gap-2">
-              {solicitud.documentos.map((documento) => (
-                <li
-                  key={documento.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-borde bg-fondo px-3 py-2"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-titulo">
-                      {documento.tipoDocumento}
-                    </p>
-                    <p className="truncate text-xs text-tenue">
-                      {formatearDocumento(documento)}
-                    </p>
-                  </div>
-                  <Boton
-                    variante="contorno"
-                    tamano="sm"
-                    onClick={() => void descargar(documento)}
-                    cargando={descargando === documento.id}
-                  >
-                    Descargar
-                  </Boton>
-                </li>
-              ))}
-            </ul>
-          )}
-          {errorDescarga ? (
-            <p className="mt-2 text-sm text-rose-700">{errorDescarga}</p>
-          ) : null}
-        </section>
-      </div>
+      <DocumentosSolicitud solicitudId={id} onActualizar={recargar} />
 
       <section className="rounded-xl border border-borde bg-superficie p-4">
         <h2 className="text-sm font-bold text-titulo">Historial de estados</h2>

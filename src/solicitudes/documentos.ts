@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import { basename, resolve, sep } from 'node:path';
 import { enteroPositivo } from '../common/entero-positivo';
+import type { estado_documento } from '../generated/prisma/client';
 
 /** Límite por defecto de cada documento: 5 MB. */
 export const MAX_BYTES_DOCUMENTO_POR_DEFECTO = 5 * 1024 * 1024;
@@ -35,6 +36,94 @@ export interface DocumentoValidado {
   extension: string;
   mimetype: string;
   bytes: number;
+}
+
+/** Estado resumido que ve el comerciante en la lista de requisitos. */
+export type EstadoRequisitoDocumental =
+  | 'faltante'
+  | 'cargado'
+  | 'cumple'
+  | 'no_cumple';
+
+/** Estados de solicitud en los que el comerciante puede cargar documentos. */
+export const ESTADOS_CARGA_DOCUMENTOS = ['radicada', 'devuelta'] as const;
+
+/** Indica si la solicitud admite cargar o reemplazar documentos. */
+export function puedeCargarDocumentos(estado: string): boolean {
+  return estado === 'radicada' || estado === 'devuelta';
+}
+
+/** Traduce el estado almacenado del documento al estado visible del requisito. */
+export function estadoRequisitoDocumental(
+  estadoDocumento: estado_documento | null | undefined,
+  tieneDocumento: boolean,
+): EstadoRequisitoDocumental {
+  if (!tieneDocumento) return 'faltante';
+  if (estadoDocumento === 'validado') return 'cumple';
+  if (estadoDocumento === 'observado') return 'no_cumple';
+  return 'cargado';
+}
+
+/** Fila mínima de un documento para calcular sus versiones. */
+export interface FilaVersionDocumento {
+  id: bigint | string;
+  reemplaza_a: bigint | string | null;
+  cargado_en: Date | string;
+}
+
+/** Versión de un documento con su número y marca de versión vigente. */
+export interface DocumentoVersionAgrupada<T extends FilaVersionDocumento> {
+  fila: T;
+  numeroVersion: number;
+  esActual: boolean;
+}
+
+/**
+ * Agrupa documentos de un mismo requisito y calcula la versión vigente.
+ *
+ * La versión vigente es la que no fue reemplazada por otra dentro del mismo
+ * grupo. Las versiones se devuelven de la más reciente a la más antigua.
+ */
+export function agruparVersionesDocumento<T extends FilaVersionDocumento>(
+  filas: readonly T[],
+): {
+  actual: T | null;
+  versiones: DocumentoVersionAgrupada<T>[];
+} {
+  const reemplazados = new Set(
+    filas
+      .map((fila) => fila.reemplaza_a?.toString())
+      .filter((id): id is string => Boolean(id)),
+  );
+  const vigentes = filas.filter(
+    (fila) => !reemplazados.has(fila.id.toString()),
+  );
+  const actual =
+    [...vigentes].sort((a, b) => tiempoDocumento(b) - tiempoDocumento(a))[0] ??
+    null;
+
+  const ordenadas = [...filas].sort(
+    (a, b) =>
+      tiempoDocumento(a) - tiempoDocumento(b) ||
+      a.id.toString().localeCompare(b.id.toString()),
+  );
+  const idActual = actual?.id.toString() ?? null;
+
+  return {
+    actual,
+    versiones: ordenadas
+      .map((fila, indice) => ({
+        fila,
+        numeroVersion: indice + 1,
+        esActual: fila.id.toString() === idActual,
+      }))
+      .reverse(),
+  };
+}
+
+function tiempoDocumento(fila: FilaVersionDocumento): number {
+  if (fila.cargado_en instanceof Date) return fila.cargado_en.getTime();
+  return new Date(fila.cargado_en).getTime();
 }
 
 /**

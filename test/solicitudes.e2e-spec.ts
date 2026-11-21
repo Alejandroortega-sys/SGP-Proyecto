@@ -119,12 +119,38 @@ const GESTOR = {
   gestores_gestores_usuario_idTousuarios: { perfil: 'administrador' },
 };
 
+const OTRO_COMERCIANTE = {
+  id: 4n,
+  nombre: 'José',
+  apellido: 'Pérez',
+  correo: 'jose.perez@hotmail.com',
+  rol: 'comerciante' as const,
+  estado: 'activa' as const,
+  gestores_gestores_usuario_idTousuarios: null,
+};
+
 describe('Solicitudes (e2e)', () => {
   let app: INestApplication;
   let tokenComerciante: string;
   let tokenGestor: string;
+  let tokenOtroComerciante: string;
   let temporal: string;
   let entornoAnterior: string | undefined;
+
+  const DOCUMENTO = {
+    id: 9n,
+    solicitud_id: 12n,
+    requisito_id: 1n,
+    tipo_documento: 'Documento de identidad',
+    nombre_original: 'nuevo.pdf',
+    mime_type: 'application/pdf',
+    tamano_bytes: PDF.length,
+    estado: 'pendiente',
+    observacion: null,
+    cargado_en: new Date('2026-11-21T10:00:00.000Z'),
+    archivo_url: 'solicitudes/12/nuevo.pdf',
+    reemplaza_a: null,
+  };
 
   const tx = {
     $queryRaw: jest.fn().mockResolvedValue([
@@ -132,7 +158,10 @@ describe('Solicitudes (e2e)', () => {
     ]),
     $executeRaw: jest.fn().mockResolvedValue(undefined),
     solicitud_productos: { createMany: jest.fn().mockResolvedValue({ count: 1 }) },
-    solicitud_documentos: { create: jest.fn().mockResolvedValue({}) },
+    solicitud_documentos: {
+      create: jest.fn().mockResolvedValue(DOCUMENTO),
+      findMany: jest.fn().mockResolvedValue([]),
+    },
     solicitud_historial: { create: jest.fn().mockResolvedValue({}) },
     notificaciones: { create: jest.fn().mockResolvedValue({}) },
   };
@@ -151,7 +180,10 @@ describe('Solicitudes (e2e)', () => {
     productos: {
       findMany: jest.fn().mockResolvedValue([{ id: 1n, nombre: 'Artesanías' }]),
     },
-    solicitud_documentos: { findFirst: jest.fn() },
+    solicitud_documentos: {
+      findFirst: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
+    },
     $queryRaw: jest.fn(),
     $transaction: jest.fn(
       async (callback: (cliente: typeof tx) => Promise<unknown>) => callback(tx),
@@ -189,7 +221,12 @@ describe('Solicitudes (e2e)', () => {
     await app.init();
 
     const jwt = app.get(JwtService);
-    const firmar = (usuario: typeof COMERCIANTE | typeof GESTOR) =>
+    const firmar = (
+      usuario:
+        | typeof COMERCIANTE
+        | typeof GESTOR
+        | typeof OTRO_COMERCIANTE,
+    ) =>
       jwt.signAsync(
         {
           sub: usuario.id.toString(),
@@ -202,9 +239,10 @@ describe('Solicitudes (e2e)', () => {
         { expiresIn: 1_800 },
       );
 
-    [tokenComerciante, tokenGestor] = await Promise.all([
+    [tokenComerciante, tokenGestor, tokenOtroComerciante] = await Promise.all([
       firmar(COMERCIANTE),
       firmar(GESTOR),
+      firmar(OTRO_COMERCIANTE),
     ]);
   });
 
@@ -223,7 +261,7 @@ describe('Solicitudes (e2e)', () => {
     prisma.sesiones.findFirst.mockResolvedValue({ id: 1n });
     prisma.usuarios.findUnique.mockImplementation(
       ({ where }: { where: { id?: bigint } }) => {
-        const usuario = [COMERCIANTE, GESTOR].find(
+        const usuario = [COMERCIANTE, GESTOR, OTRO_COMERCIANTE].find(
           (candidato) => candidato.id === where.id,
         );
         return Promise.resolve(usuario ?? null);
@@ -408,5 +446,188 @@ describe('Solicitudes (e2e)', () => {
     expect(respuesta.headers['content-disposition']).toContain(
       'filename="cedula.pdf"',
     );
+  });
+
+  it('lista los requisitos documentales de una solicitud propia', async () => {
+    const respuesta = await request(app.getHttpServer())
+      .get('/solicitudes/12/requisitos')
+      .set('Authorization', `Bearer ${tokenComerciante}`)
+      .expect(200);
+
+    expect(respuesta.body).toMatchObject({
+      solicitudId: '12',
+      numeroRadicado: 'SOL-2026-00012',
+      estado: 'radicada',
+      puedeCargar: true,
+      faltantes: ['Documento de identidad', 'RUT'],
+    });
+    expect(respuesta.body.requisitos).toHaveLength(2);
+  });
+
+  it('carga un documento válido en la solicitud', async () => {
+    tx.$queryRaw.mockResolvedValueOnce([{ estado: 'radicada' }]);
+    tx.solicitud_documentos.findMany.mockResolvedValue([]);
+    prisma.solicitud_documentos.findMany.mockResolvedValue([DOCUMENTO]);
+
+    const respuesta = await request(app.getHttpServer())
+      .post('/solicitudes/12/documentos')
+      .set('Authorization', `Bearer ${tokenComerciante}`)
+      .field('requisitoId', '1')
+      .attach('archivo', PDF, {
+        filename: 'cedula.pdf',
+        contentType: 'application/pdf',
+      })
+      .expect(201);
+
+    expect(respuesta.body).toMatchObject({
+      mensaje: 'Documento cargado correctamente.',
+      estadoSolicitud: 'radicada',
+      volvioARevision: false,
+    });
+    expect(tx.solicitud_documentos.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          requisito_id: 1n,
+          reemplaza_a: null,
+          estado: 'pendiente',
+        }),
+      }),
+    );
+  });
+
+  it('rechaza un formato no permitido', async () => {
+    const respuesta = await request(app.getHttpServer())
+      .post('/solicitudes/12/documentos')
+      .set('Authorization', `Bearer ${tokenComerciante}`)
+      .field('requisitoId', '1')
+      .attach('archivo', Buffer.from('texto plano'), {
+        filename: 'documento.txt',
+        contentType: 'text/plain',
+      })
+      .expect(400);
+
+    expect(JSON.stringify(respuesta.body.message)).toContain('PDF, JPG o PNG');
+  });
+
+  it('rechaza un archivo que supera el tamaño máximo', async () => {
+    await request(app.getHttpServer())
+      .post('/solicitudes/12/documentos')
+      .set('Authorization', `Bearer ${tokenComerciante}`)
+      .field('requisitoId', '1')
+      .attach('archivo', Buffer.alloc(5 * 1024 * 1024 + 1), {
+        filename: 'grande.pdf',
+        contentType: 'application/pdf',
+      })
+      .expect(413);
+  });
+
+  it('rechaza la carga de un requisito de otra actividad', async () => {
+    const respuesta = await request(app.getHttpServer())
+      .post('/solicitudes/12/documentos')
+      .set('Authorization', `Bearer ${tokenComerciante}`)
+      .field('requisitoId', '99')
+      .attach('archivo', PDF, {
+        filename: 'cedula.pdf',
+        contentType: 'application/pdf',
+      })
+      .expect(400);
+
+    expect(JSON.stringify(respuesta.body.message)).toContain(
+      'no aplica a la actividad',
+    );
+  });
+
+  it('versiona un reemplazo y devuelve la solicitud a revisión', async () => {
+    const solicitudDevuelta = { ...FILA, estado: 'devuelta' };
+    const solicitudEnRevision = { ...FILA, estado: 'en_revision' };
+    const observado = {
+      ...DOCUMENTO,
+      id: 5n,
+      estado: 'observado',
+      observacion: 'Documento ilegible.',
+      cargado_en: new Date('2026-11-20T10:00:00.000Z'),
+      archivo_url: 'solicitudes/12/observado.pdf',
+    };
+
+    prisma.solicitudes.findFirst
+      .mockResolvedValueOnce(solicitudDevuelta)
+      .mockResolvedValueOnce(solicitudEnRevision);
+    tx.$queryRaw.mockResolvedValueOnce([{ estado: 'devuelta' }]);
+    tx.solicitud_documentos.findMany.mockResolvedValue([observado]);
+    tx.solicitud_documentos.create.mockResolvedValue({
+      ...DOCUMENTO,
+      id: 9n,
+      reemplaza_a: 5n,
+    });
+    prisma.solicitud_documentos.findMany.mockResolvedValue([
+      observado,
+      { ...DOCUMENTO, id: 9n, reemplaza_a: 5n },
+    ]);
+
+    const respuesta = await request(app.getHttpServer())
+      .post('/solicitudes/12/documentos')
+      .set('Authorization', `Bearer ${tokenComerciante}`)
+      .field('requisitoId', '1')
+      .attach('archivo', PDF, {
+        filename: 'corregido.pdf',
+        contentType: 'application/pdf',
+      })
+      .expect(201);
+
+    expect(respuesta.body).toMatchObject({
+      mensaje: 'Documento reemplazado correctamente.',
+      estadoSolicitud: 'en_revision',
+      volvioARevision: true,
+    });
+    expect(tx.solicitud_documentos.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ reemplaza_a: 5n }),
+      }),
+    );
+    expect(tx.solicitud_historial.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          estado_anterior: 'devuelta',
+          estado_nuevo: 'en_revision',
+        }),
+      }),
+    );
+    expect(tx.notificaciones.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ tipo: 'solicitud_en_revision' }),
+      }),
+    );
+  });
+
+  it('rechaza la carga en una solicitud ajena', async () => {
+    prisma.solicitudes.findFirst.mockResolvedValue(null);
+
+    await request(app.getHttpServer())
+      .post('/solicitudes/12/documentos')
+      .set('Authorization', `Bearer ${tokenOtroComerciante}`)
+      .field('requisitoId', '1')
+      .attach('archivo', PDF, {
+        filename: 'cedula.pdf',
+        contentType: 'application/pdf',
+      })
+      .expect(404);
+  });
+
+  it('rechaza la descarga anónima y la de otro comerciante', async () => {
+    prisma.solicitud_documentos.findFirst.mockResolvedValue({
+      archivo_url: 'solicitudes/12/cedula.pdf',
+      nombre_original: 'cedula.pdf',
+      mime_type: 'application/pdf',
+    });
+
+    await request(app.getHttpServer())
+      .get('/solicitudes/12/documentos/5/archivo')
+      .expect(401);
+
+    prisma.solicitud_documentos.findFirst.mockResolvedValue(null);
+    await request(app.getHttpServer())
+      .get('/solicitudes/12/documentos/5/archivo')
+      .set('Authorization', `Bearer ${tokenOtroComerciante}`)
+      .expect(404);
   });
 });

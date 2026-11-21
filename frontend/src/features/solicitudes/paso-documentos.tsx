@@ -7,11 +7,16 @@ import { Cargando } from "@/components/ui/estado-vacio";
 import { IconoCerrar } from "@/components/ui/iconos";
 import type { RequisitoDocumental } from "@/types/api";
 import {
+  TAMANO_MAXIMO_DOCUMENTO,
   formatearBytes,
   validarArchivoDocumento,
   type ArchivoAdjuntoSolicitud,
   type ErroresSolicitud,
 } from "./validaciones-solicitud";
+import {
+  VistaPreviaDocumento,
+  type ArchivoVistaPrevia,
+} from "./vista-previa-documento";
 
 interface PasoDocumentosProps {
   requisitos: RequisitoDocumental[];
@@ -34,12 +39,25 @@ export function PasoDocumentos({
   const [erroresArchivo, setErroresArchivo] = useState<
     Record<string, string | null>
   >({});
+  const [vistaPrevia, setVistaPrevia] = useState<ArchivoVistaPrevia | null>(
+    null,
+  );
+  const [modalAbierto, setModalAbierto] = useState(false);
 
   function elegirArchivo(requisitoId: string, archivo: File | undefined): void {
     if (!archivo) return;
     const error = validarArchivoDocumento(archivo);
     setErroresArchivo((actual) => ({ ...actual, [requisitoId]: error }));
     if (!error) onAdjuntar(requisitoId, archivo);
+  }
+
+  function verArchivo(adjunto: ArchivoAdjuntoSolicitud): void {
+    setVistaPrevia({
+      nombre: adjunto.nombre,
+      tipo: adjunto.tipo,
+      blob: adjunto.archivo,
+    });
+    setModalAbierto(true);
   }
 
   return (
@@ -53,7 +71,8 @@ export function PasoDocumentos({
       </div>
 
       <Alerta tono="informacion" conIcono={false}>
-        Formatos permitidos: PDF, JPG y PNG. Tamaño máximo: 5 MB por archivo.
+        Formatos permitidos: PDF, JPG y PNG. Tamaño máximo:{" "}
+        {formatearBytes(TAMANO_MAXIMO_DOCUMENTO)} por archivo.
       </Alerta>
 
       {errores.documentos ? (
@@ -114,15 +133,24 @@ export function PasoDocumentos({
                         {formatearBytes(adjunto.tamano)}
                       </p>
                     </div>
-                    <Boton
-                      variante="fantasma"
-                      tamano="sm"
-                      onClick={() => onQuitar(requisito.id)}
-                      aria-label={`Quitar ${requisito.nombre}`}
-                    >
-                      <IconoCerrar className="size-4" />
-                      Quitar
-                    </Boton>
+                    <div className="flex flex-wrap gap-2">
+                      <Boton
+                        variante="contorno"
+                        tamano="sm"
+                        onClick={() => verArchivo(adjunto)}
+                      >
+                        Ver
+                      </Boton>
+                      <Boton
+                        variante="fantasma"
+                        tamano="sm"
+                        onClick={() => onQuitar(requisito.id)}
+                        aria-label={`Quitar ${requisito.nombre}`}
+                      >
+                        <IconoCerrar className="size-4" />
+                        Quitar
+                      </Boton>
+                    </div>
                   </div>
                 ) : (
                   <div className="mt-3">
@@ -154,6 +182,15 @@ export function PasoDocumentos({
           })}
         </div>
       )}
+
+      <VistaPreviaDocumento
+        abierto={modalAbierto}
+        archivo={vistaPrevia}
+        onCerrar={() => {
+          setModalAbierto(false);
+          setVistaPrevia(null);
+        }}
+      />
     </div>
   );
 }

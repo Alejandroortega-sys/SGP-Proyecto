@@ -5,6 +5,7 @@ import type {
   RequisitoDocumental,
 } from "@/types/api";
 import {
+  TAMANO_MAXIMO_DOCUMENTO,
   hoyISO,
   validarArchivoDocumento,
   validarPasoActividad,
@@ -155,6 +156,24 @@ describe("validaciones de solicitud", () => {
       ),
     ).toContain("PDF, JPG o PNG");
     expect(validarArchivoDocumento(archivo("1", "cedula.pdf").archivo)).toBeNull();
+  });
+
+  it("acepta el límite exacto de tamaño y rechaza un byte más", () => {
+    const exacto = new File(
+      [new Uint8Array(TAMANO_MAXIMO_DOCUMENTO)],
+      "limite.pdf",
+      { type: "application/pdf" },
+    );
+    const excedido = new File(
+      [new Uint8Array(TAMANO_MAXIMO_DOCUMENTO + 1)],
+      "grande.pdf",
+      { type: "application/pdf" },
+    );
+    const vacio = new File([], "vacio.pdf", { type: "application/pdf" });
+
+    expect(validarArchivoDocumento(exacto)).toBeNull();
+    expect(validarArchivoDocumento(excedido)).toContain("5 MB");
+    expect(validarArchivoDocumento(vacio)).toContain("vacío");
   });
 
   it("entrega la fecha de hoy en Colombia", () => {

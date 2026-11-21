@@ -1,9 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
 import { resolve } from 'node:path';
 import {
+  agruparVersionesDocumento,
   detectarFormatoDocumento,
+  estadoRequisitoDocumental,
   mimePorRuta,
   nombreArchivoSeguro,
+  puedeCargarDocumentos,
   resolverRutaDocumento,
   validarDocumento,
 } from './documentos';
@@ -73,5 +76,56 @@ describe('documentos de solicitud', () => {
     expect(mimePorRuta('solicitudes/1/a.png')).toBe('image/png');
     expect(mimePorRuta('solicitudes/1/a.jpg')).toBe('image/jpeg');
     expect(mimePorRuta('solicitudes/1/a.bin')).toBe('application/octet-stream');
+  });
+
+  it('solo permite cargar documentos en radicada o devuelta', () => {
+    expect(puedeCargarDocumentos('radicada')).toBe(true);
+    expect(puedeCargarDocumentos('devuelta')).toBe(true);
+    for (const estado of [
+      'borrador',
+      'en_revision',
+      'aprobada',
+      'rechazada',
+      'cancelada',
+    ]) {
+      expect(puedeCargarDocumentos(estado)).toBe(false);
+    }
+  });
+
+  it('traduce el estado del documento al estado del requisito', () => {
+    expect(estadoRequisitoDocumental(null, false)).toBe('faltante');
+    expect(estadoRequisitoDocumental('pendiente', true)).toBe('cargado');
+    expect(estadoRequisitoDocumental('validado', true)).toBe('cumple');
+    expect(estadoRequisitoDocumental('observado', true)).toBe('no_cumple');
+  });
+
+  it('agrupa versiones y deja como actual la que no fue reemplazada', () => {
+    const filas = [
+      {
+        id: 5n,
+        reemplaza_a: null,
+        cargado_en: new Date('2026-11-20T10:00:00.000Z'),
+      },
+      {
+        id: 8n,
+        reemplaza_a: 5n,
+        cargado_en: new Date('2026-11-22T10:00:00.000Z'),
+      },
+    ];
+
+    const grupo = agruparVersionesDocumento(filas);
+
+    expect(grupo.actual?.id).toBe(8n);
+    expect(grupo.versiones.map((version) => version.fila.id)).toEqual([
+      8n,
+      5n,
+    ]);
+    expect(grupo.versiones.map((version) => version.numeroVersion)).toEqual([
+      2, 1,
+    ]);
+    expect(grupo.versiones.map((version) => version.esActual)).toEqual([
+      true,
+      false,
+    ]);
   });
 });

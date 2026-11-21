@@ -20,20 +20,26 @@ import {
 } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+  agruparVersionesDocumento,
   eliminarDocumentoSolicitud,
+  estadoRequisitoDocumental,
   guardarDocumentoSolicitud,
   limiteBytesDocumento,
   maxDocumentos,
   mimePorRuta,
   nombreArchivoSeguro,
+  puedeCargarDocumentos,
   resolverRutaDocumento,
   validarDocumento,
   type ArchivoDocumento,
   type DocumentoValidado,
 } from './documentos';
 import {
+  CargarDocumentoSolicitudFormDto,
   ConsultarDisponibilidadQueryDto,
   DocumentoMetaDto,
+  DocumentoSolicitudDto,
+  DocumentoVersionSolicitudDto,
   ESTADOS_DUPLICADO,
   ListarMisSolicitudesQueryDto,
   ListarSolicitudesResponseDto,
@@ -41,8 +47,11 @@ import {
   RadicarSolicitudFormDto,
   RadicarSolicitudResponseDto,
   RequisitoDocumentalDto,
+  RequisitoEstadoSolicitudDto,
+  RequisitosSolicitudDetalleResponseDto,
   RequisitosSolicitudQueryDto,
   RequisitosSolicitudResponseDto,
+  RespuestaCargaDocumentoSolicitudDto,
   DisponibilidadSolicitudDto,
   SolicitudListadoDto,
   SolicitudTemporalDetalleDto,
@@ -145,6 +154,7 @@ const SELECT_SOLICITUD = {
     orderBy: { cargado_en: 'asc' },
     select: {
       id: true,
+      requisito_id: true,
       tipo_documento: true,
       nombre_original: true,
       mime_type: true,
@@ -153,6 +163,7 @@ const SELECT_SOLICITUD = {
       observacion: true,
       cargado_en: true,
       archivo_url: true,
+      reemplaza_a: true,
     },
   },
   solicitud_historial: {
@@ -171,6 +182,31 @@ const SELECT_SOLICITUD = {
 type FilaSolicitud = Prisma.solicitudesGetPayload<{
   select: typeof SELECT_SOLICITUD;
 }>;
+
+const SELECT_DOCUMENTO_VERSION = {
+  id: true,
+  requisito_id: true,
+  tipo_documento: true,
+  nombre_original: true,
+  mime_type: true,
+  tamano_bytes: true,
+  estado: true,
+  observacion: true,
+  cargado_en: true,
+  archivo_url: true,
+  reemplaza_a: true,
+} satisfies Prisma.solicitud_documentosSelect;
+
+type FilaDocumentoVersion = Prisma.solicitud_documentosGetPayload<{
+  select: typeof SELECT_DOCUMENTO_VERSION;
+}>;
+
+interface FilaSolicitudDocumentos {
+  id: bigint;
+  numero_radicado: string;
+  estado: estado_solicitud;
+  espacios_temporales: { actividad_permitida: string | null } | null;
+}
 
 /**
  * Radicación de solicitudes de uso temporal del espacio público (HU-16).
@@ -295,6 +331,232 @@ export class SolicitudesService {
         tipoActividad: fila.tipo_actividad,
         orden: fila.orden,
       })),
+    };
+  }
+
+  /**
+   * Lista los requisitos documentales de una solicitud con su estado.
+   *
+   * Devuelve la versión vigente de cada requisito y todas sus versiones para
+   * que el comerciante pueda revisar el historial sin exponer archivos
+   * públicos.
+   */
+  async listarRequisitosSolicitud(
+    idUsuario: string,
+    idSolicitud: string,
+  ): Promise<RequisitosSolicitudDetalleResponseDto> {
+    const solicitud = await this.obtenerSolicitudDocumentos(
+      idUsuario,
+      idSolicitud,
+    );
+    const requisitos = await this.obtenerRequisitos(
+      solicitud.espacios_temporales?.actividad_permitida ?? null,
+    );
+    const documentos = await this.prisma.solicitud_documentos.findMany({
+      where: { solicitud_id: solicitud.id },
+      orderBy: { cargado_en: 'asc' },
+      select: SELECT_DOCUMENTO_VERSION,
+    });
+
+    return this.construirRequisitosSolicitud(
+      solicitud,
+      requisitos,
+      documentos,
+    );
+  }
+
+  /**
+   * Carga o reemplaza el documento de un requisito.
+   *
+   * Cada reemplazo crea una fila nueva con `reemplaza_a` apuntando a la
+   * versión anterior. En estado `devuelta`, la solicitud vuelve a
+   * `en_revision` cuando ya no quedan requisitos observados sin corregir.
+   */
+  async cargarDocumentoSolicitud(
+    usuario: UsuarioAutenticado,
+    idSolicitud: string,
+    dto: CargarDocumentoSolicitudFormDto,
+    archivo: Express.Multer.File | undefined,
+  ): Promise<RespuestaCargaDocumentoSolicitudDto> {
+    const usuarioId = parseIdBigint(usuario.id);
+    const solicitudId = parseIdBigint(idSolicitud);
+
+    if (!archivo) {
+      throw new BadRequestException(
+        'Adjunta un archivo para el requisito seleccionado',
+      );
+    }
+
+    const validado = validarDocumento(
+      {
+        buffer: archivo.buffer,
+        mimetype: archivo.mimetype,
+        size: archivo.size,
+        originalname: archivo.originalname,
+      },
+      limiteBytesDocumento(),
+    );
+
+    const solicitud = await this.obtenerSolicitudDocumentos(
+      usuario.id,
+      idSolicitud,
+    );
+    if (!puedeCargarDocumentos(solicitud.estado)) {
+      throw new ConflictException(
+        this.motivoBloqueoDocumentos(solicitud.estado),
+      );
+    }
+
+    const requisitos = await this.obtenerRequisitos(
+      solicitud.espacios_temporales?.actividad_permitida ?? null,
+    );
+    const requisito = requisitos.find((item) => item.id === dto.requisitoId);
+    if (!requisito) {
+      throw new BadRequestException(
+        'El requisito documental no aplica a la actividad de la solicitud',
+      );
+    }
+
+    let rutaGuardada: string | null = null;
+    let reemplazo = false;
+    let volvioARevision = false;
+
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await fijarActorAuditoria(tx, usuarioId);
+
+        // Bloquea la solicitud para que dos cargas simultáneas no creen dos
+        // versiones vigentes del mismo requisito.
+        const bloqueo = await tx.$queryRaw<
+          { estado: estado_solicitud }[]
+        >`SELECT estado FROM solicitudes WHERE id = ${solicitudId} FOR UPDATE`;
+        const estadoActual = bloqueo[0]?.estado;
+        if (!estadoActual) {
+          throw new NotFoundException('La solicitud no existe');
+        }
+        if (!puedeCargarDocumentos(estadoActual)) {
+          throw new ConflictException(
+            this.motivoBloqueoDocumentos(estadoActual),
+          );
+        }
+
+        const documentos = await tx.solicitud_documentos.findMany({
+          where: { solicitud_id: solicitudId },
+          orderBy: { cargado_en: 'asc' },
+          select: SELECT_DOCUMENTO_VERSION,
+        });
+        const delRequisito = documentos.filter(
+          (documento) =>
+            documento.requisito_id?.toString() === requisito.id,
+        );
+        const { actual } = agruparVersionesDocumento(delRequisito);
+        reemplazo = actual !== null;
+
+        rutaGuardada = await guardarDocumentoSolicitud(
+          {
+            buffer: archivo.buffer,
+            mimetype: archivo.mimetype,
+            size: archivo.size,
+            originalname: archivo.originalname,
+          },
+          validado,
+          solicitudId,
+        );
+
+        const nuevo = await tx.solicitud_documentos.create({
+          data: {
+            solicitud_id: solicitudId,
+            requisito_id: parseIdBigint(requisito.id),
+            tipo_documento: requisito.nombre,
+            archivo_url: rutaGuardada,
+            estado: 'pendiente',
+            nombre_original: nombreArchivoSeguro(
+              archivo.originalname ?? requisito.nombre,
+            ),
+            mime_type: validado.mimetype,
+            tamano_bytes: validado.bytes,
+            reemplaza_a: actual ? BigInt(actual.id) : null,
+          },
+        });
+
+        const observados = this.documentosObservadosPorRequisito(
+          requisitos,
+          documentos,
+        );
+        if (estadoActual === 'devuelta' && observados.size > 0) {
+          const despues: FilaDocumentoVersion[] = [...documentos, nuevo];
+          const todosCorregidos = [...observados.entries()].every(
+            ([requisitoId, documentoObservadoId]) => {
+              const grupo = agruparVersionesDocumento(
+                despues.filter(
+                  (documento) =>
+                    documento.requisito_id?.toString() === requisitoId,
+                ),
+              );
+              return (
+                grupo.actual !== null &&
+                grupo.actual.id.toString() !== documentoObservadoId
+              );
+            },
+          );
+
+          if (todosCorregidos) {
+            await tx.$executeRaw`
+              UPDATE solicitudes
+                 SET estado = 'en_revision',
+                     actualizado_en = now()
+               WHERE id = ${solicitudId}
+            `;
+            await tx.solicitud_historial.create({
+              data: {
+                solicitud_id: solicitudId,
+                estado_anterior: 'devuelta',
+                estado_nuevo: 'en_revision',
+                actor_id: usuarioId,
+                observacion:
+                  'El comerciante corrigió los documentos observados y la solicitud vuelve a revisión.',
+              },
+            });
+            await tx.notificaciones.create({
+              data: {
+                usuario_id: usuarioId,
+                tipo: 'solicitud_en_revision',
+                asunto: `Solicitud ${solicitud.numero_radicado} en revisión`,
+                cuerpo: `Tu solicitud ${solicitud.numero_radicado} volvió a revisión después de corregir los documentos observados.`,
+                canal: 'app',
+                leida: false,
+              },
+            });
+            volvioARevision = true;
+          }
+        }
+      });
+    } catch (error) {
+      if (rutaGuardada) {
+        await eliminarDocumentoSolicitud(rutaGuardada);
+      }
+      throw error;
+    }
+
+    const actualizada = await this.listarRequisitosSolicitud(
+      usuario.id,
+      idSolicitud,
+    );
+    const requisitoActualizado = actualizada.requisitos.find(
+      (item) => item.id === requisito.id,
+    );
+    if (!requisitoActualizado) {
+      throw new Error('No se pudo leer el requisito actualizado');
+    }
+
+    return {
+      mensaje: reemplazo
+        ? 'Documento reemplazado correctamente.'
+        : 'Documento cargado correctamente.',
+      estadoSolicitud: actualizada.estado,
+      volvioARevision,
+      requisito: requisitoActualizado,
+      faltantes: actualizada.faltantes,
     };
   }
 
@@ -968,6 +1230,232 @@ export class SolicitudesService {
     };
   }
 
+  /** Obtiene una solicitud propia con los datos que necesita documentos. */
+  private async obtenerSolicitudDocumentos(
+    idUsuario: string,
+    idSolicitud: string,
+  ): Promise<FilaSolicitudDocumentos> {
+    const usuarioId = parseIdBigint(idUsuario);
+    const id = parseIdBigint(idSolicitud);
+
+    const solicitud = await this.prisma.solicitudes.findFirst({
+      where: {
+        id,
+        comerciante_id: usuarioId,
+        estado: { not: 'borrador' },
+      },
+      select: {
+        id: true,
+        numero_radicado: true,
+        estado: true,
+        espacios_temporales: {
+          select: { actividad_permitida: true },
+        },
+      },
+    });
+
+    if (!solicitud) {
+      throw new NotFoundException('La solicitud no existe o no te pertenece');
+    }
+
+    return solicitud;
+  }
+
+  /** Mensaje de bloqueo cuando el estado no admite cambios de documentos. */
+  private motivoBloqueoDocumentos(estado: estado_solicitud): string {
+    const etiquetas: Record<estado_solicitud, string> = {
+      borrador: 'Borrador',
+      radicada: 'Radicada',
+      en_revision: 'En revisión',
+      devuelta: 'Requiere corrección',
+      aprobada: 'Aprobada',
+      rechazada: 'Rechazada',
+      cancelada: 'Cancelada',
+    };
+    return `La solicitud está en estado «${etiquetas[estado]}» y no admite cambios en sus documentos.`;
+  }
+
+  /**
+   * Describe qué requisitos tenían un documento observado antes de la carga.
+   *
+   * Se usa para saber si, tras corregir un documento, ya no queda ningún
+   * requisito observado pendiente.
+   */
+  private documentosObservadosPorRequisito(
+    requisitos: readonly RequisitoDocumentalDto[],
+    documentos: readonly FilaDocumentoVersion[],
+  ): Map<string, string> {
+    const observados = new Map<string, string>();
+
+    for (const requisito of requisitos) {
+      const grupo = agruparVersionesDocumento(
+        documentos.filter(
+          (documento) =>
+            documento.requisito_id?.toString() === requisito.id,
+        ),
+      );
+      if (grupo.actual?.estado === 'observado') {
+        observados.set(requisito.id, grupo.actual.id.toString());
+      }
+    }
+
+    return observados;
+  }
+
+  /** Construye la respuesta con requisitos, versiones y faltantes. */
+  private construirRequisitosSolicitud(
+    solicitud: FilaSolicitudDocumentos,
+    requisitos: readonly RequisitoDocumentalDto[],
+    documentos: readonly FilaDocumentoVersion[],
+  ): RequisitosSolicitudDetalleResponseDto {
+    const solicitudId = solicitud.id.toString();
+    const idsRequisitos = new Set(requisitos.map((requisito) => requisito.id));
+    const porRequisito = new Map<string, FilaDocumentoVersion[]>();
+
+    for (const documento of documentos) {
+      const requisitoId = documento.requisito_id?.toString();
+      if (!requisitoId || !idsRequisitos.has(requisitoId)) continue;
+      const grupo = porRequisito.get(requisitoId) ?? [];
+      grupo.push(documento);
+      porRequisito.set(requisitoId, grupo);
+    }
+
+    const requisitosEstado: RequisitoEstadoSolicitudDto[] = requisitos.map(
+      (requisito) => {
+        const grupo = agruparVersionesDocumento(
+          porRequisito.get(requisito.id) ?? [],
+        );
+        const versiones = grupo.versiones.map((version) =>
+          this.aDocumentoVersion(
+            version.fila,
+            version.numeroVersion,
+            version.esActual,
+            solicitudId,
+          ),
+        );
+        const documentoActual =
+          versiones.find((version) => version.esActual) ?? null;
+
+        return {
+          id: requisito.id,
+          nombre: requisito.nombre,
+          descripcion: requisito.descripcion,
+          obligatorio: requisito.obligatorio,
+          tipoActividad: requisito.tipoActividad,
+          orden: requisito.orden,
+          estado: estadoRequisitoDocumental(
+            documentoActual?.estado,
+            documentoActual !== null,
+          ),
+          documentoActual,
+          versiones,
+        };
+      },
+    );
+
+    const faltantes = requisitosEstado
+      .filter(
+        (requisito) =>
+          requisito.obligatorio && requisito.estado === 'faltante',
+      )
+      .map((requisito) => requisito.nombre);
+
+    const noClasificados = documentos.filter((documento) => {
+      const requisitoId = documento.requisito_id?.toString();
+      return !requisitoId || !idsRequisitos.has(requisitoId);
+    });
+    const gruposOtros = new Map<string, FilaDocumentoVersion[]>();
+    for (const documento of noClasificados) {
+      const clave = documento.tipo_documento;
+      const grupo = gruposOtros.get(clave) ?? [];
+      grupo.push(documento);
+      gruposOtros.set(clave, grupo);
+    }
+    const otrosDocumentos = [...gruposOtros.values()]
+      .map((grupo) => agruparVersionesDocumento(grupo).actual)
+      .filter((documento): documento is FilaDocumentoVersion => documento !== null)
+      .sort((a, b) => {
+        const fechaA =
+          a.cargado_en instanceof Date
+            ? a.cargado_en.getTime()
+            : new Date(a.cargado_en).getTime();
+        const fechaB =
+          b.cargado_en instanceof Date
+            ? b.cargado_en.getTime()
+            : new Date(b.cargado_en).getTime();
+        return fechaB - fechaA;
+      })
+      .map((documento) => this.aDocumentoSolicitud(documento, solicitudId));
+
+    return {
+      solicitudId,
+      numeroRadicado: solicitud.numero_radicado,
+      estado: solicitud.estado,
+      actividad: solicitud.espacios_temporales?.actividad_permitida ?? null,
+      puedeCargar: puedeCargarDocumentos(solicitud.estado),
+      motivoBloqueo: puedeCargarDocumentos(solicitud.estado)
+        ? null
+        : this.motivoBloqueoDocumentos(solicitud.estado),
+      faltantes,
+      requisitos: requisitosEstado,
+      otrosDocumentos,
+    };
+  }
+
+  /** Convierte una fila de documento al DTO con número de versión. */
+  private aDocumentoVersion(
+    fila: FilaDocumentoVersion,
+    numeroVersion: number,
+    esActual: boolean,
+    solicitudId: string,
+  ): DocumentoVersionSolicitudDto {
+    return {
+      id: fila.id.toString(),
+      requisitoId: fila.requisito_id?.toString() ?? null,
+      tipoDocumento: fila.tipo_documento,
+      nombreOriginal: fila.nombre_original,
+      mimeType: fila.mime_type,
+      tamanoBytes: fila.tamano_bytes,
+      estado: fila.estado,
+      observacion: fila.observacion,
+      cargadoEn: fila.cargado_en,
+      numeroVersion,
+      reemplazaA: fila.reemplaza_a?.toString() ?? null,
+      esActual,
+      url: `/solicitudes/${solicitudId}/documentos/${fila.id.toString()}/archivo`,
+    };
+  }
+
+  /** Convierte una fila de documento al DTO básico del detalle. */
+  private aDocumentoSolicitud(
+    fila: FilaDocumentoVersion,
+    solicitudId: string,
+  ): DocumentoSolicitudDto {
+    return {
+      id: fila.id.toString(),
+      tipoDocumento: fila.tipo_documento,
+      nombreOriginal: fila.nombre_original,
+      mimeType: fila.mime_type,
+      tamanoBytes: fila.tamano_bytes,
+      estado: fila.estado,
+      observacion: fila.observacion,
+      cargadoEn: fila.cargado_en,
+      url: `/solicitudes/${solicitudId}/documentos/${fila.id.toString()}/archivo`,
+    };
+  }
+
+  /** Deja solo la versión vigente de cada documento. */
+  private documentosVigentes<
+    T extends { id: bigint; reemplaza_a: bigint | null },
+  >(filas: readonly T[]): T[] {
+    const reemplazados = new Set(
+      filas
+        .map((fila) => fila.reemplaza_a?.toString())
+        .filter((id): id is string => Boolean(id)),
+    );
+    return filas.filter((fila) => !reemplazados.has(fila.id.toString()));
+  }
+
   /** Convierte una fila de Prisma al DTO del listado. */
   private aListado(fila: FilaSolicitud): SolicitudListadoDto {
     return {
@@ -994,17 +1482,11 @@ export class SolicitudesService {
         id: relacion.productos.id.toString(),
         nombre: relacion.productos.nombre,
       })),
-      documentos: fila.solicitud_documentos.map((documento) => ({
-        id: documento.id.toString(),
-        tipoDocumento: documento.tipo_documento,
-        nombreOriginal: documento.nombre_original,
-        mimeType: documento.mime_type,
-        tamanoBytes: documento.tamano_bytes,
-        estado: documento.estado,
-        observacion: documento.observacion,
-        cargadoEn: documento.cargado_en,
-        url: `/solicitudes/${fila.id.toString()}/documentos/${documento.id.toString()}/archivo`,
-      })),
+      documentos: this.documentosVigentes(
+        fila.solicitud_documentos,
+      ).map((documento) =>
+        this.aDocumentoSolicitud(documento, fila.id.toString()),
+      ),
     };
   }
 

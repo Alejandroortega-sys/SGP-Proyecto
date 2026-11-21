@@ -27,6 +27,9 @@ async function bootstrap() {
     origin: process.env.FRONTEND_URL ?? 'http://localhost:3001',
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    // Permite que el navegador lea el nombre original del archivo en las
+    // descargas autenticadas (documentos de solicitud, reportes de importación).
+    exposedHeaders: ['Content-Disposition'],
     optionsSuccessStatus: 204,
   });
 

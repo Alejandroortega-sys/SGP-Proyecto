@@ -23,6 +23,8 @@ type MetodoSolicitudes =
   | 'requisitos'
   | 'disponibilidad'
   | 'radicar'
+  | 'cargarDocumento'
+  | 'listarRequisitosSolicitud'
   | 'descargarDocumento'
   | 'detalle';
 
@@ -39,6 +41,8 @@ interface ServiceMock {
   requisitos: jest.Mock;
   consultarDisponibilidad: jest.Mock;
   radicar: jest.Mock;
+  cargarDocumentoSolicitud: jest.Mock;
+  listarRequisitosSolicitud: jest.Mock;
   descargarDocumento: jest.Mock;
   detalle: jest.Mock;
 }
@@ -49,6 +53,8 @@ function crearMock(): { service: SolicitudesService; mock: ServiceMock } {
     requisitos: jest.fn(),
     consultarDisponibilidad: jest.fn(),
     radicar: jest.fn(),
+    cargarDocumentoSolicitud: jest.fn(),
+    listarRequisitosSolicitud: jest.fn(),
     descargarDocumento: jest.fn(),
     detalle: jest.fn(),
   };
@@ -62,6 +68,8 @@ describe('SolicitudesController', () => {
       'requisitos',
       'disponibilidad',
       'radicar',
+      'cargarDocumento',
+      'listarRequisitosSolicitud',
       'detalle',
     ] as const) {
       expect(rolesDe(metodo)).toEqual(['comerciante']);
@@ -131,6 +139,44 @@ describe('SolicitudesController', () => {
     await controller.radicar(COMERCIANTE, form, archivos);
 
     expect(mock.radicar).toHaveBeenCalledWith(COMERCIANTE, form, archivos);
+  });
+
+  it('delega la carga y la consulta de requisitos documentales', async () => {
+    const { service, mock } = crearMock();
+    const controller = new SolicitudesController(service);
+    const form = { requisitoId: '1' };
+    const archivo = { originalname: 'cedula.pdf' } as Express.Multer.File;
+    const respuesta = {
+      mensaje: 'ok',
+      estadoSolicitud: 'radicada',
+      volvioARevision: false,
+      requisito: {},
+      faltantes: [],
+    };
+
+    mock.cargarDocumentoSolicitud.mockResolvedValue(respuesta);
+    mock.listarRequisitosSolicitud.mockResolvedValue({
+      solicitudId: '12',
+      numeroRadicado: 'SOL-2026-00012',
+      estado: 'radicada',
+      actividad: 'Artesanías',
+      puedeCargar: true,
+      motivoBloqueo: null,
+      faltantes: [],
+      requisitos: [],
+      otrosDocumentos: [],
+    });
+
+    await controller.cargarDocumento(COMERCIANTE, '12', form, archivo);
+    await controller.listarRequisitosSolicitud(COMERCIANTE, '12');
+
+    expect(mock.cargarDocumentoSolicitud).toHaveBeenCalledWith(
+      COMERCIANTE,
+      '12',
+      form,
+      archivo,
+    );
+    expect(mock.listarRequisitosSolicitud).toHaveBeenCalledWith('3', '12');
   });
 
   it('delega el detalle al servicio', async () => {

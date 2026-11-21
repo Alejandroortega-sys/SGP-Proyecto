@@ -274,6 +274,150 @@ export class DocumentoSolicitudDto {
   url!: string;
 }
 
+/** Versión de un documento asociada a un requisito documental. */
+export class DocumentoVersionSolicitudDto {
+  @ApiProperty({ example: '8' })
+  id!: string;
+
+  @ApiProperty({ example: '1', nullable: true })
+  requisitoId!: string | null;
+
+  @ApiProperty({ example: 'Documento de identidad' })
+  tipoDocumento!: string;
+
+  @ApiProperty({ example: 'cedula.pdf', nullable: true })
+  nombreOriginal!: string | null;
+
+  @ApiProperty({ example: 'application/pdf', nullable: true })
+  mimeType!: string | null;
+
+  @ApiProperty({ example: 245_760, nullable: true })
+  tamanoBytes!: number | null;
+
+  @ApiProperty({
+    enum: ['pendiente', 'validado', 'observado'],
+    example: 'pendiente',
+  })
+  estado!: estado_documento;
+
+  @ApiProperty({ example: null, nullable: true })
+  observacion!: string | null;
+
+  @ApiProperty({ example: '2026-11-20T10:00:00.000Z' })
+  cargadoEn!: Date;
+
+  @ApiProperty({ example: 2 })
+  numeroVersion!: number;
+
+  @ApiProperty({ example: '5', nullable: true })
+  reemplazaA!: string | null;
+
+  @ApiProperty({ example: true })
+  esActual!: boolean;
+
+  @ApiProperty({ example: '/solicitudes/12/documentos/8/archivo' })
+  url!: string;
+}
+
+/** Estado visible de un requisito para el comerciante. */
+export type EstadoRequisitoDto =
+  | 'faltante'
+  | 'cargado'
+  | 'cumple'
+  | 'no_cumple';
+
+/** Requisito documental con su documento vigente y sus versiones. */
+export class RequisitoEstadoSolicitudDto {
+  @ApiProperty({ example: '1' })
+  id!: string;
+
+  @ApiProperty({ example: 'Documento de identidad' })
+  nombre!: string;
+
+  @ApiProperty({ example: 'Copia legible del documento.', nullable: true })
+  descripcion!: string | null;
+
+  @ApiProperty({ example: true })
+  obligatorio!: boolean;
+
+  @ApiProperty({ example: null, nullable: true })
+  tipoActividad!: string | null;
+
+  @ApiProperty({ example: 10 })
+  orden!: number;
+
+  @ApiProperty({
+    enum: ['faltante', 'cargado', 'cumple', 'no_cumple'],
+    example: 'cargado',
+  })
+  estado!: EstadoRequisitoDto;
+
+  @ApiProperty({
+    type: DocumentoVersionSolicitudDto,
+    nullable: true,
+  })
+  documentoActual!: DocumentoVersionSolicitudDto | null;
+
+  @ApiProperty({ type: [DocumentoVersionSolicitudDto] })
+  versiones!: DocumentoVersionSolicitudDto[];
+}
+
+export class RequisitosSolicitudDetalleResponseDto {
+  @ApiProperty({ example: '12' })
+  solicitudId!: string;
+
+  @ApiProperty({ example: 'SOL-2026-00012' })
+  numeroRadicado!: string;
+
+  @ApiProperty({ enum: ESTADOS_SOLICITUD, example: 'devuelta' })
+  estado!: estado_solicitud;
+
+  @ApiProperty({ example: 'Artesanías', nullable: true })
+  actividad!: string | null;
+
+  @ApiProperty({ example: true })
+  puedeCargar!: boolean;
+
+  @ApiProperty({ example: null, nullable: true })
+  motivoBloqueo!: string | null;
+
+  @ApiProperty({ type: [String], example: ['RUT'] })
+  faltantes!: string[];
+
+  @ApiProperty({ type: [RequisitoEstadoSolicitudDto] })
+  requisitos!: RequisitoEstadoSolicitudDto[];
+
+  @ApiProperty({ type: [DocumentoSolicitudDto] })
+  otrosDocumentos!: DocumentoSolicitudDto[];
+}
+
+/** Cuerpo multipart de `POST /solicitudes/:id/documentos`. */
+export class CargarDocumentoSolicitudFormDto {
+  @ApiProperty({ example: '1' })
+  @IsString({ message: 'El requisito documental es obligatorio' })
+  @Matches(FORMATO_ID, {
+    message: 'El identificador del requisito no es válido',
+  })
+  requisitoId!: string;
+}
+
+export class RespuestaCargaDocumentoSolicitudDto {
+  @ApiProperty({ example: 'Documento reemplazado correctamente.' })
+  mensaje!: string;
+
+  @ApiProperty({ enum: ESTADOS_SOLICITUD, example: 'en_revision' })
+  estadoSolicitud!: estado_solicitud;
+
+  @ApiProperty({ example: true })
+  volvioARevision!: boolean;
+
+  @ApiProperty({ type: RequisitoEstadoSolicitudDto })
+  requisito!: RequisitoEstadoSolicitudDto;
+
+  @ApiProperty({ type: [String], example: [] })
+  faltantes!: string[];
+}
+
 export class ActorSolicitudDto {
   @ApiProperty({ example: '3' })
   id!: string;

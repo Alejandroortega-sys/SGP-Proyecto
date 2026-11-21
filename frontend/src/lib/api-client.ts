@@ -51,8 +51,11 @@ import type {
   RespuestaEstadoModulo,
   RespuestaEstadoZona,
   RespuestaLogin,
+  ProgresoSubida,
   RespuestaMensaje,
+  RespuestaCargaDocumentoSolicitud,
   RespuestaRadicacion,
+  RespuestaRequisitosSolicitud,
   RequisitosSolicitudResponse,
   RespuestaRegistroComerciante,
   RespuestaRegistroOrganizador,
@@ -1198,4 +1201,130 @@ export function descargarDocumentoSolicitud(
     false,
     "application/pdf,image/jpeg,image/png,application/octet-stream",
   );
+}
+
+/** Lista los requisitos documentales de una solicitud con sus versiones. */
+export function listarRequisitosSolicitud(
+  solicitudId: string,
+): Promise<RespuestaRequisitosSolicitud> {
+  return peticion<RespuestaRequisitosSolicitud>(
+    `/solicitudes/${solicitudId}/requisitos`,
+  );
+}
+
+function errorDesdeXhr(xhr: XMLHttpRequest): ApiError {
+  try {
+    const cuerpo = JSON.parse(xhr.responseText) as CuerpoError;
+    const mensajes = Array.isArray(cuerpo.message)
+      ? cuerpo.message
+      : [cuerpo.message];
+    return new ApiError(xhr.status, mensajes.join("\n"), mensajes);
+  } catch {
+    return new ApiError(
+      xhr.status,
+      "Ocurrió un error inesperado. Intenta de nuevo.",
+    );
+  }
+}
+
+function subirDocumentoConProgreso(
+  solicitudId: string,
+  requisitoId: string,
+  archivo: File,
+  onProgress?: (progreso: ProgresoSubida) => void,
+): Promise<RespuestaCargaDocumentoSolicitud> {
+  return new Promise((resolver, rechazar) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${URL_BASE}/solicitudes/${solicitudId}/documentos`);
+    const token = obtenerAccessToken();
+    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    xhr.setRequestHeader("Accept", "application/json");
+
+    xhr.upload.onprogress = (evento) => {
+      if (!evento.lengthComputable || !onProgress) return;
+      const porcentaje = Math.min(
+        100,
+        Math.round((evento.loaded / evento.total) * 100),
+      );
+      onProgress({
+        cargados: evento.loaded,
+        total: evento.total,
+        porcentaje,
+      });
+    };
+
+    xhr.onerror = () => {
+      rechazar(
+        new ApiError(
+          0,
+          "No pudimos conectar con el servidor. Verifica tu conexión e inténtalo de nuevo.",
+        ),
+      );
+    };
+    xhr.onabort = () => {
+      rechazar(new ApiError(0, "La carga del documento fue cancelada."));
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          resolver(
+            JSON.parse(
+              xhr.responseText,
+            ) as RespuestaCargaDocumentoSolicitud,
+          );
+        } catch {
+          rechazar(
+            new ApiError(
+              xhr.status,
+              "El servidor respondió con un formato inesperado.",
+            ),
+          );
+        }
+        return;
+      }
+      rechazar(errorDesdeXhr(xhr));
+    };
+
+    const formulario = new FormData();
+    formulario.append("requisitoId", requisitoId);
+    formulario.append("archivo", archivo, archivo.name);
+    xhr.send(formulario);
+  });
+}
+
+/**
+ * Carga o reemplaza un documento con progreso real de subida.
+ *
+ * Si el token venció, renueva la sesión y reintenta una sola vez antes de
+ * redirigir al login.
+ */
+export async function cargarDocumentoSolicitud(
+  solicitudId: string,
+  requisitoId: string,
+  archivo: File,
+  onProgress?: (progreso: ProgresoSubida) => void,
+): Promise<RespuestaCargaDocumentoSolicitud> {
+  try {
+    return await subirDocumentoConProgreso(
+      solicitudId,
+      requisitoId,
+      archivo,
+      onProgress,
+    );
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      const token = await rotarSesion();
+      if (token) {
+        return subirDocumentoConProgreso(
+          solicitudId,
+          requisitoId,
+          archivo,
+          onProgress,
+        );
+      }
+      limpiarSesion();
+      redirigirALogin();
+    }
+    throw error;
+  }
 }

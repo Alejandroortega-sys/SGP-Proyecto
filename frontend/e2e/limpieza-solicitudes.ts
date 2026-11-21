@@ -54,7 +54,7 @@ export async function eliminarSolicitudesPrueba(
       await cliente.query(
         `DELETE FROM notificaciones
           WHERE usuario_id = (SELECT id FROM usuarios WHERE correo = $1)
-            AND tipo = 'solicitud_radicada'
+            AND tipo IN ('solicitud_radicada', 'solicitud_en_revision')
             AND creada_en > now() - interval '1 day'`,
         [correo],
       );

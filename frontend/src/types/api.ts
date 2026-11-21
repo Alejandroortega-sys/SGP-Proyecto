@@ -1260,6 +1260,51 @@ export interface DocumentoSolicitud {
   url: string;
 }
 
+export interface DocumentoVersionSolicitud extends DocumentoSolicitud {
+  requisitoId: string | null;
+  numeroVersion: number;
+  reemplazaA: string | null;
+  esActual: boolean;
+}
+
+export type EstadoRequisitoDocumental =
+  | "faltante"
+  | "cargado"
+  | "cumple"
+  | "no_cumple";
+
+export interface RequisitoSolicitudEstado extends RequisitoDocumental {
+  estado: EstadoRequisitoDocumental;
+  documentoActual: DocumentoVersionSolicitud | null;
+  versiones: DocumentoVersionSolicitud[];
+}
+
+export interface RespuestaRequisitosSolicitud {
+  solicitudId: string;
+  numeroRadicado: string;
+  estado: EstadoSolicitud;
+  actividad: string | null;
+  puedeCargar: boolean;
+  motivoBloqueo: string | null;
+  faltantes: string[];
+  requisitos: RequisitoSolicitudEstado[];
+  otrosDocumentos: DocumentoSolicitud[];
+}
+
+export interface RespuestaCargaDocumentoSolicitud {
+  mensaje: string;
+  estadoSolicitud: EstadoSolicitud;
+  volvioARevision: boolean;
+  requisito: RequisitoSolicitudEstado;
+  faltantes: string[];
+}
+
+export interface ProgresoSubida {
+  cargados: number;
+  total: number;
+  porcentaje: number;
+}
+
 export interface ActorSolicitud {
   id: string;
   nombre: string;

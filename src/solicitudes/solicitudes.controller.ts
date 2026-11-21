@@ -8,10 +8,11 @@ import {
   Query,
   Res,
   StreamableFile,
+  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -41,14 +42,17 @@ import {
   TIPOS_MIME_DOCUMENTO,
 } from './documentos';
 import {
+  CargarDocumentoSolicitudFormDto,
   ConsultarDisponibilidadQueryDto,
   DisponibilidadSolicitudDto,
   ListarMisSolicitudesQueryDto,
   ListarSolicitudesResponseDto,
   RadicarSolicitudFormDto,
   RadicarSolicitudResponseDto,
+  RequisitosSolicitudDetalleResponseDto,
   RequisitosSolicitudQueryDto,
   RequisitosSolicitudResponseDto,
+  RespuestaCargaDocumentoSolicitudDto,
   SolicitudTemporalDetalleDto,
 } from './dto/solicitudes.dto';
 import { SolicitudesService } from './solicitudes.service';
@@ -190,6 +194,74 @@ export class SolicitudesController {
     @UploadedFiles() archivos: Express.Multer.File[] = [],
   ): Promise<RadicarSolicitudResponseDto> {
     return this.solicitudes.radicar(usuario, form, archivos);
+  }
+
+  @ApiOperation({
+    summary: 'Cargar o reemplazar un documento de la solicitud',
+    description:
+      'Valida tipo y tamaño, guarda el archivo en el directorio privado y conserva la versión anterior mediante reemplaza_a. Solo el comerciante dueño puede cargar documentos en estado radicada o devuelta.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        requisitoId: { type: 'string', example: '1' },
+        archivo: { type: 'string', format: 'binary' },
+      },
+      required: ['requisitoId', 'archivo'],
+    },
+  })
+  @ApiCreatedResponse({ type: RespuestaCargaDocumentoSolicitudDto })
+  @ApiBadRequestResponse({
+    description: 'Archivo o requisito inválido',
+  })
+  @ApiConflictResponse({
+    description: 'La solicitud no admite cambios en su estado actual',
+  })
+  @ApiNotFoundResponse({
+    description: 'La solicitud no existe o no pertenece al usuario',
+  })
+  @ApiUnauthorizedResponse({ description: 'Token ausente o inválido' })
+  @ApiForbiddenResponse({ description: 'El rol no es comerciante' })
+  @Roles('comerciante')
+  @Post(':id/documentos')
+  @UseInterceptors(
+    FileInterceptor('archivo', opcionesDocumentos()),
+  )
+  cargarDocumento(
+    @UsuarioActual() usuario: UsuarioAutenticado,
+    @Param('id') id: string,
+    @Body() form: CargarDocumentoSolicitudFormDto,
+    @UploadedFile() archivo?: Express.Multer.File,
+  ): Promise<RespuestaCargaDocumentoSolicitudDto> {
+    return this.solicitudes.cargarDocumentoSolicitud(
+      usuario,
+      id,
+      form,
+      archivo,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Listar los requisitos documentales de una solicitud',
+    description:
+      'Devuelve el catálogo de requisitos de la actividad con su estado, la versión vigente y el historial de versiones. Solo el comerciante dueño puede consultarlo.',
+  })
+  @ApiOkResponse({ type: RequisitosSolicitudDetalleResponseDto })
+  @ApiBadRequestResponse({ description: 'Identificador inválido' })
+  @ApiNotFoundResponse({
+    description: 'La solicitud no existe o no pertenece al usuario',
+  })
+  @ApiUnauthorizedResponse({ description: 'Token ausente o inválido' })
+  @ApiForbiddenResponse({ description: 'El rol no es comerciante' })
+  @Roles('comerciante')
+  @Get(':id/requisitos')
+  listarRequisitosSolicitud(
+    @UsuarioActual() usuario: UsuarioAutenticado,
+    @Param('id') id: string,
+  ): Promise<RequisitosSolicitudDetalleResponseDto> {
+    return this.solicitudes.listarRequisitosSolicitud(usuario.id, id);
   }
 
   @ApiOperation({
