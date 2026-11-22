@@ -1,14 +1,18 @@
-import { expect, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, type APIRequestContext, type Page } from '@playwright/test';
 
-export const API_URL = "http://localhost:3000";
+export const API_URL = 'http://localhost:3000';
 
 export const CREDENCIALES = {
-  administrador: { correo: "admin@tulua.gov.co", password: "Admin1234" },
-  revisor: { correo: "revisor@tulua.gov.co", password: "Admin1234" },
-  comerciante: { correo: "maria.gomez@gmail.com", password: "Comerciante123" },
+  administrador: { correo: 'admin@tulua.gov.co', password: 'Admin1234' },
+  revisor: { correo: 'revisor@tulua.gov.co', password: 'Admin1234' },
+  comerciante: { correo: 'maria.gomez@gmail.com', password: 'Comerciante123' },
+  comerciante2: {
+    correo: 'jose.perez@hotmail.com',
+    password: 'Comerciante123',
+  },
   organizador: {
-    correo: "luis.alvarez@agrovalle.org",
-    password: "Organizador123",
+    correo: 'luis.alvarez@agrovalle.org',
+    password: 'Organizador123',
   },
 } as const;
 
@@ -17,7 +21,7 @@ export const CREDENCIALES = {
  * añaden un asterisco al texto de la etiqueta, por eso no se usa `exact`.
  */
 export function campo(page: Page, texto: string) {
-  const escapado = texto.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const escapado = texto.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return page.getByLabel(new RegExp(`^${escapado}`));
 }
 
@@ -27,27 +31,111 @@ export async function iniciarSesion(
   password: string,
   rutaEsperada: string,
 ): Promise<void> {
-  await page.goto("/login");
-  await campo(page, "Correo electrónico").fill(correo);
-  await campo(page, "Contraseña").fill(password);
-  await page.getByRole("button", { name: "Iniciar Sesión" }).click();
+  await page.goto('/login');
+  await campo(page, 'Correo electrónico').fill(correo);
+  await campo(page, 'Contraseña').fill(password);
+  await page.getByRole('button', { name: 'Iniciar Sesión' }).click();
   await page.waitForURL(`**${rutaEsperada}`);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState('networkidle');
 }
 
 export async function cerrarSesion(page: Page): Promise<void> {
   await page
-    .getByRole("button", { name: "Cerrar sesión", exact: true })
+    .getByRole('button', { name: 'Cerrar sesión', exact: true })
     .click();
-  await page.waitForURL("**/login");
+  await page.waitForURL('**/login');
 }
 
 export async function tokenSesion(page: Page): Promise<string> {
   const token = await page.evaluate(() =>
-    window.sessionStorage.getItem("sgp.accessToken"),
+    window.sessionStorage.getItem('sgp.accessToken'),
   );
-  if (!token) throw new Error("No hay access token en sessionStorage.");
+  if (!token) throw new Error('No hay access token en sessionStorage.');
   return token;
+}
+
+/** Inicia sesión contra la API y devuelve el access token. */
+export async function iniciarSesionApi(
+  request: APIRequestContext,
+  correo: string,
+  password: string,
+): Promise<string> {
+  const respuesta = await request.post(`${API_URL}/auth/login`, {
+    data: { correo, password },
+  });
+  expect(respuesta.ok()).toBeTruthy();
+  const cuerpo = (await respuesta.json()) as { accessToken: string };
+  return cuerpo.accessToken;
+}
+
+/** Cambia el estado de una solicitud como gestor. */
+export async function cambiarEstadoSolicitudApi(
+  request: APIRequestContext,
+  token: string,
+  solicitudId: string,
+  estado: 'en_revision' | 'devuelta' | 'aprobada' | 'rechazada',
+  extra: { observacion?: string; motivoRechazo?: string } = {},
+): Promise<void> {
+  const respuesta = await request.patch(
+    `${API_URL}/gestor/solicitudes/${solicitudId}/estado`,
+    {
+      ...cabecerasApi(token),
+      data: { estado, ...extra },
+    },
+  );
+  expect(respuesta.ok()).toBeTruthy();
+}
+
+/** Radica una solicitud con documentos por la API, sin recorrer el formulario. */
+export async function radicarSolicitudApi(
+  request: APIRequestContext,
+  token: string,
+  datos: {
+    espacioId: string;
+    actividad: string;
+    productoIds: string[];
+    fechaInicio: string;
+    fechaFin: string;
+    horaInicio: string;
+    horaFin: string;
+  },
+  documentos: Array<{
+    requisitoId: string;
+    nombreOriginal: string;
+    buffer: Buffer;
+  }>,
+): Promise<{ id: string; numeroRadicado: string }> {
+  const formulario = new FormData();
+  formulario.append('datos', JSON.stringify(datos));
+  formulario.append(
+    'documentosMeta',
+    JSON.stringify(
+      documentos.map(({ requisitoId, nombreOriginal }) => ({
+        requisitoId,
+        nombreOriginal,
+      })),
+    ),
+  );
+  for (const documento of documentos) {
+    formulario.append(
+      'documentos',
+      new Blob([new Uint8Array(documento.buffer)], {
+        type: 'application/pdf',
+      }),
+      documento.nombreOriginal,
+    );
+  }
+
+  const respuesta = await request.post(`${API_URL}/solicitudes`, {
+    ...cabecerasApi(token),
+    multipart: formulario,
+  });
+  if (!respuesta.ok()) {
+    throw new Error(
+      `No se pudo radicar la solicitud (${respuesta.status()}): ${await respuesta.text()}`,
+    );
+  }
+  return (await respuesta.json()) as { id: string; numeroRadicado: string };
 }
 
 export function cabecerasApi(token: string): {
@@ -60,12 +148,26 @@ export async function obtenerNotificaciones(
   request: APIRequestContext,
   token: string,
   soloNoLeidas = false,
-): Promise<Array<{ id: string; leida: boolean }>> {
-  const url = `${API_URL}/notificaciones?limite=5${soloNoLeidas ? "&leida=false" : ""}`;
+): Promise<
+  Array<{
+    id: string;
+    leida: boolean;
+    asunto: string;
+    cuerpo: string | null;
+    solicitudId: string | null;
+  }>
+> {
+  const url = `${API_URL}/notificaciones?limite=20${soloNoLeidas ? '&leida=false' : ''}`;
   const respuesta = await request.get(url, cabecerasApi(token));
   expect(respuesta.ok()).toBeTruthy();
   const cuerpo = (await respuesta.json()) as {
-    datos: Array<{ id: string; leida: boolean }>;
+    datos: Array<{
+      id: string;
+      leida: boolean;
+      asunto: string;
+      cuerpo: string | null;
+      solicitudId: string | null;
+    }>;
   };
   return cuerpo.datos;
 }

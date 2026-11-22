@@ -1,12 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsInt,
-  IsOptional,
-  Max,
-  Min,
-} from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 /** Convierte `"true"`/`"false"` de query string a boolean. */
 function aBooleano(valor: unknown): unknown {
@@ -57,6 +51,10 @@ export class NotificacionResponseDto {
   /** Identificador de la notificación (BIGINT como string). */
   @ApiProperty({ example: '12' })
   id!: string;
+
+  /** Solicitud relacionada, o `null` para avisos de cuenta. */
+  @ApiProperty({ example: null, nullable: true })
+  solicitudId!: string | null;
 
   /** Tipo interno de la notificación. */
   @ApiProperty({ example: 'cambio_password' })

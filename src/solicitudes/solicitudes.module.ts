@@ -1,17 +1,23 @@
 import { Module } from '@nestjs/common';
 import { CorreoModule } from '../correo/correo.module';
+import { NotificacionesModule } from '../notificaciones/notificaciones.module';
+import { GestorSolicitudesController } from './gestor-solicitudes.controller';
 import { SolicitudesController } from './solicitudes.controller';
 import { SolicitudesService } from './solicitudes.service';
 
 /**
- * Radicación de solicitudes de uso temporal del espacio público (HU-16).
+ * Radicación, seguimiento y resolución de solicitudes de uso temporal.
  *
- * `PrismaModule` y `CorreoModule` son globales; la autenticación y los roles
- * los aplican los guards globales de `AppModule`.
+ * - `SolicitudesController`: radicación, documentos y seguimiento del
+ *   comerciante (HU-16 a HU-18).
+ * - `GestorSolicitudesController`: transiciones de estado del gestor (HU-18).
+ *
+ * `PrismaModule` es global; la autenticación y los roles los aplican los
+ * guards globales de `AppModule`.
  */
 @Module({
-  imports: [CorreoModule],
-  controllers: [SolicitudesController],
+  imports: [CorreoModule, NotificacionesModule],
+  controllers: [SolicitudesController, GestorSolicitudesController],
   providers: [SolicitudesService],
 })
 export class SolicitudesModule {}

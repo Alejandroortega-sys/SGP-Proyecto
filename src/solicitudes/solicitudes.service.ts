@@ -10,6 +10,11 @@ import { validate } from 'class-validator';
 import { access } from 'node:fs/promises';
 import type { UsuarioAutenticado } from '../auth/interfaces/usuario-autenticado.interface';
 import { fijarActorAuditoria } from '../common/auditoria';
+import {
+  esEstadoFinalSolicitud,
+  etiquetaEstadoSolicitud,
+  puedeCambiarEstadoSolicitud,
+} from '../common/estados-solicitud';
 import { parseIdBigint } from '../common/parse-id';
 import { CorreoService } from '../correo/correo.service';
 import {
@@ -18,7 +23,12 @@ import {
   type estado_solicitud,
   type tipo_espacio,
 } from '../generated/prisma/client';
+import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  CambiarEstadoSolicitudDto,
+  CambiarEstadoSolicitudResponseDto,
+} from './dto/estado-solicitud.dto';
 import {
   agruparVersionesDocumento,
   eliminarDocumentoSolicitud,
@@ -205,7 +215,21 @@ interface FilaSolicitudDocumentos {
   id: bigint;
   numero_radicado: string;
   estado: estado_solicitud;
-  espacios_temporales: { actividad_permitida: string | null } | null;
+  espacios_temporales: {
+    nombre: string;
+    actividad_permitida: string | null;
+  } | null;
+}
+
+/** Fila bloqueada para cambiar el estado de una solicitud. */
+interface FilaEstadoSolicitud {
+  id: bigint;
+  numero_radicado: string;
+  estado: estado_solicitud;
+  comerciante_id: bigint;
+  correo: string;
+  nombre: string;
+  espacio_nombre: string | null;
 }
 
 /**
@@ -222,6 +246,7 @@ export class SolicitudesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly correo: CorreoService,
+    private readonly notificaciones: NotificacionesService,
   ) {}
 
   /** Lista las solicitudes radicadas del comerciante autenticado. */
@@ -292,6 +317,168 @@ export class SolicitudesService {
   }
 
   /**
+   * Cambia el estado de una solicitud desde el panel del gestor (HU-18).
+   *
+   * Implementa únicamente las transiciones que disparan las notificaciones de
+   * seguimiento. La revisión documental de HU-19 y la asignación de espacio de
+   * HU-20 se construirán sobre este mismo flujo.
+   */
+  async cambiarEstado(
+    usuario: UsuarioAutenticado,
+    idSolicitud: string,
+    dto: CambiarEstadoSolicitudDto,
+  ): Promise<CambiarEstadoSolicitudResponseDto> {
+    const solicitudId = parseIdBigint(idSolicitud);
+    const gestorId = parseIdBigint(usuario.id);
+    const observacion = dto.observacion?.trim() || null;
+    const motivoRechazo = dto.motivoRechazo?.trim() || null;
+
+    if (dto.estado === 'devuelta' && !observacion) {
+      throw new BadRequestException(
+        'Para devolver la solicitud debes escribir una observación.',
+      );
+    }
+    if (dto.estado === 'rechazada' && !motivoRechazo) {
+      throw new BadRequestException(
+        'Para rechazar la solicitud debes escribir el motivo del rechazo.',
+      );
+    }
+
+    const resultado = await this.prisma.$transaction(async (tx) => {
+      await fijarActorAuditoria(tx, gestorId);
+
+      const filas = await tx.$queryRaw<FilaEstadoSolicitud[]>`
+        SELECT
+          s.id,
+          s.numero_radicado,
+          s.estado,
+          s.comerciante_id,
+          u.correo,
+          u.nombre,
+          e.nombre AS espacio_nombre
+        FROM solicitudes s
+        JOIN usuarios u ON u.id = s.comerciante_id
+        LEFT JOIN espacios_temporales e ON e.id = s.espacio_id
+        WHERE s.id = ${solicitudId}
+        FOR UPDATE OF s
+      `;
+      const actual = filas[0];
+      if (!actual) {
+        throw new NotFoundException('La solicitud no existe');
+      }
+
+      if (!puedeCambiarEstadoSolicitud(actual.estado, dto.estado)) {
+        const motivo = esEstadoFinalSolicitud(actual.estado)
+          ? `La solicitud está en estado «${etiquetaEstadoSolicitud(actual.estado)}» y ya no admite cambios.`
+          : `No se puede pasar de «${etiquetaEstadoSolicitud(actual.estado)}» a «${etiquetaEstadoSolicitud(dto.estado)}».`;
+        throw new ConflictException(motivo);
+      }
+
+      const esDecision =
+        dto.estado === 'aprobada' || dto.estado === 'rechazada';
+      const observacionHistorial =
+        observacion ??
+        motivoRechazo ??
+        this.observacionPorDefectoEstado(dto.estado);
+
+      const actualizada = await tx.solicitudes.update({
+        where: { id: solicitudId },
+        data: {
+          estado: dto.estado,
+          revisor_id: gestorId,
+          ...(esDecision ? { decidida_en: new Date() } : {}),
+          ...(dto.estado === 'rechazada'
+            ? { motivo_rechazo: motivoRechazo }
+            : {}),
+        },
+        select: {
+          id: true,
+          numero_radicado: true,
+          estado: true,
+          motivo_rechazo: true,
+          decidida_en: true,
+          actualizado_en: true,
+        },
+      });
+
+      await tx.solicitud_historial.create({
+        data: {
+          solicitud_id: solicitudId,
+          estado_anterior: actual.estado,
+          estado_nuevo: dto.estado,
+          actor_id: gestorId,
+          observacion: observacionHistorial,
+        },
+      });
+
+      await this.notificaciones.crearCambioEstadoSolicitud(tx, {
+        solicitudId,
+        numeroRadicado: actual.numero_radicado,
+        usuarioId: actual.comerciante_id,
+        estadoAnterior: actual.estado,
+        estadoNuevo: dto.estado,
+        espacio: actual.espacio_nombre,
+        observacion,
+        motivoRechazo,
+      });
+
+      return {
+        actual,
+        actualizada,
+        observacionHistorial,
+        estadoAnterior: actual.estado,
+      };
+    });
+
+    const correo = await this.notificaciones.enviarCorreoCambioEstadoSolicitud(
+      {
+        correo: resultado.actual.correo,
+        nombre: resultado.actual.nombre,
+      },
+      {
+        solicitudId,
+        numeroRadicado: resultado.actual.numero_radicado,
+        usuarioId: resultado.actual.comerciante_id,
+        estadoAnterior: resultado.estadoAnterior,
+        estadoNuevo: dto.estado,
+        espacio: resultado.actual.espacio_nombre,
+        observacion,
+        motivoRechazo,
+      },
+    );
+
+    return {
+      id: resultado.actualizada.id.toString(),
+      numeroRadicado: resultado.actualizada.numero_radicado,
+      estadoAnterior: resultado.estadoAnterior,
+      estado: resultado.actualizada.estado,
+      observacion: resultado.observacionHistorial,
+      motivoRechazo: resultado.actualizada.motivo_rechazo,
+      decididaEn: resultado.actualizada.decidida_en,
+      actualizadoEn: resultado.actualizada.actualizado_en,
+      correoEnviado: correo.correoEnviado,
+      mensajeCorreo: correo.mensajeCorreo,
+      mensaje: `Solicitud actualizada a «${etiquetaEstadoSolicitud(dto.estado)}».`,
+    };
+  }
+
+  /** Texto de historial cuando el gestor no escribió una observación. */
+  private observacionPorDefectoEstado(estado: estado_solicitud): string {
+    switch (estado) {
+      case 'en_revision':
+        return 'El gestor inició la revisión de la solicitud.';
+      case 'aprobada':
+        return 'El gestor aprobó la solicitud.';
+      case 'devuelta':
+        return 'El gestor devolvió la solicitud para corrección.';
+      case 'rechazada':
+        return 'El gestor rechazó la solicitud.';
+      default:
+        return `La solicitud cambió al estado «${etiquetaEstadoSolicitud(estado)}».`;
+    }
+  }
+
+  /**
    * Catálogo de requisitos documentales para una actividad.
    *
    * Los requisitos globales (`tipo_actividad = NULL`) aplican a todas las
@@ -358,11 +545,7 @@ export class SolicitudesService {
       select: SELECT_DOCUMENTO_VERSION,
     });
 
-    return this.construirRequisitosSolicitud(
-      solicitud,
-      requisitos,
-      documentos,
-    );
+    return this.construirRequisitosSolicitud(solicitud, requisitos, documentos);
   }
 
   /**
@@ -420,6 +603,7 @@ export class SolicitudesService {
     let rutaGuardada: string | null = null;
     let reemplazo = false;
     let volvioARevision = false;
+    let observacionRevision: string | null = null;
 
     try {
       await this.prisma.$transaction(async (tx) => {
@@ -446,8 +630,7 @@ export class SolicitudesService {
           select: SELECT_DOCUMENTO_VERSION,
         });
         const delRequisito = documentos.filter(
-          (documento) =>
-            documento.requisito_id?.toString() === requisito.id,
+          (documento) => documento.requisito_id?.toString() === requisito.id,
         );
         const { actual } = agruparVersionesDocumento(delRequisito);
         reemplazo = actual !== null;
@@ -503,29 +686,28 @@ export class SolicitudesService {
           if (todosCorregidos) {
             await tx.$executeRaw`
               UPDATE solicitudes
-                 SET estado = 'en_revision',
-                     actualizado_en = now()
+                 SET estado = 'en_revision'
                WHERE id = ${solicitudId}
             `;
+            observacionRevision =
+              'El comerciante corrigió los documentos observados y la solicitud vuelve a revisión.';
             await tx.solicitud_historial.create({
               data: {
                 solicitud_id: solicitudId,
                 estado_anterior: 'devuelta',
                 estado_nuevo: 'en_revision',
                 actor_id: usuarioId,
-                observacion:
-                  'El comerciante corrigió los documentos observados y la solicitud vuelve a revisión.',
+                observacion: observacionRevision,
               },
             });
-            await tx.notificaciones.create({
-              data: {
-                usuario_id: usuarioId,
-                tipo: 'solicitud_en_revision',
-                asunto: `Solicitud ${solicitud.numero_radicado} en revisión`,
-                cuerpo: `Tu solicitud ${solicitud.numero_radicado} volvió a revisión después de corregir los documentos observados.`,
-                canal: 'app',
-                leida: false,
-              },
+            await this.notificaciones.crearCambioEstadoSolicitud(tx, {
+              solicitudId,
+              numeroRadicado: solicitud.numero_radicado,
+              usuarioId,
+              estadoAnterior: 'devuelta',
+              estadoNuevo: 'en_revision',
+              espacio: solicitud.espacios_temporales?.nombre ?? null,
+              observacion: observacionRevision,
             });
             volvioARevision = true;
           }
@@ -549,6 +731,21 @@ export class SolicitudesService {
       throw new Error('No se pudo leer el requisito actualizado');
     }
 
+    const correo = volvioARevision
+      ? await this.notificaciones.enviarCorreoCambioEstadoSolicitud(
+          { correo: usuario.correo, nombre: usuario.nombre },
+          {
+            solicitudId,
+            numeroRadicado: solicitud.numero_radicado,
+            usuarioId,
+            estadoAnterior: 'devuelta',
+            estadoNuevo: 'en_revision',
+            espacio: solicitud.espacios_temporales?.nombre ?? null,
+            observacion: observacionRevision,
+          },
+        )
+      : { correoEnviado: true, mensajeCorreo: null };
+
     return {
       mensaje: reemplazo
         ? 'Documento reemplazado correctamente.'
@@ -557,6 +754,8 @@ export class SolicitudesService {
       volvioARevision,
       requisito: requisitoActualizado,
       faltantes: actualizada.faltantes,
+      correoEnviado: correo.correoEnviado,
+      mensajeCorreo: correo.mensajeCorreo,
     };
   }
 
@@ -717,15 +916,13 @@ export class SolicitudesService {
           },
         });
 
-        await tx.notificaciones.create({
-          data: {
-            usuario_id: usuarioId,
-            tipo: 'solicitud_radicada',
-            asunto: `Solicitud radicada ${fila.numero_radicado}`,
-            cuerpo: `Tu solicitud para ${evaluacion.espacio.nombre} quedó radicada con el número ${fila.numero_radicado}.`,
-            canal: 'app',
-            leida: false,
-          },
+        await this.notificaciones.crearCambioEstadoSolicitud(tx, {
+          solicitudId: fila.id,
+          numeroRadicado: fila.numero_radicado,
+          usuarioId,
+          estadoAnterior: 'borrador',
+          estadoNuevo: 'radicada',
+          espacio: evaluacion.espacio.nombre,
         });
 
         return fila;
@@ -816,7 +1013,9 @@ export class SolicitudesService {
     try {
       await access(ruta);
     } catch {
-      throw new NotFoundException('El archivo del documento no está disponible');
+      throw new NotFoundException(
+        'El archivo del documento no está disponible',
+      );
     }
 
     return {
@@ -941,7 +1140,9 @@ export class SolicitudesService {
     metas: DocumentoMetaDto[],
     archivos: Express.Multer.File[],
   ): DocumentoParaGuardar[] {
-    const porId = new Map(requisitos.map((requisito) => [requisito.id, requisito]));
+    const porId = new Map(
+      requisitos.map((requisito) => [requisito.id, requisito]),
+    );
     const vistos = new Set<string>();
 
     for (const meta of metas) {
@@ -1249,7 +1450,7 @@ export class SolicitudesService {
         numero_radicado: true,
         estado: true,
         espacios_temporales: {
-          select: { actividad_permitida: true },
+          select: { nombre: true, actividad_permitida: true },
         },
       },
     });
@@ -1263,16 +1464,7 @@ export class SolicitudesService {
 
   /** Mensaje de bloqueo cuando el estado no admite cambios de documentos. */
   private motivoBloqueoDocumentos(estado: estado_solicitud): string {
-    const etiquetas: Record<estado_solicitud, string> = {
-      borrador: 'Borrador',
-      radicada: 'Radicada',
-      en_revision: 'En revisión',
-      devuelta: 'Requiere corrección',
-      aprobada: 'Aprobada',
-      rechazada: 'Rechazada',
-      cancelada: 'Cancelada',
-    };
-    return `La solicitud está en estado «${etiquetas[estado]}» y no admite cambios en sus documentos.`;
+    return `La solicitud está en estado «${etiquetaEstadoSolicitud(estado)}» y no admite cambios en sus documentos.`;
   }
 
   /**
@@ -1290,8 +1482,7 @@ export class SolicitudesService {
     for (const requisito of requisitos) {
       const grupo = agruparVersionesDocumento(
         documentos.filter(
-          (documento) =>
-            documento.requisito_id?.toString() === requisito.id,
+          (documento) => documento.requisito_id?.toString() === requisito.id,
         ),
       );
       if (grupo.actual?.estado === 'observado') {
@@ -1355,8 +1546,7 @@ export class SolicitudesService {
 
     const faltantes = requisitosEstado
       .filter(
-        (requisito) =>
-          requisito.obligatorio && requisito.estado === 'faltante',
+        (requisito) => requisito.obligatorio && requisito.estado === 'faltante',
       )
       .map((requisito) => requisito.nombre);
 
@@ -1373,7 +1563,9 @@ export class SolicitudesService {
     }
     const otrosDocumentos = [...gruposOtros.values()]
       .map((grupo) => agruparVersionesDocumento(grupo).actual)
-      .filter((documento): documento is FilaDocumentoVersion => documento !== null)
+      .filter(
+        (documento): documento is FilaDocumentoVersion => documento !== null,
+      )
       .sort((a, b) => {
         const fechaA =
           a.cargado_en instanceof Date
@@ -1482,10 +1674,8 @@ export class SolicitudesService {
         id: relacion.productos.id.toString(),
         nombre: relacion.productos.nombre,
       })),
-      documentos: this.documentosVigentes(
-        fila.solicitud_documentos,
-      ).map((documento) =>
-        this.aDocumentoSolicitud(documento, fila.id.toString()),
+      documentos: this.documentosVigentes(fila.solicitud_documentos).map(
+        (documento) => this.aDocumentoSolicitud(documento, fila.id.toString()),
       ),
     };
   }

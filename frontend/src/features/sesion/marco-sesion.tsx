@@ -1,20 +1,21 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
-import { Boton } from "@/components/ui/boton";
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Boton } from '@/components/ui/boton';
 import {
   IconoCerrar,
   IconoEscudo,
   IconoMenu,
   IconoPersona,
-} from "@/components/ui/iconos";
-import { Spinner } from "@/components/ui/spinner";
-import { useSesion } from "@/hooks/use-sesion";
-import { listarNotificaciones } from "@/lib/api-client";
-import { nombreRol, rutaInicio } from "@/lib/rutas";
-import type { RolUsuario } from "@/types/api";
+} from '@/components/ui/iconos';
+import { Spinner } from '@/components/ui/spinner';
+import { useSesion } from '@/hooks/use-sesion';
+import { listarNotificaciones } from '@/lib/api-client';
+import { EVENTO_NOTIFICACIONES_ACTUALIZADAS } from '@/lib/notificaciones';
+import { nombreRol, rutaInicio } from '@/lib/rutas';
+import type { RolUsuario } from '@/types/api';
 
 interface EnlaceSesion {
   href: string;
@@ -24,49 +25,53 @@ interface EnlaceSesion {
 }
 
 const ENLACES: EnlaceSesion[] = [
-  { href: "/comerciante/inicio", texto: "Inicio", roles: ["comerciante"] },
+  { href: '/comerciante/inicio', texto: 'Inicio', roles: ['comerciante'] },
   {
-    href: "/comerciante/espacios",
-    texto: "Espacios",
-    roles: ["comerciante"],
+    href: '/comerciante/espacios',
+    texto: 'Espacios',
+    roles: ['comerciante'],
   },
   {
-    href: "/comerciante/solicitudes",
-    texto: "Mis solicitudes",
-    roles: ["comerciante"],
+    href: '/comerciante/solicitudes',
+    texto: 'Mis solicitudes',
+    roles: ['comerciante'],
   },
-  { href: "/comerciante/perfil", texto: "Mi perfil", roles: ["comerciante"] },
-  { href: "/organizador/inicio", texto: "Inicio", roles: ["organizador"] },
-  { href: "/organizador/perfil", texto: "Mi perfil", roles: ["organizador"] },
+  { href: '/comerciante/perfil', texto: 'Mi perfil', roles: ['comerciante'] },
+  { href: '/organizador/inicio', texto: 'Inicio', roles: ['organizador'] },
+  { href: '/organizador/perfil', texto: 'Mi perfil', roles: ['organizador'] },
   {
-    href: "/organizador/mi-organizacion",
-    texto: "Mi organización",
-    roles: ["organizador"],
+    href: '/organizador/mi-organizacion',
+    texto: 'Mi organización',
+    roles: ['organizador'],
   },
-  { href: "/gestor/panel", texto: "Panel", roles: ["gestor"] },
-  { href: "/gestor/zonas", texto: "Zonas", roles: ["gestor"] },
-  { href: "/gestor/modulos", texto: "Módulos", roles: ["gestor"] },
-  { href: "/gestor/espacios", texto: "Espacios", roles: ["gestor"] },
+  { href: '/gestor/panel', texto: 'Panel', roles: ['gestor'] },
+  { href: '/gestor/zonas', texto: 'Zonas', roles: ['gestor'] },
+  { href: '/gestor/modulos', texto: 'Módulos', roles: ['gestor'] },
+  { href: '/gestor/espacios', texto: 'Espacios', roles: ['gestor'] },
   {
-    href: "/gestor/importaciones",
-    texto: "Importar",
-    roles: ["gestor"],
+    href: '/gestor/importaciones',
+    texto: 'Importar',
+    roles: ['gestor'],
   },
-  { href: "/gestor/usuarios", texto: "Usuarios", roles: ["gestor"] },
-  { href: "/gestor/comerciantes", texto: "Comerciantes", roles: ["gestor"] },
+  { href: '/gestor/usuarios', texto: 'Usuarios', roles: ['gestor'] },
+  { href: '/gestor/comerciantes', texto: 'Comerciantes', roles: ['gestor'] },
   {
-    href: "/gestor/organizaciones",
-    texto: "Organizaciones",
-    roles: ["gestor"],
+    href: '/gestor/organizaciones',
+    texto: 'Organizaciones',
+    roles: ['gestor'],
   },
   {
-    href: "/gestor/auditoria",
-    texto: "Auditoría",
-    roles: ["gestor"],
+    href: '/gestor/auditoria',
+    texto: 'Auditoría',
+    roles: ['gestor'],
     soloAdministrador: true,
   },
-  { href: "/gestor/perfil", texto: "Mi perfil", roles: ["gestor"] },
-  { href: "/notificaciones", texto: "Notificaciones", roles: ["comerciante", "organizador", "gestor"] },
+  { href: '/gestor/perfil', texto: 'Mi perfil', roles: ['gestor'] },
+  {
+    href: '/notificaciones',
+    texto: 'Notificaciones',
+    roles: ['comerciante', 'organizador', 'gestor'],
+  },
 ];
 
 export function MarcoSesion({ children }: { children: ReactNode }) {
@@ -79,19 +84,33 @@ export function MarcoSesion({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let activo = true;
-    listarNotificaciones({ leida: false, pagina: 1, limite: 1 })
-      .then((respuesta) => {
-        if (activo) setNoLeidas(respuesta.noLeidas);
-      })
-      .catch(() => {
-        if (activo) setNoLeidas(0);
-      });
+
+    const actualizarContador = () => {
+      listarNotificaciones({ leida: false, pagina: 1, limite: 1 })
+        .then((respuesta) => {
+          if (activo) setNoLeidas(respuesta.noLeidas);
+        })
+        .catch(() => {
+          if (activo) setNoLeidas(0);
+        });
+    };
+
+    actualizarContador();
+    window.addEventListener(
+      EVENTO_NOTIFICACIONES_ACTUALIZADAS,
+      actualizarContador,
+    );
+
     return () => {
       activo = false;
+      window.removeEventListener(
+        EVENTO_NOTIFICACIONES_ACTUALIZADAS,
+        actualizarContador,
+      );
     };
   }, [pathname]);
 
-  const esAdministrador = usuario?.perfil === "administrador";
+  const esAdministrador = usuario?.perfil === 'administrador';
   const enlaces = ENLACES.filter(
     (enlace) =>
       usuario !== null &&
@@ -104,7 +123,7 @@ export function MarcoSesion({ children }: { children: ReactNode }) {
     setSaliendo(true);
     try {
       await salir();
-      router.replace("/login");
+      router.replace('/login');
     } finally {
       setSaliendo(false);
     }
@@ -115,7 +134,7 @@ export function MarcoSesion({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-borde bg-superficie/95 backdrop-blur">
         <div className="mx-auto flex min-h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
           <Link
-            href={usuario ? rutaInicio(usuario) : "/"}
+            href={usuario ? rutaInicio(usuario) : '/'}
             className="flex min-w-0 items-center gap-2.5 rounded-lg py-1"
           >
             <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primario text-white">
@@ -126,7 +145,9 @@ export function MarcoSesion({ children }: { children: ReactNode }) {
                 SGP Tuluá
               </span>
               <span className="block text-xs font-medium text-primario">
-                {usuario ? nombreRol(usuario.rol) : "Gestión del espacio público"}
+                {usuario
+                  ? nombreRol(usuario.rol)
+                  : 'Gestión del espacio público'}
               </span>
             </span>
           </Link>
@@ -143,15 +164,15 @@ export function MarcoSesion({ children }: { children: ReactNode }) {
                 <Link
                   key={enlace.href}
                   href={enlace.href}
-                  aria-current={activo ? "page" : undefined}
+                  aria-current={activo ? 'page' : undefined}
                   className={
                     activo
-                      ? "whitespace-nowrap rounded-lg bg-primario-suave px-2.5 py-2 text-sm font-semibold text-primario"
-                      : "whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-texto hover:bg-slate-100 hover:text-titulo"
+                      ? 'whitespace-nowrap rounded-lg bg-primario-suave px-2.5 py-2 text-sm font-semibold text-primario'
+                      : 'whitespace-nowrap rounded-lg px-2.5 py-2 text-sm font-medium text-texto hover:bg-slate-100 hover:text-titulo'
                   }
                 >
                   {enlace.texto}
-                  {enlace.href === "/notificaciones" && noLeidas > 0 ? (
+                  {enlace.href === '/notificaciones' && noLeidas > 0 ? (
                     <span className="ml-1.5 rounded-full bg-rose-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
                       {noLeidas}
                     </span>
@@ -171,8 +192,8 @@ export function MarcoSesion({ children }: { children: ReactNode }) {
                   {usuario.nombre}
                 </span>
                 <span className="rounded-full bg-primario-suave px-2 py-0.5 text-[11px] font-semibold uppercase text-primario">
-                  {usuario.rol === "gestor"
-                    ? usuario.perfil ?? "gestor"
+                  {usuario.rol === 'gestor'
+                    ? (usuario.perfil ?? 'gestor')
                     : usuario.rol}
                 </span>
               </span>
@@ -192,7 +213,7 @@ export function MarcoSesion({ children }: { children: ReactNode }) {
               onClick={() => setMenuAbierto((valor) => !valor)}
               aria-expanded={menuAbierto}
               aria-controls="menu-sesion"
-              aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
+              aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
               className="flex size-11 items-center justify-center rounded-lg text-titulo hover:bg-slate-100 lg:hidden"
             >
               {menuAbierto ? <IconoCerrar /> : <IconoMenu />}
@@ -217,7 +238,7 @@ export function MarcoSesion({ children }: { children: ReactNode }) {
                 className="flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-texto hover:bg-slate-100"
               >
                 {enlace.texto}
-                {enlace.href === "/notificaciones" && noLeidas > 0 ? (
+                {enlace.href === '/notificaciones' && noLeidas > 0 ? (
                   <span className="rounded-full bg-rose-600 px-2 py-0.5 text-[10px] font-bold text-white">
                     {noLeidas}
                   </span>
@@ -228,7 +249,10 @@ export function MarcoSesion({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main id="contenido" className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main
+        id="contenido"
+        className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8"
+      >
         {children}
       </main>
 

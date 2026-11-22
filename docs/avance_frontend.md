@@ -433,3 +433,13 @@ jest.config.ts                                            (excluye frontend de J
 - Detalle con documentos descargables e historial de estados.
 - Pruebas Vitest de validaciones, estados y borrador local; Playwright del flujo completo, borrador, error de horario y confirmación.
 - Detalle: [`docs/Uso_solicitudes.md`](Uso_solicitudes.md).
+
+## 12. Seguimiento de solicitudes y notificaciones (HU-18)
+
+- **Lista:** `/comerciante/solicitudes` reutiliza el filtro por estado y la paginación existentes; el borrador local se mantiene como tarjeta aparte.
+- **Detalle:** la línea de tiempo muestra el estado nuevo con etiqueta visual, la transición, la fecha, el actor y la observación del gestor.
+- **Centro de notificaciones:** `/notificaciones` muestra el contador de no leídas, permite marcar una o todas y añade el enlace **Ver solicitud** cuando la notificación trae `solicitudId`.
+- **Indicador del menú:** se refresca al navegar y, además, escucha el evento `sgp:notificaciones-actualizadas` que dispara la bandeja al marcar una notificación.
+- **Aislamiento:** el backend filtra solicitudes y notificaciones por el usuario del JWT; el frontend nunca recibe datos de otros comerciantes.
+- **Pruebas:** Vitest para rutas y textos de estado; Playwright para filtros, línea de tiempo, cambio de estado por gestor, enlace desde la notificación, contador y aislamiento entre dos comerciantes.
+- Detalle: [`docs/Uso_solicitudes.md`](Uso_solicitudes.md) §2.5, §4.3 y §6.

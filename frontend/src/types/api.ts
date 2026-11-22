@@ -1,20 +1,18 @@
-export type RolUsuario = "comerciante" | "organizador" | "gestor";
+export type RolUsuario = 'comerciante' | 'organizador' | 'gestor';
 
 export type EstadoUsuario =
-  | "pendiente_activacion"
-  | "activa"
-  | "suspendida"
-  | "inactiva";
+  'pendiente_activacion' | 'activa' | 'suspendida' | 'inactiva';
 
-export type PerfilGestor = "revisor" | "administrador";
+export type PerfilGestor = 'revisor' | 'administrador';
 
-export type EstadoOrganizacion = "pendiente_validacion" | "activa" | "suspendida";
+export type EstadoOrganizacion =
+  'pendiente_validacion' | 'activa' | 'suspendida';
 
-export type CategoriaComercio = "formal" | "informal";
+export type CategoriaComercio = 'formal' | 'informal';
 
-export type TipoDocumento = "CC" | "CE" | "TI" | "PP" | "NIT";
+export type TipoDocumento = 'CC' | 'CE' | 'TI' | 'PP' | 'NIT';
 
-export type AccionAuditoria = "insert" | "update" | "delete";
+export type AccionAuditoria = 'insert' | 'update' | 'delete';
 
 export interface UsuarioSesion {
   id: string;
@@ -402,7 +400,7 @@ export interface RespuestaCambioEstadoUsuario {
 }
 
 export interface SolicitudCambioEstadoUsuario {
-  estado: "activa" | "suspendida" | "inactiva";
+  estado: 'activa' | 'suspendida' | 'inactiva';
   motivo?: string;
 }
 
@@ -525,6 +523,7 @@ export interface RespuestaCambioEstadoOrganizacion {
 
 export interface Notificacion {
   id: string;
+  solicitudId: string | null;
   tipo: string;
   asunto: string;
   cuerpo?: string | null;
@@ -582,7 +581,7 @@ export interface ListarAuditoriaResponse {
 /* Zonas / Geo-Portal                                                  */
 /* ------------------------------------------------------------------ */
 
-export type TipoZona = "permitida" | "restringida" | "alta_congestion";
+export type TipoZona = 'permitida' | 'restringida' | 'alta_congestion';
 
 export interface HorariosZona {
   inicio: string | null;
@@ -599,22 +598,22 @@ export interface ZonaGeoJsonProperties {
 }
 
 export interface ZonaFeature {
-  type: "Feature";
+  type: 'Feature';
   geometry: {
-    type: "Polygon";
+    type: 'Polygon';
     coordinates: number[][][];
   };
   properties: ZonaGeoJsonProperties;
 }
 
 export interface ZonaFeatureCollection {
-  type: "FeatureCollection";
+  type: 'FeatureCollection';
   features: ZonaFeature[];
 }
 
 /** Polígono GeoJSON en WGS84, con coordenadas [longitud, latitud]. */
 export interface GeometriaPoligono {
-  type: "Polygon";
+  type: 'Polygon';
   coordinates: number[][][];
 }
 
@@ -690,10 +689,7 @@ export interface RespuestaEstadoZona {
 }
 
 export type AccionVersionZona =
-  | "creacion"
-  | "edicion"
-  | "activacion"
-  | "desactivacion";
+  'creacion' | 'edicion' | 'activacion' | 'desactivacion';
 
 export interface ActorVersionZona {
   id: string;
@@ -765,13 +761,10 @@ export interface ListarProductosResponse {
 /* Espacios temporales (HU-09)                                         */
 /* ------------------------------------------------------------------ */
 
-export type TipoEspacio = "modulo" | "kiosco" | "puesto" | "espacio_movil";
+export type TipoEspacio = 'modulo' | 'kiosco' | 'puesto' | 'espacio_movil';
 
 export type EstadoEspacio =
-  | "disponible"
-  | "bloqueado"
-  | "asignado"
-  | "mantenimiento";
+  'disponible' | 'bloqueado' | 'asignado' | 'mantenimiento';
 
 export interface HorarioEspacio {
   inicio: string | null;
@@ -817,7 +810,7 @@ export interface EspacioListado {
   disponible: boolean;
   motivoEstado: string | null;
   ubicacion: {
-    type: "Point";
+    type: 'Point';
     coordinates: [number, number];
   };
   horario: HorarioEspacio;
@@ -888,7 +881,7 @@ export interface EspacioGestorListado {
   motivoEstado: string | null;
   asignacionManual: boolean;
   ubicacion: {
-    type: "Point";
+    type: 'Point';
     coordinates: [number, number];
   };
   horario: HorarioEspacio;
@@ -920,7 +913,7 @@ export interface ListarEspaciosGestorResponse {
 export interface FiltrosEspaciosGestor {
   busqueda?: string;
   tipo?: TipoEspacio;
-  estado?: EstadoEspacio | "todos";
+  estado?: EstadoEspacio | 'todos';
   sector?: string;
   zonaId?: string;
   asignacionManual?: boolean;
@@ -956,7 +949,7 @@ export interface SolicitudEspacioGestor {
   ubicacion: GeometriaPunto;
   horarioInicio?: string | null;
   horarioFin?: string | null;
-  estado?: "disponible" | "mantenimiento";
+  estado?: 'disponible' | 'mantenimiento';
 }
 
 export interface SolicitudBloqueoEspacio {
@@ -976,7 +969,7 @@ export interface RespuestaEstadoEspacio {
 export interface HistorialEspacioItem {
   id: string;
   tabla: string;
-  accion: "insert" | "update" | "delete";
+  accion: 'insert' | 'update' | 'delete';
   creadoEn: string;
   actorId: string | null;
   actorNombre: string | null;
@@ -1003,11 +996,11 @@ export interface HistorialEspacio {
 /* Censo de módulos y puestos (HU-13)                                  */
 /* ------------------------------------------------------------------ */
 
-export type EstadoModulo = "activo" | "baja";
+export type EstadoModulo = 'activo' | 'baja';
 
 /** Punto GeoJSON en WGS84, con coordenadas [longitud, latitud]. */
 export interface GeometriaPunto {
-  type: "Point";
+  type: 'Point';
   coordinates: [number, number];
 }
 
@@ -1036,9 +1029,7 @@ export interface ZonaContenedoraModulo {
 }
 
 export type TipoAdvertenciaModulo =
-  | "zona_restringida"
-  | "alta_congestion"
-  | "fuera_de_zona";
+  'zona_restringida' | 'alta_congestion' | 'fuera_de_zona';
 
 export interface AdvertenciaModulo {
   tipo: TipoAdvertenciaModulo;
@@ -1086,7 +1077,7 @@ export interface RespuestaZonaContenedora {
 export interface FiltrosModulos {
   categoria?: CategoriaComercio;
   sector?: string;
-  estado?: EstadoModulo | "todos";
+  estado?: EstadoModulo | 'todos';
   busqueda?: string;
   pagina?: number;
   limite?: number;
@@ -1117,7 +1108,7 @@ export interface CambioModulo {
 
 export interface ModuloHistorialItem {
   id: string;
-  accion: "insert" | "update" | "delete";
+  accion: 'insert' | 'update' | 'delete';
   creadoEn: string;
   actor: ActorModulo | null;
   cambios: CambioModulo[];
@@ -1137,9 +1128,9 @@ export interface ModuloHistorial {
 /* Importación de zonas y módulos (HU-14)                              */
 /* ------------------------------------------------------------------ */
 
-export type TipoImportacion = "zonas" | "modulos";
+export type TipoImportacion = 'zonas' | 'modulos';
 
-export type EstadoFilaImportacion = "valida" | "rechazada" | "advertencia";
+export type EstadoFilaImportacion = 'valida' | 'rechazada' | 'advertencia';
 
 export interface SridOpcion {
   srid: number;
@@ -1225,13 +1216,13 @@ export interface ConfirmacionImportacion {
 /* ------------------------------------------------------------------ */
 
 export type EstadoSolicitud =
-  | "borrador"
-  | "radicada"
-  | "en_revision"
-  | "devuelta"
-  | "aprobada"
-  | "rechazada"
-  | "cancelada";
+  | 'borrador'
+  | 'radicada'
+  | 'en_revision'
+  | 'devuelta'
+  | 'aprobada'
+  | 'rechazada'
+  | 'cancelada';
 
 export interface EspacioSolicitudResumen {
   id: string;
@@ -1246,7 +1237,7 @@ export interface ProductoSolicitud {
   nombre: string;
 }
 
-export type EstadoDocumentoSolicitud = "pendiente" | "validado" | "observado";
+export type EstadoDocumentoSolicitud = 'pendiente' | 'validado' | 'observado';
 
 export interface DocumentoSolicitud {
   id: string;
@@ -1268,10 +1259,7 @@ export interface DocumentoVersionSolicitud extends DocumentoSolicitud {
 }
 
 export type EstadoRequisitoDocumental =
-  | "faltante"
-  | "cargado"
-  | "cumple"
-  | "no_cumple";
+  'faltante' | 'cargado' | 'cumple' | 'no_cumple';
 
 export interface RequisitoSolicitudEstado extends RequisitoDocumental {
   estado: EstadoRequisitoDocumental;
@@ -1297,6 +1285,8 @@ export interface RespuestaCargaDocumentoSolicitud {
   volvioARevision: boolean;
   requisito: RequisitoSolicitudEstado;
   faltantes: string[];
+  correoEnviado: boolean;
+  mensajeCorreo: string | null;
 }
 
 export interface ProgresoSubida {

@@ -153,17 +153,22 @@ describe('Solicitudes (e2e)', () => {
   };
 
   const tx = {
-    $queryRaw: jest.fn().mockResolvedValue([
-      { id: 12n, numero_radicado: 'SOL-2026-00012' },
-    ]),
+    $queryRaw: jest
+      .fn()
+      .mockResolvedValue([{ id: 12n, numero_radicado: 'SOL-2026-00012' }]),
     $executeRaw: jest.fn().mockResolvedValue(undefined),
-    solicitud_productos: { createMany: jest.fn().mockResolvedValue({ count: 1 }) },
+    solicitud_productos: {
+      createMany: jest.fn().mockResolvedValue({ count: 1 }),
+    },
     solicitud_documentos: {
       create: jest.fn().mockResolvedValue(DOCUMENTO),
       findMany: jest.fn().mockResolvedValue([]),
     },
     solicitud_historial: { create: jest.fn().mockResolvedValue({}) },
-    notificaciones: { create: jest.fn().mockResolvedValue({}) },
+    notificaciones: { create: jest.fn().mockResolvedValue({ id: 21n }) },
+    solicitudes: {
+      update: jest.fn(),
+    },
   };
 
   const prisma = {
@@ -186,12 +191,14 @@ describe('Solicitudes (e2e)', () => {
     },
     $queryRaw: jest.fn(),
     $transaction: jest.fn(
-      async (callback: (cliente: typeof tx) => Promise<unknown>) => callback(tx),
+      async (callback: (cliente: typeof tx) => Promise<unknown>) =>
+        callback(tx),
     ),
   };
 
   const correo = {
     enviarConfirmacionRadicacion: jest.fn().mockResolvedValue(undefined),
+    enviarCambioEstadoSolicitud: jest.fn().mockResolvedValue(undefined),
   };
 
   beforeAll(async () => {
@@ -222,10 +229,7 @@ describe('Solicitudes (e2e)', () => {
 
     const jwt = app.get(JwtService);
     const firmar = (
-      usuario:
-        | typeof COMERCIANTE
-        | typeof GESTOR
-        | typeof OTRO_COMERCIANTE,
+      usuario: typeof COMERCIANTE | typeof GESTOR | typeof OTRO_COMERCIANTE,
     ) =>
       jwt.signAsync(
         {
@@ -629,5 +633,101 @@ describe('Solicitudes (e2e)', () => {
       .get('/solicitudes/12/documentos/5/archivo')
       .set('Authorization', `Bearer ${tokenOtroComerciante}`)
       .expect(404);
+  });
+
+  it('no permite consultar el detalle de una solicitud ajena', async () => {
+    prisma.solicitudes.findFirst.mockResolvedValue(null);
+
+    await request(app.getHttpServer())
+      .get('/solicitudes/12')
+      .set('Authorization', `Bearer ${tokenOtroComerciante}`)
+      .expect(404);
+  });
+
+  it('solo permite cambiar el estado al rol gestor', async () => {
+    await request(app.getHttpServer())
+      .patch('/gestor/solicitudes/12/estado')
+      .set('Authorization', `Bearer ${tokenComerciante}`)
+      .send({ estado: 'en_revision' })
+      .expect(403);
+  });
+
+  it('cambia el estado, registra historial, notifica y envía correo', async () => {
+    tx.$queryRaw.mockResolvedValueOnce([
+      {
+        id: 12n,
+        numero_radicado: 'SOL-2026-00012',
+        estado: 'radicada',
+        comerciante_id: 3n,
+        correo: COMERCIANTE.correo,
+        nombre: COMERCIANTE.nombre,
+        espacio_nombre: 'Kiosco Parque La Guadua',
+      },
+    ]);
+    tx.solicitudes.update.mockResolvedValue({
+      id: 12n,
+      numero_radicado: 'SOL-2026-00012',
+      estado: 'en_revision',
+      motivo_rechazo: null,
+      decidida_en: null,
+      actualizado_en: new Date('2026-11-21T10:00:00.000Z'),
+    });
+
+    const respuesta = await request(app.getHttpServer())
+      .patch('/gestor/solicitudes/12/estado')
+      .set('Authorization', `Bearer ${tokenGestor}`)
+      .send({ estado: 'en_revision' })
+      .expect(200);
+
+    expect(respuesta.body).toMatchObject({
+      estadoAnterior: 'radicada',
+      estado: 'en_revision',
+      correoEnviado: true,
+    });
+    expect(tx.solicitudes.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ estado: 'en_revision' }),
+      }),
+    );
+    expect(tx.solicitud_historial.create).toHaveBeenCalled();
+    expect(tx.notificaciones.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          tipo: 'solicitud_en_revision',
+          solicitud_id: 12n,
+        }),
+      }),
+    );
+    expect(correo.enviarCambioEstadoSolicitud).toHaveBeenCalled();
+  });
+
+  it('exige motivo al rechazar y no ejecuta la transacción', async () => {
+    await request(app.getHttpServer())
+      .patch('/gestor/solicitudes/12/estado')
+      .set('Authorization', `Bearer ${tokenGestor}`)
+      .send({ estado: 'rechazada' })
+      .expect(400);
+
+    expect(tx.solicitudes.update).not.toHaveBeenCalled();
+  });
+
+  it('rechaza una transición no permitida', async () => {
+    tx.$queryRaw.mockResolvedValueOnce([
+      {
+        id: 12n,
+        numero_radicado: 'SOL-2026-00012',
+        estado: 'radicada',
+        comerciante_id: 3n,
+        correo: COMERCIANTE.correo,
+        nombre: COMERCIANTE.nombre,
+        espacio_nombre: 'Kiosco Parque La Guadua',
+      },
+    ]);
+
+    await request(app.getHttpServer())
+      .patch('/gestor/solicitudes/12/estado')
+      .set('Authorization', `Bearer ${tokenGestor}`)
+      .send({ estado: 'aprobada' })
+      .expect(409);
   });
 });

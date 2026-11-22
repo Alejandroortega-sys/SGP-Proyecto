@@ -3106,6 +3106,7 @@ export type ModulosScalarFieldEnum = (typeof ModulosScalarFieldEnum)[keyof typeo
 export const NotificacionesScalarFieldEnum = {
   id: 'id',
   usuario_id: 'usuario_id',
+  solicitud_id: 'solicitud_id',
   tipo: 'tipo',
   asunto: 'asunto',
   cuerpo: 'cuerpo',

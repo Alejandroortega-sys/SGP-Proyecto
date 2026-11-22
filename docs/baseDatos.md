@@ -14,8 +14,9 @@
 psql -U postgres -d postgres -c 'CREATE DATABASE "sgp_tulua";'
 
 # 2) Crear la estructura base (30 tablas, 17 ENUM, 3 secuencias, índices,
-#    6 funciones, 10 triggers y 4 vistas materializadas). Las migraciones 03–08
-#    agregan sesiones, columnas de espacios, historial de zonas y auditoría.
+#    6 funciones, 10 triggers y 4 vistas materializadas). Las migraciones 03–11
+#    agregan sesiones, columnas de espacios, historial de zonas, auditoría,
+#    trámites y notificaciones enlazadas.
 psql -U postgres -d "sgp_tulua" -f 01_creacion_bd.sql
 
 # 3) Cargar datos de prueba (incluye 4 pruebas automáticas de reglas de negocio)
@@ -38,6 +39,13 @@ psql -U postgres -d "sgp_tulua" -f 07_modulos_hu13.sql
 
 # 9) HU-15: asignación manual, estados automáticos y auditoría de espacios:
 psql -U postgres -d "sgp_tulua" -f 08_espacios_hu15.sql
+
+# 10) HU-16 y HU-17: requisitos, historial y versionado de documentos:
+psql -U postgres -d "sgp_tulua" -f 09_solicitudes_hu16.sql
+psql -U postgres -d "sgp_tulua" -f 10_solicitudes_hu17.sql
+
+# 11) HU-18: enlace de notificaciones con solicitudes:
+psql -U postgres -d "sgp_tulua" -f 11_notificaciones_hu18.sql
 
 # Para repetir desde cero:
 psql -U postgres -d postgres -c 'DROP DATABASE "sgp_tulua" WITH (FORCE);'
@@ -515,6 +523,7 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 |---|---|---|
 | id | BIGINT | PK, IDENTITY |
 | usuario_id | BIGINT | NOT NULL, FK ON DELETE CASCADE |
+| solicitud_id | BIGINT | FK→solicitudes(id), nullable; enlaza el aviso con el trámite |
 | tipo | VARCHAR(60) | NOT NULL — activacion · cambio_solicitud · permiso_emitido · aviso_vencimiento |
 | asunto | VARCHAR(200) | NOT NULL |
 | cuerpo | TEXT | |

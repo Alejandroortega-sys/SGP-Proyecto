@@ -1,9 +1,14 @@
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { UsuarioAutenticado } from '../auth/interfaces/usuario-autenticado.interface';
 import type { CorreoService } from '../correo/correo.service';
+import type { NotificacionesService } from '../notificaciones/notificaciones.service';
 import type { PrismaService } from '../prisma/prisma.service';
 import { SolicitudesService } from './solicitudes.service';
 
@@ -16,6 +21,16 @@ const USUARIO: UsuarioAutenticado = {
   correo: 'maria.gomez@gmail.com',
   rol: 'comerciante',
   perfil: null,
+  estado: 'activa',
+};
+
+const GESTOR: UsuarioAutenticado = {
+  id: '1',
+  nombre: 'Laura',
+  apellido: 'Martínez',
+  correo: 'admin@tulua.gov.co',
+  rol: 'gestor',
+  perfil: 'administrador',
   estado: 'activa',
 };
 
@@ -140,6 +155,7 @@ function archivoPdf(nombre = 'documento.pdf'): Express.Multer.File {
 interface TxMock {
   $queryRaw: jest.Mock;
   $executeRaw: jest.Mock;
+  solicitudes: { update: jest.Mock };
   solicitud_productos: { createMany: jest.Mock };
   solicitud_documentos: { create: jest.Mock; findMany: jest.Mock };
   solicitud_historial: { create: jest.Mock };
@@ -163,17 +179,20 @@ const DOCUMENTO_NUEVO = {
 
 function crearMocks() {
   const tx: TxMock = {
-    $queryRaw: jest.fn().mockResolvedValue([
-      { id: 12n, numero_radicado: 'SOL-2026-00012' },
-    ]),
+    $queryRaw: jest
+      .fn()
+      .mockResolvedValue([{ id: 12n, numero_radicado: 'SOL-2026-00012' }]),
     $executeRaw: jest.fn().mockResolvedValue(undefined),
-    solicitud_productos: { createMany: jest.fn().mockResolvedValue({ count: 1 }) },
+    solicitudes: { update: jest.fn() },
+    solicitud_productos: {
+      createMany: jest.fn().mockResolvedValue({ count: 1 }),
+    },
     solicitud_documentos: {
       create: jest.fn().mockResolvedValue(DOCUMENTO_NUEVO),
       findMany: jest.fn().mockResolvedValue([]),
     },
     solicitud_historial: { create: jest.fn().mockResolvedValue({}) },
-    notificaciones: { create: jest.fn().mockResolvedValue({}) },
+    notificaciones: { create: jest.fn().mockResolvedValue({ id: 1n }) },
   };
 
   const prisma = {
@@ -181,8 +200,11 @@ function crearMocks() {
       findMany: jest.fn(),
       count: jest.fn(),
       findFirst: jest.fn(),
+      update: jest.fn(),
     },
-    requisitos_documentales: { findMany: jest.fn().mockResolvedValue(REQUISITOS) },
+    requisitos_documentales: {
+      findMany: jest.fn().mockResolvedValue(REQUISITOS),
+    },
     productos: { findMany: jest.fn().mockResolvedValue([PRODUCTO]) },
     solicitud_documentos: {
       findFirst: jest.fn(),
@@ -196,9 +218,30 @@ function crearMocks() {
 
   const correo = {
     enviarConfirmacionRadicacion: jest.fn().mockResolvedValue(undefined),
+    enviarCambioEstadoSolicitud: jest.fn().mockResolvedValue(undefined),
   };
 
-  return { prisma, correo, tx };
+  const notificaciones = {
+    crearCambioEstadoSolicitud: jest.fn().mockResolvedValue('1'),
+    enviarCorreoCambioEstadoSolicitud: jest.fn().mockResolvedValue({
+      correoEnviado: true,
+      mensajeCorreo: null,
+    }),
+  };
+
+  return { prisma, correo, notificaciones, tx };
+}
+
+function crearServicio(
+  prisma: ReturnType<typeof crearMocks>['prisma'],
+  correo: ReturnType<typeof crearMocks>['correo'],
+  notificaciones = crearMocks().notificaciones,
+): SolicitudesService {
+  return new SolicitudesService(
+    prisma as unknown as PrismaService,
+    correo as unknown as CorreoService,
+    notificaciones as unknown as NotificacionesService,
+  );
 }
 
 function mockConsultaBase(
@@ -221,9 +264,7 @@ function mockConsultaBase(
         return Promise.resolve([]);
       }
       if (sql.includes('estado IN') && opciones.duplicado) {
-        return Promise.resolve([
-          { id: 1n, numero_radicado: 'SOL-2026-00001' },
-        ]);
+        return Promise.resolve([{ id: 1n, numero_radicado: 'SOL-2026-00001' }]);
       }
       if (sql.includes('estado IN')) {
         return Promise.resolve([]);
@@ -256,10 +297,7 @@ describe('SolicitudesService', () => {
     const { prisma, correo } = crearMocks();
     prisma.solicitudes.findMany.mockResolvedValue([FILA]);
     prisma.solicitudes.count.mockResolvedValue(1);
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     const respuesta = await servicio.listarMias('3', { pagina: 1, limite: 10 });
 
@@ -285,10 +323,7 @@ describe('SolicitudesService', () => {
 
   it('no devuelve borradores del backend en el listado', async () => {
     const { prisma, correo } = crearMocks();
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     const respuesta = await servicio.listarMias('3', { estado: 'borrador' });
 
@@ -299,10 +334,7 @@ describe('SolicitudesService', () => {
   it('devuelve el detalle propio y rechaza solicitudes ajenas', async () => {
     const { prisma, correo } = crearMocks();
     prisma.solicitudes.findFirst.mockResolvedValue(FILA);
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     const detalle = await servicio.detalle('3', '12');
     expect(detalle.historial[0]).toMatchObject({
@@ -319,10 +351,7 @@ describe('SolicitudesService', () => {
 
   it('consulta los requisitos globales y de la actividad', async () => {
     const { prisma, correo } = crearMocks();
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     const respuesta = await servicio.requisitos({ actividad: 'Artesanías' });
 
@@ -338,12 +367,9 @@ describe('SolicitudesService', () => {
   });
 
   it('radica una solicitud válida y registra historial, notificación y correo', async () => {
-    const { prisma, correo, tx } = crearMocks();
+    const { prisma, correo, notificaciones, tx } = crearMocks();
     mockConsultaBase(prisma);
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo, notificaciones);
 
     const respuesta = await servicio.radicar(
       USUARIO,
@@ -373,9 +399,13 @@ describe('SolicitudesService', () => {
         }),
       }),
     );
-    expect(tx.notificaciones.create).toHaveBeenCalledWith(
+    expect(notificaciones.crearCambioEstadoSolicitud).toHaveBeenCalledWith(
+      tx,
       expect.objectContaining({
-        data: expect.objectContaining({ tipo: 'solicitud_radicada' }),
+        solicitudId: 12n,
+        estadoAnterior: 'borrador',
+        estadoNuevo: 'radicada',
+        numeroRadicado: 'SOL-2026-00012',
       }),
     );
     expect(correo.enviarConfirmacionRadicacion).toHaveBeenCalledWith(
@@ -388,10 +418,7 @@ describe('SolicitudesService', () => {
   it('rechaza la radicación si faltan documentos obligatorios', async () => {
     const { prisma, correo } = crearMocks();
     mockConsultaBase(prisma);
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     await expect(
       servicio.radicar(
@@ -410,71 +437,75 @@ describe('SolicitudesService', () => {
   it('rechaza un horario fuera del permitido', async () => {
     const { prisma, correo } = crearMocks();
     mockConsultaBase(prisma);
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     await expect(
-      servicio.radicar(USUARIO, {
-        datos: JSON.stringify({ ...DATOS, horaInicio: '07:00', horaFin: '12:00' }),
-        documentosMeta: JSON.stringify([
-          { requisitoId: '1', nombreOriginal: 'cedula.pdf' },
-          { requisitoId: '2', nombreOriginal: 'rut.pdf' },
-        ]),
-      }, [archivoPdf(), archivoPdf('rut.pdf')]),
+      servicio.radicar(
+        USUARIO,
+        {
+          datos: JSON.stringify({
+            ...DATOS,
+            horaInicio: '07:00',
+            horaFin: '12:00',
+          }),
+          documentosMeta: JSON.stringify([
+            { requisitoId: '1', nombreOriginal: 'cedula.pdf' },
+            { requisitoId: '2', nombreOriginal: 'rut.pdf' },
+          ]),
+        },
+        [archivoPdf(), archivoPdf('rut.pdf')],
+      ),
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('rechaza fechas pasadas', async () => {
     const { prisma, correo } = crearMocks();
     mockConsultaBase(prisma);
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     await expect(
-      servicio.radicar(USUARIO, {
-        datos: JSON.stringify({
-          ...DATOS,
-          fechaInicio: '2020-01-01',
-          fechaFin: '2020-01-02',
-        }),
-        documentosMeta: JSON.stringify([
-          { requisitoId: '1', nombreOriginal: 'cedula.pdf' },
-          { requisitoId: '2', nombreOriginal: 'rut.pdf' },
-        ]),
-      }, [archivoPdf(), archivoPdf('rut.pdf')]),
+      servicio.radicar(
+        USUARIO,
+        {
+          datos: JSON.stringify({
+            ...DATOS,
+            fechaInicio: '2020-01-01',
+            fechaFin: '2020-01-02',
+          }),
+          documentosMeta: JSON.stringify([
+            { requisitoId: '1', nombreOriginal: 'cedula.pdf' },
+            { requisitoId: '2', nombreOriginal: 'rut.pdf' },
+          ]),
+        },
+        [archivoPdf(), archivoPdf('rut.pdf')],
+      ),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('rechaza una solicitud duplicada del mismo comerciante', async () => {
     const { prisma, correo } = crearMocks();
     mockConsultaBase(prisma, { duplicado: true });
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     await expect(
-      servicio.radicar(USUARIO, {
-        datos: JSON.stringify(DATOS),
-        documentosMeta: JSON.stringify([
-          { requisitoId: '1', nombreOriginal: 'cedula.pdf' },
-          { requisitoId: '2', nombreOriginal: 'rut.pdf' },
-        ]),
-      }, [archivoPdf(), archivoPdf('rut.pdf')]),
+      servicio.radicar(
+        USUARIO,
+        {
+          datos: JSON.stringify(DATOS),
+          documentosMeta: JSON.stringify([
+            { requisitoId: '1', nombreOriginal: 'cedula.pdf' },
+            { requisitoId: '2', nombreOriginal: 'rut.pdf' },
+          ]),
+        },
+        [archivoPdf(), archivoPdf('rut.pdf')],
+      ),
     ).rejects.toThrow('Ya tienes una solicitud activa');
   });
 
   it('informa la disponibilidad del espacio', async () => {
     const { prisma, correo } = crearMocks();
     mockConsultaBase(prisma);
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     const respuesta = await servicio.consultarDisponibilidad('3', DATOS);
 
@@ -488,10 +519,7 @@ describe('SolicitudesService', () => {
   it('no permite descargar documentos ajenos o inexistentes', async () => {
     const { prisma, correo } = crearMocks();
     prisma.solicitud_documentos.findFirst.mockResolvedValue(null);
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     await expect(
       servicio.descargarDocumento(USUARIO, '12', '5'),
@@ -508,10 +536,7 @@ describe('SolicitudesService', () => {
       nombre_original: 'cedula.pdf',
       mime_type: 'application/pdf',
     });
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     const archivo = await servicio.descargarDocumento(USUARIO, '12', '5');
 
@@ -564,10 +589,7 @@ describe('SolicitudesService', () => {
       documento(6n, 1n, 'validado', 5n),
       documento(7n, null, 'pendiente', null, 'Documento antiguo'),
     ]);
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     const respuesta = await servicio.listarRequisitosSolicitud('3', '12');
 
@@ -588,7 +610,9 @@ describe('SolicitudesService', () => {
       documentoActual: null,
     });
     expect(respuesta.otrosDocumentos).toHaveLength(1);
-    expect(respuesta.otrosDocumentos[0].tipoDocumento).toBe('Documento antiguo');
+    expect(respuesta.otrosDocumentos[0].tipoDocumento).toBe(
+      'Documento antiguo',
+    );
   });
 
   it('carga un documento nuevo en estado radicada sin cambiar el estado', async () => {
@@ -599,10 +623,7 @@ describe('SolicitudesService', () => {
     tx.$queryRaw.mockResolvedValue([{ estado: 'radicada' }]);
     tx.solicitud_documentos.findMany.mockResolvedValue([]);
     prisma.solicitud_documentos.findMany.mockResolvedValue([DOCUMENTO_NUEVO]);
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     const respuesta = await servicio.cargarDocumentoSolicitud(
       USUARIO,
@@ -634,7 +655,7 @@ describe('SolicitudesService', () => {
   });
 
   it('reemplaza en devuelta y vuelve a en_revision cuando ya no quedan observados', async () => {
-    const { prisma, correo, tx } = crearMocks();
+    const { prisma, correo, notificaciones, tx } = crearMocks();
     prisma.solicitudes.findFirst
       .mockResolvedValueOnce(solicitudDocumentos('devuelta'))
       .mockResolvedValueOnce(solicitudDocumentos('en_revision'));
@@ -646,10 +667,7 @@ describe('SolicitudesService', () => {
       documento(5n, 1n, 'observado'),
       DOCUMENTO_NUEVO,
     ]);
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo, notificaciones);
 
     const respuesta = await servicio.cargarDocumentoSolicitud(
       USUARIO,
@@ -677,11 +695,14 @@ describe('SolicitudesService', () => {
         }),
       }),
     );
-    expect(tx.notificaciones.create).toHaveBeenCalledWith(
+    expect(notificaciones.crearCambioEstadoSolicitud).toHaveBeenCalledWith(
+      tx,
       expect.objectContaining({
-        data: expect.objectContaining({ tipo: 'solicitud_en_revision' }),
+        estadoAnterior: 'devuelta',
+        estadoNuevo: 'en_revision',
       }),
     );
+    expect(notificaciones.enviarCorreoCambioEstadoSolicitud).toHaveBeenCalled();
   });
 
   it('no vuelve a revisión si todavía quedan requisitos observados', async () => {
@@ -699,10 +720,7 @@ describe('SolicitudesService', () => {
       documento(6n, 2n, 'observado', null, 'RUT'),
       DOCUMENTO_NUEVO,
     ]);
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     const respuesta = await servicio.cargarDocumentoSolicitud(
       USUARIO,
@@ -726,10 +744,7 @@ describe('SolicitudesService', () => {
     prisma.solicitudes.findFirst.mockResolvedValue(
       solicitudDocumentos('en_revision'),
     );
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     await expect(
       servicio.cargarDocumentoSolicitud(
@@ -746,10 +761,7 @@ describe('SolicitudesService', () => {
     prisma.solicitudes.findFirst.mockResolvedValue(
       solicitudDocumentos('radicada'),
     );
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     await expect(
       servicio.cargarDocumentoSolicitud(
@@ -764,10 +776,7 @@ describe('SolicitudesService', () => {
   it('rechaza cargar documentos de una solicitud ajena', async () => {
     const { prisma, correo } = crearMocks();
     prisma.solicitudes.findFirst.mockResolvedValue(null);
-    const servicio = new SolicitudesService(
-      prisma as unknown as PrismaService,
-      correo as unknown as CorreoService,
-    );
+    const servicio = crearServicio(prisma, correo);
 
     await expect(
       servicio.cargarDocumentoSolicitud(
@@ -777,5 +786,151 @@ describe('SolicitudesService', () => {
         archivoPdf('cedula.pdf'),
       ),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('cambia el estado, registra historial y notifica al comerciante', async () => {
+    const { prisma, correo, notificaciones, tx } = crearMocks();
+    tx.$queryRaw.mockResolvedValue([
+      {
+        id: 12n,
+        numero_radicado: 'SOL-2026-00012',
+        estado: 'radicada',
+        comerciante_id: 3n,
+        correo: USUARIO.correo,
+        nombre: USUARIO.nombre,
+        espacio_nombre: 'Kiosco Parque La Guadua',
+      },
+    ]);
+    tx.solicitudes.update.mockResolvedValue({
+      id: 12n,
+      numero_radicado: 'SOL-2026-00012',
+      estado: 'en_revision',
+      motivo_rechazo: null,
+      decidida_en: null,
+      actualizado_en: new Date('2026-11-21T10:00:00.000Z'),
+    });
+    const servicio = crearServicio(prisma, correo, notificaciones);
+
+    const respuesta = await servicio.cambiarEstado(GESTOR, '12', {
+      estado: 'en_revision',
+    });
+
+    expect(respuesta).toMatchObject({
+      id: '12',
+      estadoAnterior: 'radicada',
+      estado: 'en_revision',
+      correoEnviado: true,
+    });
+    expect(tx.solicitudes.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 12n },
+        data: expect.objectContaining({
+          estado: 'en_revision',
+          revisor_id: 1n,
+        }),
+      }),
+    );
+    expect(tx.solicitud_historial.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          estado_anterior: 'radicada',
+          estado_nuevo: 'en_revision',
+          actor_id: 1n,
+        }),
+      }),
+    );
+    expect(notificaciones.crearCambioEstadoSolicitud).toHaveBeenCalledWith(
+      tx,
+      expect.objectContaining({
+        solicitudId: 12n,
+        estadoAnterior: 'radicada',
+        estadoNuevo: 'en_revision',
+      }),
+    );
+    expect(notificaciones.enviarCorreoCambioEstadoSolicitud).toHaveBeenCalled();
+  });
+
+  it('rechaza una transición no permitida y los estados finales', async () => {
+    const { prisma, correo, tx } = crearMocks();
+    const servicio = crearServicio(prisma, correo);
+    tx.$queryRaw.mockResolvedValue([
+      {
+        id: 12n,
+        numero_radicado: 'SOL-2026-00012',
+        estado: 'radicada',
+        comerciante_id: 3n,
+        correo: USUARIO.correo,
+        nombre: USUARIO.nombre,
+        espacio_nombre: 'Kiosco Parque La Guadua',
+      },
+    ]);
+
+    await expect(
+      servicio.cambiarEstado(GESTOR, '12', { estado: 'aprobada' }),
+    ).rejects.toBeInstanceOf(ConflictException);
+
+    tx.$queryRaw.mockResolvedValue([
+      {
+        id: 12n,
+        numero_radicado: 'SOL-2026-00012',
+        estado: 'aprobada',
+        comerciante_id: 3n,
+        correo: USUARIO.correo,
+        nombre: USUARIO.nombre,
+        espacio_nombre: 'Kiosco Parque La Guadua',
+      },
+    ]);
+    await expect(
+      servicio.cambiarEstado(GESTOR, '12', { estado: 'en_revision' }),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('exige observación al devolver y motivo al rechazar', async () => {
+    const { prisma, correo } = crearMocks();
+    const servicio = crearServicio(prisma, correo);
+
+    await expect(
+      servicio.cambiarEstado(GESTOR, '12', { estado: 'devuelta' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      servicio.cambiarEstado(GESTOR, '12', { estado: 'rechazada' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('devuelve correoEnviado=false sin revertir el cambio de estado', async () => {
+    const { prisma, correo, notificaciones, tx } = crearMocks();
+    tx.$queryRaw.mockResolvedValue([
+      {
+        id: 12n,
+        numero_radicado: 'SOL-2026-00012',
+        estado: 'en_revision',
+        comerciante_id: 3n,
+        correo: USUARIO.correo,
+        nombre: USUARIO.nombre,
+        espacio_nombre: 'Kiosco Parque La Guadua',
+      },
+    ]);
+    tx.solicitudes.update.mockResolvedValue({
+      id: 12n,
+      numero_radicado: 'SOL-2026-00012',
+      estado: 'rechazada',
+      motivo_rechazo: 'Documento inválido',
+      decidida_en: new Date('2026-11-21T10:00:00.000Z'),
+      actualizado_en: new Date('2026-11-21T10:00:00.000Z'),
+    });
+    notificaciones.enviarCorreoCambioEstadoSolicitud.mockResolvedValue({
+      correoEnviado: false,
+      mensajeCorreo: 'SMTP no disponible',
+    });
+    const servicio = crearServicio(prisma, correo, notificaciones);
+
+    const respuesta = await servicio.cambiarEstado(GESTOR, '12', {
+      estado: 'rechazada',
+      motivoRechazo: 'Documento inválido',
+    });
+
+    expect(respuesta.estado).toBe('rechazada');
+    expect(respuesta.correoEnviado).toBe(false);
+    expect(respuesta.mensajeCorreo).toBe('SMTP no disponible');
   });
 });

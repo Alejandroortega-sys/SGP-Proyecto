@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
-import type { perfil_gestor } from '../generated/prisma/client';
+import { etiquetaEstadoSolicitud } from '../common/estados-solicitud';
+import type {
+  estado_solicitud,
+  perfil_gestor,
+} from '../generated/prisma/client';
 
 /** Datos mínimos para la confirmación de una solicitud radicada. */
 export interface DatosConfirmacionRadicacion {
@@ -14,6 +18,17 @@ export interface DatosConfirmacionRadicacion {
   horaInicio: string;
   horaFin: string;
   documentos: string[];
+}
+
+/** Datos mínimos para avisar un cambio de estado de la solicitud. */
+export interface DatosCambioEstadoSolicitud {
+  solicitudId: string;
+  numeroRadicado: string;
+  estadoAnterior: estado_solicitud;
+  estadoNuevo: estado_solicitud;
+  espacio?: string | null;
+  observacion?: string | null;
+  motivoRechazo?: string | null;
 }
 
 /** Convierte una fecha `YYYY-MM-DD` a `DD/MM/YYYY`. */
@@ -41,10 +56,14 @@ export class CorreoService {
   private readonly logger = new Logger(CorreoService.name);
   private readonly transporter: Transporter | null;
   private readonly remitente: string;
+  private readonly urlFrontend: string;
 
   constructor(config: ConfigService) {
     this.remitente =
       config.get<string>('MAIL_FROM') ?? 'SGP Tulua <no-reply@sgptulua.gov.co>';
+    this.urlFrontend = (
+      config.get<string>('FRONTEND_URL') ?? 'http://localhost:3001'
+    ).replace(/\/+$/, '');
 
     const host = config.get<string>('MAIL_HOST');
     if (host) {
@@ -416,6 +435,74 @@ export class CorreoService {
       html,
       `SMTP no configurado: solicitud ${datos.numeroRadicado} radicada para ` +
         `${destino} (${datos.espacio}, ${rango}, ${datos.horaInicio}-${datos.horaFin})`,
+    );
+  }
+
+  /**
+   * Envía el aviso de un cambio de estado de una solicitud (HU-18).
+   *
+   * Incluye la observación del gestor o el motivo de rechazo y un enlace al
+   * detalle de la solicitud en la plataforma. El estado y la notificación
+   * interna ya quedaron guardados: un fallo de correo no revierte el trámite.
+   *
+   * @param destino Correo del comerciante dueño de la solicitud.
+   * @param nombre Nombre del comerciante.
+   * @param datos Radicado, estados, espacio y observaciones.
+   * @throws Error si no hay SMTP en producción o si el envío falla.
+   */
+  async enviarCambioEstadoSolicitud(
+    destino: string,
+    nombre: string,
+    datos: DatosCambioEstadoSolicitud,
+  ): Promise<void> {
+    const etiquetaAnterior = etiquetaEstadoSolicitud(datos.estadoAnterior);
+    const etiquetaNueva = etiquetaEstadoSolicitud(datos.estadoNuevo);
+    const asunto = `Solicitud ${datos.numeroRadicado}: ${etiquetaNueva} — SGP Tuluá`;
+    const espacio = datos.espacio ? `Espacio: ${datos.espacio}\n` : '';
+    const detalle = datos.motivoRechazo
+      ? `Motivo del rechazo: ${datos.motivoRechazo}\n`
+      : datos.observacion
+        ? `Observación del gestor: ${datos.observacion}\n`
+        : '';
+    const enlace = `${this.urlFrontend}/comerciante/solicitudes/${datos.solicitudId}`;
+
+    const texto =
+      `Hola ${nombre},\n\n` +
+      `El estado de tu solicitud de uso temporal cambió.\n\n` +
+      `Número de radicado: ${datos.numeroRadicado}\n` +
+      `${espacio}` +
+      `Estado anterior: ${etiquetaAnterior}\n` +
+      `Estado nuevo: ${etiquetaNueva}\n` +
+      `${detalle}\n` +
+      `Puedes consultar el detalle y la línea de tiempo en:\n${enlace}\n\n` +
+      `Secretaría de Gobierno — Municipio de Tuluá`;
+
+    const html =
+      `<p>Hola <strong>${nombre}</strong>,</p>` +
+      `<p>El estado de tu solicitud de uso temporal cambió.</p>` +
+      `<p style="font-size:20px;font-weight:bold;">${datos.numeroRadicado}</p>` +
+      `<ul>` +
+      (datos.espacio
+        ? `<li><strong>Espacio:</strong> ${datos.espacio}</li>`
+        : '') +
+      `<li><strong>Estado anterior:</strong> ${etiquetaAnterior}</li>` +
+      `<li><strong>Estado nuevo:</strong> ${etiquetaNueva}</li>` +
+      (datos.motivoRechazo
+        ? `<li><strong>Motivo del rechazo:</strong> ${datos.motivoRechazo}</li>`
+        : datos.observacion
+          ? `<li><strong>Observación del gestor:</strong> ${datos.observacion}</li>`
+          : '') +
+      `</ul>` +
+      `<p><a href="${enlace}">Ver el detalle de la solicitud</a></p>` +
+      `<p>Secretaría de Gobierno — Municipio de Tuluá</p>`;
+
+    await this.enviar(
+      destino,
+      asunto,
+      texto,
+      html,
+      `SMTP no configurado: solicitud ${datos.numeroRadicado} pasó de ` +
+        `${etiquetaAnterior} a ${etiquetaNueva} para ${destino} (${enlace})`,
     );
   }
 }

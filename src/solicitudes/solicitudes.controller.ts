@@ -178,7 +178,8 @@ export class SolicitudesController {
   })
   @ApiCreatedResponse({ type: RadicarSolicitudResponseDto })
   @ApiBadRequestResponse({
-    description: 'Datos incompletos, documentos inválidos o fechas fuera de regla',
+    description:
+      'Datos incompletos, documentos inválidos o fechas fuera de regla',
   })
   @ApiConflictResponse({
     description: 'Espacio no disponible o solicitud duplicada',
@@ -187,7 +188,9 @@ export class SolicitudesController {
   @ApiForbiddenResponse({ description: 'El rol no es comerciante' })
   @Roles('comerciante')
   @Post()
-  @UseInterceptors(FilesInterceptor('documentos', maxDocumentos(), opcionesDocumentos()))
+  @UseInterceptors(
+    FilesInterceptor('documentos', maxDocumentos(), opcionesDocumentos()),
+  )
   radicar(
     @UsuarioActual() usuario: UsuarioAutenticado,
     @Body() form: RadicarSolicitudFormDto,
@@ -226,9 +229,7 @@ export class SolicitudesController {
   @ApiForbiddenResponse({ description: 'El rol no es comerciante' })
   @Roles('comerciante')
   @Post(':id/documentos')
-  @UseInterceptors(
-    FileInterceptor('archivo', opcionesDocumentos()),
-  )
+  @UseInterceptors(FileInterceptor('archivo', opcionesDocumentos()))
   cargarDocumento(
     @UsuarioActual() usuario: UsuarioAutenticado,
     @Param('id') id: string,
@@ -312,7 +313,9 @@ export class SolicitudesController {
   })
   @ApiOkResponse({ type: SolicitudTemporalDetalleDto })
   @ApiBadRequestResponse({ description: 'Identificador inválido' })
-  @ApiNotFoundResponse({ description: 'La solicitud no existe o no pertenece al usuario' })
+  @ApiNotFoundResponse({
+    description: 'La solicitud no existe o no pertenece al usuario',
+  })
   @ApiUnauthorizedResponse({ description: 'Token ausente o inválido' })
   @ApiForbiddenResponse({ description: 'El rol no es comerciante' })
   @Roles('comerciante')

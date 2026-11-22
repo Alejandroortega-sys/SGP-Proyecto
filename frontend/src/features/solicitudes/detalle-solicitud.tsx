@@ -1,19 +1,23 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { Alerta } from "@/components/ui/alerta";
-import { BloqueError } from "@/components/ui/bloque-error";
-import { Cargando } from "@/components/ui/estado-vacio";
-import { useConsultaApi } from "@/hooks/use-consulta-api";
-import { obtenerMiSolicitud } from "@/lib/api-client";
-import { formatearFecha, formatearFechaHora, nombreCompleto } from "@/lib/formato";
-import { formatearRangoFechas } from "@/features/espacios/estilos-espacio";
-import { DocumentosSolicitud } from "./documentos-solicitud";
+import Link from 'next/link';
+import { Alerta } from '@/components/ui/alerta';
+import { BloqueError } from '@/components/ui/bloque-error';
+import { Cargando } from '@/components/ui/estado-vacio';
+import { useConsultaApi } from '@/hooks/use-consulta-api';
+import { obtenerMiSolicitud } from '@/lib/api-client';
 import {
-  ETIQUETAS_ESTADO_SOLICITUD,
+  formatearFecha,
+  formatearFechaHora,
+  nombreCompleto,
+} from '@/lib/formato';
+import { formatearRangoFechas } from '@/features/espacios/estilos-espacio';
+import { DocumentosSolicitud } from './documentos-solicitud';
+import {
   DESCRIPCIONES_ESTADO_SOLICITUD,
-} from "./estado-solicitud";
-import { EtiquetaEstadoSolicitud } from "./etiqueta-estado-solicitud";
+  describirTransicion,
+} from './estado-solicitud';
+import { EtiquetaEstadoSolicitud } from './etiqueta-estado-solicitud';
 
 interface DetalleSolicitudProps {
   id: string;
@@ -21,10 +25,12 @@ interface DetalleSolicitudProps {
 
 /** Detalle de una solicitud radicada, con documentos e historial. */
 export function DetalleSolicitud({ id }: DetalleSolicitudProps) {
-  const { datos: solicitud, cargando, error, recargar } = useConsultaApi(
-    () => obtenerMiSolicitud(id),
-    [id],
-  );
+  const {
+    datos: solicitud,
+    cargando,
+    error,
+    recargar,
+  } = useConsultaApi(() => obtenerMiSolicitud(id), [id]);
 
   if (cargando && !solicitud) {
     return <Cargando texto="Cargando el detalle de la solicitud…" />;
@@ -50,7 +56,7 @@ export function DetalleSolicitud({ id }: DetalleSolicitudProps) {
               {solicitud.numeroRadicado}
             </h1>
             <p className="mt-1 text-sm text-texto">
-              Radicada el{" "}
+              Radicada el{' '}
               {formatearFecha(solicitud.radicadaEn ?? solicitud.creadoEn)}
             </p>
           </div>
@@ -61,7 +67,7 @@ export function DetalleSolicitud({ id }: DetalleSolicitudProps) {
         </Alerta>
       </header>
 
-      {solicitud.estado === "rechazada" && solicitud.motivoRechazo ? (
+      {solicitud.estado === 'rechazada' && solicitud.motivoRechazo ? (
         <Alerta tono="error">
           <p className="font-semibold">Motivo del rechazo</p>
           <p className="mt-1">{solicitud.motivoRechazo}</p>
@@ -71,10 +77,10 @@ export function DetalleSolicitud({ id }: DetalleSolicitudProps) {
       <section className="rounded-xl border border-borde bg-superficie p-4">
         <h2 className="text-sm font-bold text-titulo">Espacio solicitado</h2>
         <p className="mt-2 font-semibold text-titulo">
-          {solicitud.espacio?.nombre ?? "Espacio no disponible"}
+          {solicitud.espacio?.nombre ?? 'Espacio no disponible'}
         </p>
         <p className="text-sm text-texto">
-          {solicitud.espacio?.sector ?? "Sin sector registrado"}
+          {solicitud.espacio?.sector ?? 'Sin sector registrado'}
         </p>
         <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
           <dt className="font-semibold text-titulo">Actividad</dt>
@@ -82,8 +88,10 @@ export function DetalleSolicitud({ id }: DetalleSolicitudProps) {
           <dt className="font-semibold text-titulo">Productos</dt>
           <dd>
             {solicitud.productos.length > 0
-              ? solicitud.productos.map((producto) => producto.nombre).join(", ")
-              : "Sin productos registrados"}
+              ? solicitud.productos
+                  .map((producto) => producto.nombre)
+                  .join(', ')
+              : 'Sin productos registrados'}
           </dd>
           <dt className="font-semibold text-titulo">Fechas</dt>
           <dd>
@@ -105,25 +113,36 @@ export function DetalleSolicitud({ id }: DetalleSolicitudProps) {
             Todavía no hay cambios de estado registrados.
           </p>
         ) : (
-          <ol className="mt-3 flex flex-col gap-3">
+          <ol
+            className="mt-3 flex flex-col gap-4"
+            aria-label="Línea de tiempo de estados"
+          >
             {solicitud.historial.map((registro) => (
               <li
                 key={registro.id}
-                className="border-l-2 border-primario/30 pl-3"
+                className="relative border-l-2 border-primario/30 pl-4"
               >
+                <span
+                  className="absolute -left-[5px] top-2 size-2 rounded-full bg-primario"
+                  aria-hidden="true"
+                />
                 <div className="flex flex-wrap items-center gap-2">
+                  <EtiquetaEstadoSolicitud estado={registro.estadoNuevo} />
                   <span className="text-sm font-semibold text-titulo">
-                    {registro.estadoAnterior
-                      ? `${ETIQUETAS_ESTADO_SOLICITUD[registro.estadoAnterior]} → `
-                      : ""}
-                    {ETIQUETAS_ESTADO_SOLICITUD[registro.estadoNuevo]}
+                    {describirTransicion(
+                      registro.estadoAnterior,
+                      registro.estadoNuevo,
+                    )}
                   </span>
-                  <span className="text-xs text-tenue">
+                  <time
+                    dateTime={registro.creadoEn}
+                    className="text-xs text-tenue"
+                  >
                     {formatearFechaHora(registro.creadoEn)}
-                  </span>
+                  </time>
                 </div>
                 {registro.actor ? (
-                  <p className="text-xs text-tenue">
+                  <p className="mt-1 text-xs text-tenue">
                     {nombreCompleto(
                       registro.actor.nombre,
                       registro.actor.apellido,
@@ -132,6 +151,9 @@ export function DetalleSolicitud({ id }: DetalleSolicitudProps) {
                 ) : null}
                 {registro.observacion ? (
                   <p className="mt-1 text-sm text-texto">
+                    <span className="font-semibold text-titulo">
+                      Observación del gestor:{' '}
+                    </span>
                     {registro.observacion}
                   </p>
                 ) : null}

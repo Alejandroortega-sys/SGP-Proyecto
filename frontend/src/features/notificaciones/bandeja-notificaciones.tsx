@@ -1,26 +1,31 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Alerta } from "@/components/ui/alerta";
-import { BloqueError } from "@/components/ui/bloque-error";
-import { Boton } from "@/components/ui/boton";
-import { Selector } from "@/components/ui/campo";
-import { Cargando, EstadoVacio } from "@/components/ui/estado-vacio";
-import { Etiqueta } from "@/components/ui/etiqueta";
-import { Paginacion } from "@/components/ui/paginacion";
-import { Tarjeta, TarjetaCuerpo } from "@/components/ui/tarjeta";
-import { useConsultaApi } from "@/hooks/use-consulta-api";
+import Link from 'next/link';
+import { useState } from 'react';
+import { Alerta } from '@/components/ui/alerta';
+import { BloqueError } from '@/components/ui/bloque-error';
+import { Boton } from '@/components/ui/boton';
+import { Selector } from '@/components/ui/campo';
+import { Cargando, EstadoVacio } from '@/components/ui/estado-vacio';
+import { Etiqueta } from '@/components/ui/etiqueta';
+import { Paginacion } from '@/components/ui/paginacion';
+import { Tarjeta, TarjetaCuerpo } from '@/components/ui/tarjeta';
+import { useConsultaApi } from '@/hooks/use-consulta-api';
+import { useSesion } from '@/hooks/use-sesion';
 import {
   comoApiError,
   listarNotificaciones,
   marcarNotificacionLeida,
   marcarTodasNotificacionesLeidas,
   type ApiError,
-} from "@/lib/api-client";
-import { formatearFechaHora } from "@/lib/formato";
+} from '@/lib/api-client';
+import { formatearFechaHora } from '@/lib/formato';
+import { avisarNotificacionesActualizadas } from '@/lib/notificaciones';
+import { rutaDetalleSolicitud } from '@/lib/rutas';
 
 export function BandejaNotificaciones() {
-  const [filtroLeida, setFiltroLeida] = useState<"" | "true" | "false">("");
+  const { usuario } = useSesion();
+  const [filtroLeida, setFiltroLeida] = useState<'' | 'true' | 'false'>('');
   const [pagina, setPagina] = useState(1);
   const [procesando, setProcesando] = useState<string | null>(null);
   const [errorAccion, setErrorAccion] = useState<ApiError | null>(null);
@@ -29,7 +34,7 @@ export function BandejaNotificaciones() {
   const { datos, cargando, error, recargar } = useConsultaApi(
     () =>
       listarNotificaciones({
-        ...(filtroLeida === "" ? {} : { leida: filtroLeida === "true" }),
+        ...(filtroLeida === '' ? {} : { leida: filtroLeida === 'true' }),
         pagina,
         limite: 20,
       }),
@@ -44,6 +49,7 @@ export function BandejaNotificaciones() {
     try {
       await marcarNotificacionLeida(id);
       recargar();
+      avisarNotificacionesActualizadas();
     } catch (capturado) {
       setErrorAccion(comoApiError(capturado));
     } finally {
@@ -53,13 +59,14 @@ export function BandejaNotificaciones() {
 
   async function marcarTodas() {
     if (procesando) return;
-    setProcesando("todas");
+    setProcesando('todas');
     setErrorAccion(null);
     setExito(null);
     try {
       const respuesta = await marcarTodasNotificacionesLeidas();
       setExito(respuesta.mensaje);
       recargar();
+      avisarNotificacionesActualizadas();
     } catch (capturado) {
       setErrorAccion(comoApiError(capturado));
     } finally {
@@ -75,7 +82,7 @@ export function BandejaNotificaciones() {
             Notificaciones
           </h1>
           <p className="mt-2 text-base text-texto">
-            {datos ? `${datos.noLeidas} sin leer` : "Bandeja de notificaciones"}
+            {datos ? `${datos.noLeidas} sin leer` : 'Bandeja de notificaciones'}
           </p>
         </div>
         <div className="flex flex-wrap items-end gap-2">
@@ -83,7 +90,7 @@ export function BandejaNotificaciones() {
             etiqueta="Mostrar"
             value={filtroLeida}
             onChange={(evento) => {
-              setFiltroLeida(evento.target.value as "" | "true" | "false");
+              setFiltroLeida(evento.target.value as '' | 'true' | 'false');
               setPagina(1);
             }}
           >
@@ -94,7 +101,7 @@ export function BandejaNotificaciones() {
           <Boton
             variante="contorno"
             onClick={marcarTodas}
-            cargando={procesando === "todas"}
+            cargando={procesando === 'todas'}
             disabled={!datos || datos.noLeidas === 0}
           >
             Marcar todas como leídas
@@ -112,52 +119,83 @@ export function BandejaNotificaciones() {
       ) : !datos || datos.datos.length === 0 ? (
         <Tarjeta>
           <EstadoVacio
-            titulo="No tienes notificaciones"
-            descripcion="Cuando ocurra un cambio importante en tu cuenta, aparecerá aquí."
+            titulo={
+              filtroLeida === 'false'
+                ? 'No tienes notificaciones sin leer'
+                : filtroLeida === 'true'
+                  ? 'No tienes notificaciones leídas'
+                  : 'No tienes notificaciones'
+            }
+            descripcion="Cuando ocurra un cambio importante en tus solicitudes, aparecerá aquí."
           />
         </Tarjeta>
       ) : (
         <div className="flex flex-col gap-3">
-          {datos.datos.map((notificacion) => (
-            <Tarjeta
-              key={notificacion.id}
-              className={notificacion.leida ? "opacity-80" : "border-l-4 border-l-primario"}
-            >
-              <TarjetaCuerpo className="flex flex-col gap-2">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <h2 className="text-base font-bold text-titulo">
-                      {notificacion.asunto}
-                    </h2>
-                    <p className="mt-1 text-xs text-tenue">
-                      {formatearFechaHora(notificacion.creadaEn)} ·{" "}
-                      {notificacion.canal === "app" ? "Aplicación" : notificacion.canal}
-                    </p>
-                  </div>
-                  <Etiqueta tono={notificacion.leida ? "neutro" : "pendiente"}>
-                    {notificacion.leida ? "Leída" : "No leída"}
-                  </Etiqueta>
-                </div>
-                {notificacion.cuerpo ? (
-                  <p className="text-sm leading-relaxed text-texto">
-                    {notificacion.cuerpo}
-                  </p>
-                ) : null}
-                {!notificacion.leida ? (
-                  <div>
-                    <Boton
-                      variante="fantasma"
-                      tamano="sm"
-                      onClick={() => marcarUna(notificacion.id)}
-                      cargando={procesando === notificacion.id}
+          {datos.datos.map((notificacion) => {
+            const rutaSolicitud =
+              usuario && notificacion.solicitudId
+                ? rutaDetalleSolicitud(usuario.rol, notificacion.solicitudId)
+                : null;
+
+            return (
+              <Tarjeta
+                key={notificacion.id}
+                className={
+                  notificacion.leida
+                    ? 'opacity-80'
+                    : 'border-l-4 border-l-primario'
+                }
+              >
+                <TarjetaCuerpo className="flex flex-col gap-2">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h2 className="text-base font-bold text-titulo">
+                        {notificacion.asunto}
+                      </h2>
+                      <p className="mt-1 text-xs text-tenue">
+                        {formatearFechaHora(notificacion.creadaEn)} ·{' '}
+                        {notificacion.canal === 'app'
+                          ? 'Aplicación'
+                          : notificacion.canal}
+                      </p>
+                    </div>
+                    <Etiqueta
+                      tono={notificacion.leida ? 'neutro' : 'pendiente'}
                     >
-                      Marcar como leída
-                    </Boton>
+                      {notificacion.leida ? 'Leída' : 'No leída'}
+                    </Etiqueta>
                   </div>
-                ) : null}
-              </TarjetaCuerpo>
-            </Tarjeta>
-          ))}
+                  {notificacion.cuerpo ? (
+                    <p className="text-sm leading-relaxed text-texto">
+                      {notificacion.cuerpo}
+                    </p>
+                  ) : null}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {rutaSolicitud ? (
+                      <Link
+                        href={rutaSolicitud}
+                        aria-label={`Ver solicitud ${notificacion.asunto}`}
+                        className="inline-flex min-h-9 items-center justify-center rounded-lg border border-primario px-3 py-1.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+                      >
+                        Ver solicitud
+                      </Link>
+                    ) : null}
+                    {!notificacion.leida ? (
+                      <Boton
+                        variante="fantasma"
+                        tamano="sm"
+                        aria-label={`Marcar como leída ${notificacion.asunto}`}
+                        onClick={() => marcarUna(notificacion.id)}
+                        cargando={procesando === notificacion.id}
+                      >
+                        Marcar como leída
+                      </Boton>
+                    ) : null}
+                  </div>
+                </TarjetaCuerpo>
+              </Tarjeta>
+            );
+          })}
           <Paginacion
             pagina={datos.paginacion.pagina}
             totalPaginas={datos.paginacion.totalPaginas}

@@ -13,7 +13,10 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import type { estado_solicitud, estado_documento } from '../../generated/prisma/client';
+import type {
+  estado_solicitud,
+  estado_documento,
+} from '../../generated/prisma/client';
 
 /** Estados admitidos por el enum `estado_solicitud` de la BD. */
 export const ESTADOS_SOLICITUD: readonly estado_solicitud[] = [
@@ -56,7 +59,11 @@ export class RadicarSolicitudDatosDto {
   @Matches(FORMATO_ID, { message: 'El identificador del espacio no es válido' })
   espacioId!: string;
 
-  @ApiProperty({ example: 'Venta de frutas y verduras', minLength: 3, maxLength: 200 })
+  @ApiProperty({
+    example: 'Venta de frutas y verduras',
+    minLength: 3,
+    maxLength: 200,
+  })
   @Transform(({ value }) => recortar(value))
   @IsString({ message: 'La actividad debe ser texto' })
   @Length(3, 200, {
@@ -124,7 +131,8 @@ export class DocumentoMetaDto {
 /** Cuerpo multipart de `POST /solicitudes`. */
 export class RadicarSolicitudFormDto {
   @ApiProperty({
-    description: 'JSON con los datos de la solicitud (RadicarSolicitudDatosDto).',
+    description:
+      'JSON con los datos de la solicitud (RadicarSolicitudDatosDto).',
     example:
       '{"espacioId":"1","actividad":"Venta de frutas","productoIds":["1"],"fechaInicio":"2026-12-01","fechaFin":"2026-12-15","horaInicio":"08:00","horaFin":"12:00"}',
   })
@@ -321,10 +329,7 @@ export class DocumentoVersionSolicitudDto {
 
 /** Estado visible de un requisito para el comerciante. */
 export type EstadoRequisitoDto =
-  | 'faltante'
-  | 'cargado'
-  | 'cumple'
-  | 'no_cumple';
+  'faltante' | 'cargado' | 'cumple' | 'no_cumple';
 
 /** Requisito documental con su documento vigente y sus versiones. */
 export class RequisitoEstadoSolicitudDto {
@@ -416,6 +421,16 @@ export class RespuestaCargaDocumentoSolicitudDto {
 
   @ApiProperty({ type: [String], example: [] })
   faltantes!: string[];
+
+  @ApiProperty({
+    example: true,
+    description:
+      'Indica si se pudo enviar el correo de aviso cuando la solicitud volvió a revisión.',
+  })
+  correoEnviado!: boolean;
+
+  @ApiProperty({ example: null, nullable: true })
+  mensajeCorreo!: string | null;
 }
 
 export class ActorSolicitudDto {
@@ -439,7 +454,10 @@ export class HistorialSolicitudDto {
   @ApiProperty({ enum: ESTADOS_SOLICITUD, example: 'radicada' })
   estadoNuevo!: estado_solicitud;
 
-  @ApiProperty({ example: 'Solicitud radicada por el comerciante.', nullable: true })
+  @ApiProperty({
+    example: 'Solicitud radicada por el comerciante.',
+    nullable: true,
+  })
   observacion!: string | null;
 
   @ApiProperty({ example: '2026-11-20T10:00:00.000Z' })

@@ -307,6 +307,7 @@ por IP** (ver `docs/Uso_zonas.md`).
 | 34 | `PATCH` | `/notificaciones/leer-todas` | Autenticado | Marcar todas como leídas |
 | 35 | `GET` | `/gestor/auditoria` | Gestor administrador | Consultar la auditoría sin datos sensibles |
 | 36 | `POST` | `/auth/refresh` | Público | Renovar la sesión con refresh token |
+| 37 | `PATCH` | `/gestor/solicitudes/:id/estado` | Gestor | Cambiar estado y notificar al comerciante (HU-18) |
 
 ---
 
@@ -1619,6 +1620,7 @@ Query params: `leida` (`true`/`false`), `pagina` (desde 1), `limite` (1–100).
   "datos": [
     {
       "id": "12",
+      "solicitudId": "5",
       "tipo": "cambio_password",
       "asunto": "Contraseña actualizada",
       "cuerpo": "La contraseña de tu cuenta fue actualizada.",
@@ -1637,6 +1639,8 @@ Query params: `leida` (`true`/`false`), `pagina` (desde 1), `limite` (1–100).
 }
 ```
 
+`solicitudId` es `null` para avisos de cuenta y trae el identificador de la solicitud cuando la notificación nace de un cambio de estado. El frontend puede usarlo para abrir el detalle.
+
 #### `PATCH /notificaciones/:id/leida`
 
 Cuerpo opcional: `{ "leida": true }`. Por defecto marca como leída. Una notificación
@@ -1648,7 +1652,57 @@ Marca todas las no leídas del usuario y devuelve `{ "actualizadas": 2, "mensaje
 
 ---
 
-### 5.15 Auditoría — `GET /gestor/auditoria`
+### 5.15 Cambio de estado de solicitud — `/gestor/solicitudes/:id/estado`
+
+**Acceso:** solo gestor (revisor o administrador).
+
+Cuerpo:
+
+```json
+{ "estado": "en_revision" }
+{ "estado": "devuelta", "observacion": "Falta el RUT actualizado." }
+{ "estado": "aprobada", "observacion": "Cumple con los requisitos." }
+{ "estado": "rechazada", "motivoRechazo": "La documentación no permite verificar la actividad." }
+```
+
+Transiciones permitidas:
+
+```text
+radicada → en_revision
+en_revision → devuelta | aprobada | rechazada
+devuelta → en_revision
+```
+
+Una solicitud `aprobada`, `rechazada` o `cancelada` no cambia. El endpoint actualiza `estado`, `revisor_id`, `decidida_en` y `motivo_rechazo` cuando corresponde, escribe `solicitud_historial` y crea la notificación del comerciante en la misma transacción. Después del commit envía el correo; si falla, la respuesta trae `correoEnviado: false` sin revertir el trámite.
+
+Respuesta `200`:
+
+```json
+{
+  "id": "12",
+  "numeroRadicado": "SOL-2026-00012",
+  "estadoAnterior": "en_revision",
+  "estado": "aprobada",
+  "observacion": "Cumple con los requisitos.",
+  "motivoRechazo": null,
+  "decididaEn": "2026-11-21T10:00:00.000Z",
+  "actualizadoEn": "2026-11-21T10:00:00.000Z",
+  "correoEnviado": true,
+  "mensajeCorreo": null,
+  "mensaje": "Solicitud actualizada a «Aprobada»."
+}
+```
+
+| HTTP | Causa |
+|---|---|
+| `400` | Estado inválido o falta observación/motivo |
+| `403` | Rol distinto de gestor |
+| `404` | La solicitud no existe |
+| `409` | Transición no permitida o estado final |
+
+---
+
+### 5.16 Auditoría — `GET /gestor/auditoria`
 
 **Acceso:** solo gestor administrador.
 

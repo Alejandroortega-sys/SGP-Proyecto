@@ -604,8 +604,7 @@ Muestra:
 - estado de la cuenta;
 - correo y fecha de registro;
 - tu actividad comercial y categoría;
-- accesos rápidos para consultar espacios, editar datos, cambiar contraseña y revisar notificaciones;
-- un aviso de “Próximamente” con las solicitudes, ferias, permisos QR y cobros.
+- accesos rápidos para consultar espacios, radicar y seguir solicitudes, editar datos, cambiar contraseña y revisar notificaciones;
 
 ### 11.5 Tu perfil
 
@@ -655,16 +654,23 @@ En escritorio se abre como panel lateral; en celular, como hoja inferior. Puedes
 
 | Estado | Qué debes hacer |
 |---|---|
-| **Disponible** | Puedes revisar la ficha y, cuando el flujo de solicitudes esté habilitado, iniciar el trámite. |
+| **Disponible** | Puedes revisar la ficha e iniciar una solicitud de uso temporal. |
 | **Bloqueado** | No está disponible en esas fechas. Lee el motivo y prueba otra fecha o espacio. |
 | **Asignado** | Ya está ocupado por un permiso, una solicitud aprobada o una asignación manual. |
 | **Mantenimiento** | El municipio lo retiró temporalmente. No se puede usar hasta que vuelva a disponible. |
 
-### 11.9 Lo que todavía no puedes hacer
+### 11.9 Radicar y seguir una solicitud
 
-En esta versión **no existe el botón “Solicitar”** ni el formulario de solicitud. La plataforma solo permite **consultar** espacios. La solicitud formal, la carga de documentos, la revisión, la aprobación y el permiso con QR llegarán en los siguientes sprints.
+En esta versión ya puedes:
 
-Si necesitas pedir un espacio hoy, debes hacerlo por el canal presencial o el correo que indique la Alcaldía. La plataforma te sirve para **llegar informado**: saber qué espacio existe, en qué zona está y qué restricciones tiene.
+- radicar una solicitud desde **Mis solicitudes → Nueva solicitud**;
+- adjuntar los documentos obligatorios;
+- consultar la lista con filtro por estado;
+- abrir el detalle con la línea de tiempo;
+- corregir documentos cuando el gestor los devuelva;
+- recibir notificaciones en la plataforma y por correo cuando cambie el estado.
+
+El gestor municipal revisa y resuelve la solicitud. La aprobación con permiso QR y las ferias llegan en los siguientes sprints.
 
 ### 11.10 Recuperar la contraseña
 
@@ -673,6 +679,16 @@ Si necesitas pedir un espacio hoy, debes hacerlo por el canal presencial o el co
 3. Recibirás un código de recuperación (vigencia corta, 2 minutos por defecto).
 4. Abre `/restablecer`, ingresa el código y define la nueva contraseña.
 5. Inicia sesión con la nueva contraseña.
+
+### 11.11 Seguir solicitudes y recibir notificaciones
+
+- **Mis solicitudes** muestra tus radicados, el espacio, la actividad, las fechas, el horario y el estado.
+- El filtro por estado permite ver solo las radicadas, en revisión, con corrección, aprobadas o rechazadas. El borrador sin radicar se muestra aparte como tarjeta local.
+- El detalle incluye una línea de tiempo con fechas, actor y observaciones del gestor.
+- Cuando el gestor cambia el estado, recibes una notificación en `/notificaciones` y un correo con el enlace al detalle.
+- El menú muestra un indicador con las notificaciones no leídas; puedes marcar una o todas como leídas.
+- Nunca verás solicitudes ni notificaciones de otros comerciantes.
+
 
 ---
 
@@ -879,7 +895,13 @@ Ruta: `/notificaciones`.
 - Bandeja compartida por todos los roles.
 - Cada usuario ve solo sus notificaciones.
 - Puedes marcar una como leída o marcar todas.
-- El contador del menú se actualiza al navegar.
+- El contador del menú se actualiza al navegar y también al marcar una notificación en la bandeja.
+- Las notificaciones de cambio de estado incluyen el radicado y el enlace **Ver solicitud** para el comerciante.
+
+### 13.14 Cambiar el estado de una solicitud
+
+`PATCH /gestor/solicitudes/:id/estado` permite al gestor iniciar la revisión, devolver, aprobar o rechazar una solicitud. El cambio queda en el historial y dispara la notificación y el correo al comerciante. Para devolver se exige una observación y para rechazar, un motivo. Una solicitud aprobada o rechazada ya no cambia.
+
 
 ---
 

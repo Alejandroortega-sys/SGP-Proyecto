@@ -1,6 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { parseIdBigint } from '../common/parse-id';
-import { Prisma } from '../generated/prisma/client';
+import {
+  etiquetaEstadoSolicitud,
+  tipoNotificacionSolicitud,
+} from '../common/estados-solicitud';
+import {
+  CorreoService,
+  type DatosCambioEstadoSolicitud,
+} from '../correo/correo.service';
+import { Prisma, type estado_solicitud } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   ListarNotificacionesQueryDto,
@@ -12,6 +20,7 @@ import {
 /** Columnas que se exponen al frontend. */
 const SELECT_NOTIFICACION = {
   id: true,
+  solicitud_id: true,
   tipo: true,
   asunto: true,
   cuerpo: true,
@@ -24,16 +33,39 @@ type FilaNotificacion = Prisma.notificacionesGetPayload<{
   select: typeof SELECT_NOTIFICACION;
 }>;
 
+/** Datos de la notificación interna de un cambio de estado. */
+export interface DatosNotificacionCambioEstado {
+  solicitudId: bigint;
+  numeroRadicado: string;
+  usuarioId: bigint;
+  estadoAnterior: estado_solicitud;
+  estadoNuevo: estado_solicitud;
+  espacio?: string | null;
+  observacion?: string | null;
+  motivoRechazo?: string | null;
+}
+
+/** Resultado best-effort del envío de correo de un cambio de estado. */
+export interface ResultadoCorreoCambioEstado {
+  correoEnviado: boolean;
+  mensajeCorreo: string | null;
+}
+
 /**
- * Bandeja de notificaciones del usuario autenticado.
+ * Bandeja de notificaciones del usuario y avisos por cambio de estado.
  *
- * La tabla `notificaciones` ya existe y el resto del backend escribe en ella.
- * Este servicio solo permite consultar y marcar como leídas las notificaciones
- * propias: el `usuario_id` siempre sale del JWT y nunca de un parámetro.
+ * La consulta y el marcado de lectura siempre usan el `usuario_id` del JWT.
+ * Los módulos de trámites usan `crearCambioEstadoSolicitud` dentro de su
+ * transacción y `enviarCorreoCambioEstadoSolicitud` después del commit.
  */
 @Injectable()
 export class NotificacionesService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(NotificacionesService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly correo: CorreoService,
+  ) {}
 
   /** Lista las notificaciones del usuario con paginación y filtro de lectura. */
   async listar(
@@ -73,6 +105,89 @@ export class NotificacionesService {
       },
       noLeidas,
     };
+  }
+
+  /**
+   * Crea la notificación interna de un cambio de estado.
+   *
+   * Debe llamarse dentro de la misma transacción que actualiza la solicitud y
+   * escribe el historial, para que ambos queden consistentes.
+   *
+   * @returns Identificador de la notificación creada.
+   */
+  async crearCambioEstadoSolicitud(
+    tx: Prisma.TransactionClient,
+    datos: DatosNotificacionCambioEstado,
+  ): Promise<string> {
+    const etiquetaAnterior = etiquetaEstadoSolicitud(datos.estadoAnterior);
+    const etiquetaNueva = etiquetaEstadoSolicitud(datos.estadoNuevo);
+    const detalle = datos.motivoRechazo
+      ? ` Motivo del rechazo: ${datos.motivoRechazo}`
+      : datos.observacion
+        ? ` Observación del gestor: ${datos.observacion}`
+        : '';
+    const espacio = datos.espacio
+      ? ` para ${datos.espacio}`
+      : ' para el espacio solicitado';
+
+    const creada = await tx.notificaciones.create({
+      data: {
+        usuario_id: datos.usuarioId,
+        solicitud_id: datos.solicitudId,
+        tipo: tipoNotificacionSolicitud(datos.estadoNuevo),
+        asunto: `Solicitud ${datos.numeroRadicado}: ${etiquetaNueva}`.slice(
+          0,
+          200,
+        ),
+        cuerpo:
+          `Tu solicitud ${datos.numeroRadicado}${espacio} cambió de ` +
+          `«${etiquetaAnterior}» a «${etiquetaNueva}».${detalle}`,
+        canal: 'app',
+        leida: false,
+      },
+      select: { id: true },
+    });
+
+    return creada.id.toString();
+  }
+
+  /**
+   * Envía el correo de un cambio de estado.
+   *
+   * Es best-effort: el estado y la notificación interna ya están guardados.
+   * Un fallo de SMTP se registra y se informa, pero no revierte la transición.
+   */
+  async enviarCorreoCambioEstadoSolicitud(
+    destinatario: { correo: string; nombre: string },
+    datos: DatosNotificacionCambioEstado,
+  ): Promise<ResultadoCorreoCambioEstado> {
+    try {
+      await this.correo.enviarCambioEstadoSolicitud(
+        destinatario.correo,
+        destinatario.nombre,
+        {
+          solicitudId: datos.solicitudId.toString(),
+          numeroRadicado: datos.numeroRadicado,
+          estadoAnterior: datos.estadoAnterior,
+          estadoNuevo: datos.estadoNuevo,
+          espacio: datos.espacio ?? null,
+          observacion: datos.observacion ?? null,
+          motivoRechazo: datos.motivoRechazo ?? null,
+        } satisfies DatosCambioEstadoSolicitud,
+      );
+
+      return { correoEnviado: true, mensajeCorreo: null };
+    } catch (error) {
+      this.logger.error(
+        `No se pudo enviar el correo del cambio de estado de ` +
+          `${datos.numeroRadicado} a ${destinatario.correo}: ${String(error)}`,
+      );
+      return {
+        correoEnviado: false,
+        mensajeCorreo:
+          'El cambio de estado quedó guardado, pero no pudimos enviar el correo de aviso.',
+      };
+    }
   }
 
   /**
@@ -127,6 +242,7 @@ export class NotificacionesService {
   private mapear(fila: FilaNotificacion): NotificacionResponseDto {
     return {
       id: fila.id.toString(),
+      solicitudId: fila.solicitud_id?.toString() ?? null,
       tipo: fila.tipo,
       asunto: fila.asunto,
       cuerpo: fila.cuerpo,

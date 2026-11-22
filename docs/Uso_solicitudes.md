@@ -1,4 +1,4 @@
-# Módulo de Solicitudes — HU-16
+# Módulo de Solicitudes — HU-16 a HU-18
 
 **Proyecto:** Plataforma Web de Gestión del Espacio Público, Ferias Agroecológicas y Comercio Formal/Informal de Tuluá (Equipo 6)
 **Módulo NestJS:** `src/solicitudes/` · **Ruta base:** `/solicitudes`
@@ -21,6 +21,7 @@ Este módulo permite al **comerciante autenticado** radicar una solicitud de uso
 | `GET` | `/solicitudes/:id/requisitos` | Comerciante dueño | Requisitos, estado, versión vigente e historial de versiones |
 | `POST` | `/solicitudes/:id/documentos` | Comerciante dueño | Carga o reemplaza un documento de un requisito |
 | `GET` | `/solicitudes/:id/documentos/:documentoId/archivo` | Comerciante dueño / Gestor | Descarga autenticada de un documento |
+| `PATCH` | `/gestor/solicitudes/:id/estado` | Gestor | Cambia el estado, registra historial y notifica al comerciante |
 
 ---
 
@@ -72,7 +73,11 @@ El detalle devuelve la línea de tiempo con fecha, estados y actor.
 
 Al radicar se crea una notificación en plataforma (`tipo = solicitud_radicada`) y se envía un correo al comerciante con el radicado, espacio, actividad, productos, fechas, horario y documentos.
 
-Si el correo falla, la solicitud **permanece radicada** y la respuesta incluye `correoEnviado: false` con un mensaje de advertencia.
+Cada cambio de estado posterior usa el servicio de notificaciones de HU-18:
+
+- Crea una fila en `notificaciones` con `solicitud_id`, `canal = app`, `leida = false` y el tipo `solicitud_<estado>`.
+- Envía un correo al comerciante con el estado anterior, el nuevo, la observación del gestor o el motivo de rechazo y un enlace al detalle.
+- Si el correo falla, el estado y la notificación interna permanecen; la respuesta incluye `correoEnviado: false` y un mensaje de advertencia.
 
 ---
 
@@ -227,7 +232,9 @@ Respuesta `201`:
   "estadoSolicitud": "en_revision",
   "volvioARevision": true,
   "requisito": { "...": "estado actualizado del requisito" },
-  "faltantes": []
+  "faltantes": [],
+  "correoEnviado": true,
+  "mensajeCorreo": null
 }
 ```
 
@@ -243,6 +250,58 @@ Errores principales:
 | `413` | Archivo que supera el límite de Multer |
 
 La descarga y la vista previa usan el endpoint autenticado existente. El archivo nunca se sirve como recurso estático público.
+
+### 4.3 Cambio de estado del gestor
+
+**`PATCH /gestor/solicitudes/:id/estado`**
+
+Acceso: `gestor` (revisor o administrador). Aplica una transición de la máquina de estados.
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `estado` | texto | Sí | `en_revision`, `devuelta`, `aprobada` o `rechazada` |
+| `observacion` | texto | Si `estado = devuelta` | Observación visible en la línea de tiempo |
+| `motivoRechazo` | texto | Si `estado = rechazada` | Motivo visible para el solicitante |
+
+Transiciones permitidas:
+
+```text
+radicada → en_revision
+en_revision → devuelta | aprobada | rechazada
+devuelta → en_revision  (corrección documental del comerciante)
+```
+
+Una solicitud `aprobada`, `rechazada` o `cancelada` no admite más cambios.
+
+Respuesta `200`:
+
+```json
+{
+  "id": "12",
+  "numeroRadicado": "SOL-2026-00012",
+  "estadoAnterior": "en_revision",
+  "estado": "aprobada",
+  "observacion": "Cumple con los requisitos.",
+  "motivoRechazo": null,
+  "decididaEn": "2026-11-21T10:00:00.000Z",
+  "actualizadoEn": "2026-11-21T10:00:00.000Z",
+  "correoEnviado": true,
+  "mensajeCorreo": null,
+  "mensaje": "Solicitud actualizada a «Aprobada»."
+}
+```
+
+Errores:
+
+| HTTP | Causa |
+|---|---|
+| `400` | Estado inválido, falta observación de devolución o motivo de rechazo |
+| `401` | Sin token o sesión revocada |
+| `403` | Rol distinto de gestor |
+| `404` | La solicitud no existe |
+| `409` | Transición no permitida o solicitud en estado final |
+
+El cambio de estado, el historial y la notificación en plataforma se guardan en una sola transacción. El correo se envía después del commit y su fallo no revierte el trámite.
 
 ---
 
@@ -274,6 +333,9 @@ La descarga y la vista previa usan el endpoint autenticado existente. El archivo
 - Si la operación falla, el archivo seleccionado se conserva para reintentar.
 - En estados no editables se oculta la acción de carga y se muestra el motivo.
 - Los documentos antiguos sin requisito asociado se muestran aparte para no ocultarlos.
+- La línea de tiempo muestra el estado anterior y el nuevo, la fecha, el actor, la observación del gestor y usa etiquetas visuales por estado.
+- El centro de notificaciones muestra las notificaciones propias, permite marcar una o todas y actualiza el indicador del menú sin esperar una navegación.
+- Si la notificación tiene `solicitudId`, el comerciante puede abrir el detalle con el enlace **Ver solicitud**.
 
 ### Borrador local
 
@@ -296,13 +358,13 @@ La descarga y la vista previa usan el endpoint autenticado existente. El archivo
 
 ```powershell
 # Backend
-pnpm test -- --runInBand src/solicitudes
-pnpm test:e2e -- --runInBand test/solicitudes.e2e-spec.ts
+pnpm test -- --runInBand src/solicitudes src/notificaciones src/common/estados-solicitud.spec.ts
+pnpm test:e2e -- --runInBand test/solicitudes.e2e-spec.ts test/notificaciones.e2e-spec.ts
 
 # Frontend
 cd frontend
 pnpm test
-pnpm test:e2e e2e/solicitudes.spec.ts e2e/solicitudes-documentos.spec.ts
+pnpm test:e2e e2e/solicitudes.spec.ts e2e/solicitudes-documentos.spec.ts e2e/notificaciones.spec.ts e2e/seguimiento-solicitudes.spec.ts
 ```
 
 Cubren:
@@ -314,6 +376,10 @@ Cubren:
 - Roles: comerciante permitido; gestor y anónimo rechazados en la radicación.
 - Carga, reemplazo y versionado de documentos; transición `devuelta → en_revision`.
 - Límites de tipo y tamaño, requisitos faltantes y acceso no autorizado a archivos.
+- Transiciones del gestor: `radicada → en_revision → aprobada/rechazada`, transición inválida, estado final inmutable y motivo obligatorio.
+- Notificación en plataforma y correo por cambio de estado, con `solicitud_id`.
+- Aislamiento de solicitudes y notificaciones entre dos comerciantes.
+- Centro de notificaciones: enlace al detalle y actualización del indicador de no leídas.
 - Borrador local: guardar, recuperar y descartar.
 - Flujo Playwright completo con documentos reales, progreso, vista previa y versiones.
 
@@ -324,10 +390,13 @@ Cubren:
 ```powershell
 psql -U postgres -d "sgp_tulua" -f dataBase/09_solicitudes_hu16.sql
 psql -U postgres -d "sgp_tulua" -f dataBase/10_solicitudes_hu17.sql
+psql -U postgres -d "sgp_tulua" -f dataBase/11_notificaciones_hu18.sql
 pnpm exec prisma generate
 ```
 
-Las migraciones son idempotentes. La 09 agrega:
+Las migraciones son idempotentes. La 11 agrega `notificaciones.solicitud_id`, su clave foránea a `solicitudes` y el índice `idx_notificaciones_solicitud` para enlazar cada aviso con su trámite.
+
+La 09 agrega:
 
 - `requisitos_documentales` y su seed.
 - Metadatos de documentos en `solicitud_documentos`.
@@ -352,3 +421,12 @@ La 10 agrega el índice de versiones documentales. La columna `reemplaza_a` ya e
 9. Reemplazar un documento con un PDF y comprobar la barra de progreso y el bloque **Versiones anteriores**.
 10. Intentar subir un `.txt` o un archivo de más de 5 MB y comprobar el mensaje de rechazo.
 11. Repetir la misma solicitud para comprobar el rechazo por duplicado.
+12. Con el token de un gestor, cambiar el estado a `en_revision` y luego a `aprobada`:
+    ```powershell
+    Invoke-RestMethod -Method Patch -Uri 'http://localhost:3000/gestor/solicitudes/12/estado' `
+      -Headers @{ Authorization = "Bearer $tokenGestor" } `
+      -ContentType 'application/json' -Body '{"estado":"en_revision"}'
+    ```
+13. Volver a iniciar sesión como comerciante y abrir **Notificaciones**: debe aparecer el aviso con el radicado, la observación y el enlace **Ver solicitud**.
+14. Abrir el detalle y comprobar la línea de tiempo con los estados, fechas y observaciones.
+15. Marcar la notificación como leída y verificar que el indicador del menú disminuye sin cambiar de página.
