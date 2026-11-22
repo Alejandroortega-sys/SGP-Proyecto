@@ -209,6 +209,7 @@ export type gestoresWhereInput = {
   usuarios_gestores_creado_porTousuarios?: Prisma.XOR<Prisma.UsuariosNullableScalarRelationFilter, Prisma.usuariosWhereInput> | null
   usuarios_gestores_usuario_idTousuarios?: Prisma.XOR<Prisma.UsuariosScalarRelationFilter, Prisma.usuariosWhereInput>
   permisos?: Prisma.PermisosListRelationFilter
+  solicitud_revisiones?: Prisma.Solicitud_revisionesListRelationFilter
   solicitudes?: Prisma.SolicitudesListRelationFilter
 }
 
@@ -221,6 +222,7 @@ export type gestoresOrderByWithRelationInput = {
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosOrderByWithRelationInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosOrderByWithRelationInput
   permisos?: Prisma.permisosOrderByRelationAggregateInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesOrderByRelationAggregateInput
   solicitudes?: Prisma.solicitudesOrderByRelationAggregateInput
 }
 
@@ -236,6 +238,7 @@ export type gestoresWhereUniqueInput = Prisma.AtLeast<{
   usuarios_gestores_creado_porTousuarios?: Prisma.XOR<Prisma.UsuariosNullableScalarRelationFilter, Prisma.usuariosWhereInput> | null
   usuarios_gestores_usuario_idTousuarios?: Prisma.XOR<Prisma.UsuariosScalarRelationFilter, Prisma.usuariosWhereInput>
   permisos?: Prisma.PermisosListRelationFilter
+  solicitud_revisiones?: Prisma.Solicitud_revisionesListRelationFilter
   solicitudes?: Prisma.SolicitudesListRelationFilter
 }, "usuario_id">
 
@@ -266,6 +269,7 @@ export type gestoresCreateInput = {
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
   usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
   permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesCreateNestedManyWithoutGestoresInput
 }
 
@@ -276,6 +280,7 @@ export type gestoresUncheckedCreateInput = {
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
   permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
 }
 
@@ -286,6 +291,7 @@ export type gestoresUpdateInput = {
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
   permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUpdateManyWithoutGestoresNestedInput
 }
 
@@ -296,6 +302,7 @@ export type gestoresUncheckedUpdateInput = {
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
 }
 
@@ -501,12 +508,27 @@ export type gestoresUncheckedUpdateOneWithoutUsuarios_gestores_usuario_idTousuar
   update?: Prisma.XOR<Prisma.XOR<Prisma.gestoresUpdateToOneWithWhereWithoutUsuarios_gestores_usuario_idTousuariosInput, Prisma.gestoresUpdateWithoutUsuarios_gestores_usuario_idTousuariosInput>, Prisma.gestoresUncheckedUpdateWithoutUsuarios_gestores_usuario_idTousuariosInput>
 }
 
+export type gestoresCreateNestedOneWithoutSolicitud_revisionesInput = {
+  create?: Prisma.XOR<Prisma.gestoresCreateWithoutSolicitud_revisionesInput, Prisma.gestoresUncheckedCreateWithoutSolicitud_revisionesInput>
+  connectOrCreate?: Prisma.gestoresCreateOrConnectWithoutSolicitud_revisionesInput
+  connect?: Prisma.gestoresWhereUniqueInput
+}
+
+export type gestoresUpdateOneRequiredWithoutSolicitud_revisionesNestedInput = {
+  create?: Prisma.XOR<Prisma.gestoresCreateWithoutSolicitud_revisionesInput, Prisma.gestoresUncheckedCreateWithoutSolicitud_revisionesInput>
+  connectOrCreate?: Prisma.gestoresCreateOrConnectWithoutSolicitud_revisionesInput
+  upsert?: Prisma.gestoresUpsertWithoutSolicitud_revisionesInput
+  connect?: Prisma.gestoresWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.gestoresUpdateToOneWithWhereWithoutSolicitud_revisionesInput, Prisma.gestoresUpdateWithoutSolicitud_revisionesInput>, Prisma.gestoresUncheckedUpdateWithoutSolicitud_revisionesInput>
+}
+
 export type gestoresCreateWithoutExcepciones_factibilidadInput = {
   perfil?: $Enums.perfil_gestor
   ferias?: Prisma.feriasCreateNestedManyWithoutGestoresInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
   usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
   permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesCreateNestedManyWithoutGestoresInput
 }
 
@@ -516,6 +538,7 @@ export type gestoresUncheckedCreateWithoutExcepciones_factibilidadInput = {
   creado_por?: bigint | number | null
   ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
   permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
 }
 
@@ -541,6 +564,7 @@ export type gestoresUpdateWithoutExcepciones_factibilidadInput = {
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
   permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUpdateManyWithoutGestoresNestedInput
 }
 
@@ -550,6 +574,7 @@ export type gestoresUncheckedUpdateWithoutExcepciones_factibilidadInput = {
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
 }
 
@@ -559,6 +584,7 @@ export type gestoresCreateWithoutFeriasInput = {
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
   usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
   permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesCreateNestedManyWithoutGestoresInput
 }
 
@@ -568,6 +594,7 @@ export type gestoresUncheckedCreateWithoutFeriasInput = {
   creado_por?: bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
   permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
 }
 
@@ -593,6 +620,7 @@ export type gestoresUpdateWithoutFeriasInput = {
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
   permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUpdateManyWithoutGestoresNestedInput
 }
 
@@ -602,6 +630,7 @@ export type gestoresUncheckedUpdateWithoutFeriasInput = {
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
 }
 
@@ -611,6 +640,7 @@ export type gestoresCreateWithoutPermisosInput = {
   ferias?: Prisma.feriasCreateNestedManyWithoutGestoresInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
   usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesCreateNestedManyWithoutGestoresInput
 }
 
@@ -620,6 +650,7 @@ export type gestoresUncheckedCreateWithoutPermisosInput = {
   creado_por?: bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
 }
 
@@ -645,6 +676,7 @@ export type gestoresUpdateWithoutPermisosInput = {
   ferias?: Prisma.feriasUpdateManyWithoutGestoresNestedInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUpdateManyWithoutGestoresNestedInput
 }
 
@@ -654,6 +686,7 @@ export type gestoresUncheckedUpdateWithoutPermisosInput = {
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
 }
 
@@ -664,6 +697,7 @@ export type gestoresCreateWithoutSolicitudesInput = {
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
   usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
   permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesCreateNestedManyWithoutGestoresInput
 }
 
 export type gestoresUncheckedCreateWithoutSolicitudesInput = {
@@ -673,6 +707,7 @@ export type gestoresUncheckedCreateWithoutSolicitudesInput = {
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
   permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
 }
 
 export type gestoresCreateOrConnectWithoutSolicitudesInput = {
@@ -698,6 +733,7 @@ export type gestoresUpdateWithoutSolicitudesInput = {
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
   permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUpdateManyWithoutGestoresNestedInput
 }
 
 export type gestoresUncheckedUpdateWithoutSolicitudesInput = {
@@ -707,6 +743,7 @@ export type gestoresUncheckedUpdateWithoutSolicitudesInput = {
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
 }
 
 export type gestoresCreateWithoutUsuarios_gestores_creado_porTousuariosInput = {
@@ -715,6 +752,7 @@ export type gestoresCreateWithoutUsuarios_gestores_creado_porTousuariosInput = {
   ferias?: Prisma.feriasCreateNestedManyWithoutGestoresInput
   usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
   permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesCreateNestedManyWithoutGestoresInput
 }
 
@@ -724,6 +762,7 @@ export type gestoresUncheckedCreateWithoutUsuarios_gestores_creado_porTousuarios
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
   permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
 }
 
@@ -743,6 +782,7 @@ export type gestoresCreateWithoutUsuarios_gestores_usuario_idTousuariosInput = {
   ferias?: Prisma.feriasCreateNestedManyWithoutGestoresInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
   permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesCreateNestedManyWithoutGestoresInput
 }
 
@@ -752,6 +792,7 @@ export type gestoresUncheckedCreateWithoutUsuarios_gestores_usuario_idTousuarios
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
   permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
 }
 
@@ -802,10 +843,68 @@ export type gestoresUpdateWithoutUsuarios_gestores_usuario_idTousuariosInput = {
   ferias?: Prisma.feriasUpdateManyWithoutGestoresNestedInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
   permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUpdateManyWithoutGestoresNestedInput
 }
 
 export type gestoresUncheckedUpdateWithoutUsuarios_gestores_usuario_idTousuariosInput = {
+  perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
+  creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
+  ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
+  permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
+  solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
+}
+
+export type gestoresCreateWithoutSolicitud_revisionesInput = {
+  perfil?: $Enums.perfil_gestor
+  excepciones_factibilidad?: Prisma.excepciones_factibilidadCreateNestedManyWithoutGestoresInput
+  ferias?: Prisma.feriasCreateNestedManyWithoutGestoresInput
+  usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
+  usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
+  permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
+  solicitudes?: Prisma.solicitudesCreateNestedManyWithoutGestoresInput
+}
+
+export type gestoresUncheckedCreateWithoutSolicitud_revisionesInput = {
+  usuario_id: bigint | number
+  perfil?: $Enums.perfil_gestor
+  creado_por?: bigint | number | null
+  excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
+  ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
+  permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
+  solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
+}
+
+export type gestoresCreateOrConnectWithoutSolicitud_revisionesInput = {
+  where: Prisma.gestoresWhereUniqueInput
+  create: Prisma.XOR<Prisma.gestoresCreateWithoutSolicitud_revisionesInput, Prisma.gestoresUncheckedCreateWithoutSolicitud_revisionesInput>
+}
+
+export type gestoresUpsertWithoutSolicitud_revisionesInput = {
+  update: Prisma.XOR<Prisma.gestoresUpdateWithoutSolicitud_revisionesInput, Prisma.gestoresUncheckedUpdateWithoutSolicitud_revisionesInput>
+  create: Prisma.XOR<Prisma.gestoresCreateWithoutSolicitud_revisionesInput, Prisma.gestoresUncheckedCreateWithoutSolicitud_revisionesInput>
+  where?: Prisma.gestoresWhereInput
+}
+
+export type gestoresUpdateToOneWithWhereWithoutSolicitud_revisionesInput = {
+  where?: Prisma.gestoresWhereInput
+  data: Prisma.XOR<Prisma.gestoresUpdateWithoutSolicitud_revisionesInput, Prisma.gestoresUncheckedUpdateWithoutSolicitud_revisionesInput>
+}
+
+export type gestoresUpdateWithoutSolicitud_revisionesInput = {
+  perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
+  excepciones_factibilidad?: Prisma.excepciones_factibilidadUpdateManyWithoutGestoresNestedInput
+  ferias?: Prisma.feriasUpdateManyWithoutGestoresNestedInput
+  usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
+  usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
+  permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
+  solicitudes?: Prisma.solicitudesUpdateManyWithoutGestoresNestedInput
+}
+
+export type gestoresUncheckedUpdateWithoutSolicitud_revisionesInput = {
+  usuario_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
@@ -825,6 +924,7 @@ export type gestoresUpdateWithoutUsuarios_gestores_creado_porTousuariosInput = {
   ferias?: Prisma.feriasUpdateManyWithoutGestoresNestedInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
   permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUpdateManyWithoutGestoresNestedInput
 }
 
@@ -834,6 +934,7 @@ export type gestoresUncheckedUpdateWithoutUsuarios_gestores_creado_porTousuarios
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
 }
 
@@ -851,6 +952,7 @@ export type GestoresCountOutputType = {
   excepciones_factibilidad: number
   ferias: number
   permisos: number
+  solicitud_revisiones: number
   solicitudes: number
 }
 
@@ -858,6 +960,7 @@ export type GestoresCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensio
   excepciones_factibilidad?: boolean | GestoresCountOutputTypeCountExcepciones_factibilidadArgs
   ferias?: boolean | GestoresCountOutputTypeCountFeriasArgs
   permisos?: boolean | GestoresCountOutputTypeCountPermisosArgs
+  solicitud_revisiones?: boolean | GestoresCountOutputTypeCountSolicitud_revisionesArgs
   solicitudes?: boolean | GestoresCountOutputTypeCountSolicitudesArgs
 }
 
@@ -895,6 +998,13 @@ export type GestoresCountOutputTypeCountPermisosArgs<ExtArgs extends runtime.Typ
 /**
  * GestoresCountOutputType without action
  */
+export type GestoresCountOutputTypeCountSolicitud_revisionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.solicitud_revisionesWhereInput
+}
+
+/**
+ * GestoresCountOutputType without action
+ */
 export type GestoresCountOutputTypeCountSolicitudesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.solicitudesWhereInput
 }
@@ -909,6 +1019,7 @@ export type gestoresSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   usuarios_gestores_creado_porTousuarios?: boolean | Prisma.gestores$usuarios_gestores_creado_porTousuariosArgs<ExtArgs>
   usuarios_gestores_usuario_idTousuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
   permisos?: boolean | Prisma.gestores$permisosArgs<ExtArgs>
+  solicitud_revisiones?: boolean | Prisma.gestores$solicitud_revisionesArgs<ExtArgs>
   solicitudes?: boolean | Prisma.gestores$solicitudesArgs<ExtArgs>
   _count?: boolean | Prisma.GestoresCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["gestores"]>
@@ -942,6 +1053,7 @@ export type gestoresInclude<ExtArgs extends runtime.Types.Extensions.InternalArg
   usuarios_gestores_creado_porTousuarios?: boolean | Prisma.gestores$usuarios_gestores_creado_porTousuariosArgs<ExtArgs>
   usuarios_gestores_usuario_idTousuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
   permisos?: boolean | Prisma.gestores$permisosArgs<ExtArgs>
+  solicitud_revisiones?: boolean | Prisma.gestores$solicitud_revisionesArgs<ExtArgs>
   solicitudes?: boolean | Prisma.gestores$solicitudesArgs<ExtArgs>
   _count?: boolean | Prisma.GestoresCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -962,6 +1074,7 @@ export type $gestoresPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     usuarios_gestores_creado_porTousuarios: Prisma.$usuariosPayload<ExtArgs> | null
     usuarios_gestores_usuario_idTousuarios: Prisma.$usuariosPayload<ExtArgs>
     permisos: Prisma.$permisosPayload<ExtArgs>[]
+    solicitud_revisiones: Prisma.$solicitud_revisionesPayload<ExtArgs>[]
     solicitudes: Prisma.$solicitudesPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1367,6 +1480,7 @@ export interface Prisma__gestoresClient<T, Null = never, ExtArgs extends runtime
   usuarios_gestores_creado_porTousuarios<T extends Prisma.gestores$usuarios_gestores_creado_porTousuariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.gestores$usuarios_gestores_creado_porTousuariosArgs<ExtArgs>>): Prisma.Prisma__usuariosClient<runtime.Types.Result.GetResult<Prisma.$usuariosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   usuarios_gestores_usuario_idTousuarios<T extends Prisma.usuariosDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuariosDefaultArgs<ExtArgs>>): Prisma.Prisma__usuariosClient<runtime.Types.Result.GetResult<Prisma.$usuariosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   permisos<T extends Prisma.gestores$permisosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.gestores$permisosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$permisosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  solicitud_revisiones<T extends Prisma.gestores$solicitud_revisionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.gestores$solicitud_revisionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$solicitud_revisionesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   solicitudes<T extends Prisma.gestores$solicitudesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.gestores$solicitudesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$solicitudesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1889,6 +2003,30 @@ export type gestores$permisosArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.PermisosScalarFieldEnum | Prisma.PermisosScalarFieldEnum[]
+}
+
+/**
+ * gestores.solicitud_revisiones
+ */
+export type gestores$solicitud_revisionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the solicitud_revisiones
+   */
+  select?: Prisma.solicitud_revisionesSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the solicitud_revisiones
+   */
+  omit?: Prisma.solicitud_revisionesOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.solicitud_revisionesInclude<ExtArgs> | null
+  where?: Prisma.solicitud_revisionesWhereInput
+  orderBy?: Prisma.solicitud_revisionesOrderByWithRelationInput | Prisma.solicitud_revisionesOrderByWithRelationInput[]
+  cursor?: Prisma.solicitud_revisionesWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.Solicitud_revisionesScalarFieldEnum | Prisma.Solicitud_revisionesScalarFieldEnum[]
 }
 
 /**

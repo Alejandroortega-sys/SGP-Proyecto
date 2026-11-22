@@ -430,3 +430,76 @@ La 10 agrega el índice de versiones documentales. La columna `reemplaza_a` ya e
 13. Volver a iniciar sesión como comerciante y abrir **Notificaciones**: debe aparecer el aviso con el radicado, la observación y el enlace **Ver solicitud**.
 14. Abrir el detalle y comprobar la línea de tiempo con los estados, fechas y observaciones.
 15. Marcar la notificación como leída y verificar que el indicador del menú disminuye sin cambiar de página.
+
+---
+
+## 9. Revisión documental del gestor (HU-19)
+
+### 9.1 Rutas y permisos
+
+| Ruta | Función |
+|---|---|
+| `/gestor/solicitudes` | Bandeja de revisión con filtros, orden y paginación |
+| `/gestor/solicitudes/[id]` | Detalle, checklist, visor de documentos y devolución |
+
+Disponible para gestores con perfil `revisor` y `administrador`. Un comerciante recibe `403`.
+
+### 9.2 Bandeja
+
+- Sin filtro de estado muestra `radicada` y `en_revision`.
+- Filtros por estado, sector y `actividad_permitida` del espacio.
+- Orden por antigüedad (más antiguas primero) o más recientes.
+- Cada fila muestra comerciante, espacio, fechas, documentos, avance y bloqueo.
+- Si otro gestor tiene el bloqueo, la acción cambia a **Ver en solo lectura**.
+
+### 9.3 Verificación por requisito
+
+- La lista se construye con los requisitos de la actividad del espacio.
+- Solo se pueden verificar requisitos con documento vigente.
+- El gestor elige **Cumple** o **No cumple** y pulsa **Guardar verificación**.
+- `No cumple` exige una observación de 1–2000 caracteres.
+- El estado se guarda en `solicitud_documentos.estado` (`validado`/`observado`) y la observación en `observacion`.
+- Se registran `verificado_por` y `verificado_en`.
+- El progreso (`X de Y requisitos verificados`) se actualiza sin recargar.
+
+### 9.4 Bloqueo concurrente
+
+- Abrir el detalle toma el bloqueo y, si la solicitud está radicada, la pasa a `En revisión`.
+- Cada toma genera un `tokenBloqueo`; la liberación solo afecta al bloqueo de esa pantalla.
+- El bloqueo se renueva cada 60 segundos y con cada verificación.
+- Duración por defecto: 15 minutos (`REVISION_LOCK_MINUTES`).
+- Si otro gestor intenta verificar o cambiar el estado, recibe `409`.
+- Al salir de la pantalla se libera el bloqueo; si la pestaña se cierra sin liberar, expira por inactividad.
+- El segundo gestor puede consultar en solo lectura y reintentar cuando el bloqueo se libere.
+
+### 9.5 Devolución
+
+- El botón **Devolver para corrección** exige una observación general.
+- La solicitud pasa a `devuelta` (visible como **Requiere corrección**).
+- Se registra historial, notificación en plataforma y correo.
+- Los requisitos marcados `No cumple` conservan su observación para el comerciante.
+- El bloqueo se libera al devolver.
+
+### 9.6 Pruebas
+
+```powershell
+# Backend
+pnpm test -- --runInBand src/solicitudes
+pnpm test:e2e -- --runInBand test/revision-solicitudes.e2e-spec.ts
+
+# Frontend
+cd frontend
+pnpm test
+pnpm test:e2e e2e/revision-solicitudes.spec.ts
+```
+
+Las pruebas Playwright cubren bandeja y filtros, vista móvil, verificación con persistencia, devolución con notificación, concurrencia entre dos gestores y expiración del bloqueo.
+
+### 9.7 Migración
+
+```powershell
+psql -U postgres -d "sgp_tulua" -f dataBase/12_revision_hu19.sql
+pnpm exec prisma generate
+```
+
+La migración agrega `solicitud_revisiones`, el token de bloqueo y las columnas `verificado_por` y `verificado_en`.

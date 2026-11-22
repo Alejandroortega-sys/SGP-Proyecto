@@ -119,7 +119,7 @@ src/
 
 **Organizador:** `/organizador/inicio` · `/organizador/perfil` · `/organizador/mi-organizacion`
 
-**Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/zonas` · `/gestor/zonas/nueva` · `/gestor/zonas/[id]/editar` · `/gestor/zonas/[id]/historial` · `/gestor/modulos` · `/gestor/modulos/nuevo` · `/gestor/modulos/[id]` · `/gestor/modulos/[id]/editar` · `/gestor/espacios` · `/gestor/espacios/nuevo` · `/gestor/espacios/[id]` · `/gestor/espacios/[id]/editar` · `/gestor/importaciones` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
+**Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/solicitudes` · `/gestor/solicitudes/[id]` · `/gestor/zonas` · `/gestor/zonas/nueva` · `/gestor/zonas/[id]/editar` · `/gestor/zonas/[id]/historial` · `/gestor/modulos` · `/gestor/modulos/nuevo` · `/gestor/modulos/[id]` · `/gestor/modulos/[id]/editar` · `/gestor/espacios` · `/gestor/espacios/nuevo` · `/gestor/espacios/[id]` · `/gestor/espacios/[id]/editar` · `/gestor/importaciones` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
 
 **Transversal:** `/notificaciones`
 
@@ -195,3 +195,11 @@ Para probar los flujos contra la API real, consulta la sección *"Cómo probar l
 - Mapa de previsualización con zonas de contexto y filas coloreadas por estado.
 - Reporte de errores descargable en CSV UTF-8 con BOM.
 - Detalle funcional: [`docs/Uso_importaciones.md`](../docs/Uso_importaciones.md).
+
+## Revisión documental del gestor (HU-19)
+
+- `/gestor/solicitudes`: bandeja con filtros por estado, sector y actividad, orden por antigüedad/reciente y paginación.
+- `/gestor/solicitudes/[id]`: detalle con lista de verificación, visor de documentos, progreso, bloqueo concurrente y devolución.
+- Verificación por requisito con **Cumple** / **No cumple**, observación obligatoria para No cumple y guardado explícito.
+- El bloqueo se toma al abrir, se renueva cada minuto, se libera al salir y expira por inactividad.
+- Detalle funcional: [`docs/Uso_solicitudes.md`](../docs/Uso_solicitudes.md) §9.

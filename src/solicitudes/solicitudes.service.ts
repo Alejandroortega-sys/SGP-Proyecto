@@ -223,13 +223,14 @@ interface FilaSolicitudDocumentos {
 
 /** Fila bloqueada para cambiar el estado de una solicitud. */
 interface FilaEstadoSolicitud {
-  id: bigint;
+  id: bigint | string;
   numero_radicado: string;
   estado: estado_solicitud;
-  comerciante_id: bigint;
+  comerciante_id: bigint | string;
   correo: string;
   nombre: string;
   espacio_nombre: string | null;
+  bloqueo_gestor_id: bigint | string | null;
 }
 
 /**
@@ -355,7 +356,13 @@ export class SolicitudesService {
           s.comerciante_id,
           u.correo,
           u.nombre,
-          e.nombre AS espacio_nombre
+          e.nombre AS espacio_nombre,
+          (
+            SELECT r.gestor_id
+              FROM solicitud_revisiones r
+             WHERE r.solicitud_id = s.id
+               AND r.expira_en > now()
+          ) AS bloqueo_gestor_id
         FROM solicitudes s
         JOIN usuarios u ON u.id = s.comerciante_id
         LEFT JOIN espacios_temporales e ON e.id = s.espacio_id
@@ -365,6 +372,16 @@ export class SolicitudesService {
       const actual = filas[0];
       if (!actual) {
         throw new NotFoundException('La solicitud no existe');
+      }
+
+      if (
+        actual.bloqueo_gestor_id !== null &&
+        actual.bloqueo_gestor_id !== undefined &&
+        BigInt(actual.bloqueo_gestor_id.toString()) !== gestorId
+      ) {
+        throw new ConflictException(
+          'Otro gestor está revisando esta solicitud. No puedes cambiar su estado mientras el bloqueo esté vigente.',
+        );
       }
 
       if (!puedeCambiarEstadoSolicitud(actual.estado, dto.estado)) {
@@ -411,10 +428,21 @@ export class SolicitudesService {
         },
       });
 
+      // Al salir de la revisión (devolución, aprobación, rechazo) el bloqueo
+      // del gestor deja de tener sentido. Si la transición es a en_revision se
+      // conserva, porque puede venir de un gestor que ya tomó la revisión.
+      if (dto.estado !== 'en_revision') {
+        await tx.$executeRaw`
+          DELETE FROM solicitud_revisiones WHERE solicitud_id = ${solicitudId}
+        `;
+      }
+
+      const comercianteId = BigInt(actual.comerciante_id.toString());
+
       await this.notificaciones.crearCambioEstadoSolicitud(tx, {
         solicitudId,
         numeroRadicado: actual.numero_radicado,
-        usuarioId: actual.comerciante_id,
+        usuarioId: comercianteId,
         estadoAnterior: actual.estado,
         estadoNuevo: dto.estado,
         espacio: actual.espacio_nombre,
@@ -423,7 +451,7 @@ export class SolicitudesService {
       });
 
       return {
-        actual,
+        actual: { ...actual, comerciante_id: comercianteId },
         actualizada,
         observacionHistorial,
         estadoAnterior: actual.estado,

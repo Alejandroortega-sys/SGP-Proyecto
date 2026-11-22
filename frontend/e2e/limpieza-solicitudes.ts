@@ -88,3 +88,24 @@ export async function eliminarSolicitudesPrueba(
     await cliente.end();
   }
 }
+
+/**
+ * Fuerza la expiración del bloqueo de revisión de una solicitud para probar
+ * la toma por otro gestor sin esperar los 15 minutos reales.
+ */
+export async function expirarBloqueoRevision(solicitudId: string): Promise<void> {
+  const cliente = new Client({ connectionString: urlBaseDatos() });
+  await cliente.connect();
+
+  try {
+    await cliente.query(
+      `UPDATE solicitud_revisiones
+          SET ultima_actividad = now() - interval '2 minutes',
+              expira_en = now() - interval '1 minute'
+        WHERE solicitud_id = $1::bigint`,
+      [solicitudId],
+    );
+  } finally {
+    await cliente.end();
+  }
+}

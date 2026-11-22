@@ -1387,3 +1387,156 @@ export interface RespuestaRadicacion {
   correoEnviado: boolean;
   mensajeCorreo: string | null;
 }
+
+/* ------------------------------------------------------------------ */
+/* Revisión documental del gestor (HU-19)                              */
+/* ------------------------------------------------------------------ */
+
+export type OrdenRevisionSolicitudes = 'antiguedad' | 'reciente';
+
+export interface GestorBloqueoRevision {
+  id: string;
+  nombre: string;
+  apellido: string | null;
+  perfil: PerfilGestor;
+}
+
+export interface BloqueoRevision {
+  solicitudId: string;
+  gestor: GestorBloqueoRevision;
+  iniciadaEn: string;
+  ultimaActividad: string;
+  expiraEn: string;
+  esPropio: boolean;
+}
+
+export interface ComercianteRevision {
+  id: string;
+  nombre: string;
+  apellido: string | null;
+  correo: string;
+  documento: string | null;
+  telefono: string | null;
+  actividadComercial: string | null;
+  categoria: string | null;
+}
+
+export interface DocumentoRevision extends DocumentoVersionSolicitud {
+  verificadoEn: string | null;
+  verificadoPor: ActorSolicitud | null;
+}
+
+export interface RequisitoRevision extends RequisitoDocumental {
+  estado: EstadoRequisitoDocumental;
+  documentoActual: DocumentoRevision | null;
+  versiones: DocumentoRevision[];
+  observacion: string | null;
+  verificadoEn: string | null;
+  verificadoPor: ActorSolicitud | null;
+}
+
+export interface ProgresoRevision {
+  total: number;
+  pendientes: number;
+  verificados: number;
+  cumple: number;
+  noCumple: number;
+}
+
+export interface SolicitudRevisionListado {
+  id: string;
+  numeroRadicado: string;
+  estado: EstadoSolicitud;
+  actividad: string;
+  fechaInicio: string;
+  fechaFin: string;
+  horaInicio: string;
+  horaFin: string;
+  radicadaEn: string | null;
+  creadoEn: string;
+  comerciante: ComercianteRevision;
+  espacio: EspacioSolicitudResumen | null;
+  documentosCargados: number;
+  requisitosVerificados: number;
+  requisitosNoCumplen: number;
+  bloqueo: BloqueoRevision | null;
+}
+
+export interface ListarSolicitudesRevisionResponse {
+  datos: SolicitudRevisionListado[];
+  paginacion: Paginacion;
+}
+
+export interface OpcionesRevisionSolicitudes {
+  sectores: string[];
+  actividades: string[];
+}
+
+export interface SolicitudRevisionDetalle extends SolicitudRevisionListado {
+  decididaEn: string | null;
+  motivoRechazo: string | null;
+  actualizadoEn: string;
+  productos: ProductoSolicitud[];
+  requisitos: RequisitoRevision[];
+  otrosDocumentos: DocumentoRevision[];
+  historial: HistorialSolicitud[];
+  progreso: ProgresoRevision;
+  puedeVerificar: boolean;
+  motivoBloqueo: string | null;
+}
+
+export interface FiltrosRevisionSolicitudes {
+  estado?: EstadoSolicitud;
+  sector?: string;
+  actividad?: string;
+  orden?: OrdenRevisionSolicitudes;
+  pagina?: number;
+  limite?: number;
+}
+
+export interface RespuestaTomarRevision {
+  estado: EstadoSolicitud;
+  transiciono: boolean;
+  correoEnviado: boolean;
+  mensajeCorreo: string | null;
+  mensaje: string;
+  bloqueo: BloqueoRevision;
+  tokenBloqueo: string;
+  detalle: SolicitudRevisionDetalle;
+}
+
+export interface RespuestaRenovarRevision {
+  expiraEn: string;
+  mensaje: string;
+}
+
+export interface RespuestaLiberarRevision {
+  liberado: boolean;
+  mensaje: string;
+}
+
+export interface RespuestaVerificarRequisito {
+  mensaje: string;
+  requisito: RequisitoRevision;
+  progreso: ProgresoRevision;
+  expiraEn: string;
+}
+
+export interface SolicitudDevolucionRevision {
+  estado: 'devuelta';
+  observacion: string;
+}
+
+export interface RespuestaCambioEstadoRevision {
+  id: string;
+  numeroRadicado: string;
+  estadoAnterior: EstadoSolicitud;
+  estado: EstadoSolicitud;
+  observacion: string | null;
+  motivoRechazo: string | null;
+  decididaEn: string | null;
+  actualizadoEn: string;
+  correoEnviado: boolean;
+  mensajeCorreo: string | null;
+  mensaje: string;
+}

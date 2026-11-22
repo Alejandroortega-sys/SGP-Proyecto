@@ -206,6 +206,7 @@ model gestores {
   usuarios_gestores_creado_porTousuarios usuarios?                  @relation("gestores_creado_porTousuarios", fields: [creado_por], references: [id], onDelete: NoAction, onUpdate: NoAction)
   usuarios_gestores_usuario_idTousuarios usuarios                   @relation("gestores_usuario_idTousuarios", fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   permisos                               permisos[]
+  solicitud_revisiones                   solicitud_revisiones[]
   solicitudes                            solicitudes[]
 }
 
@@ -353,13 +354,17 @@ model solicitud_documentos {
   nombre_original            String?                  @db.VarChar(255)
   mime_type                  String?                  @db.VarChar(100)
   tamano_bytes               Int?
+  verificado_por             BigInt?
+  verificado_en              DateTime?                @db.Timestamptz(6)
   solicitud_documentos       solicitud_documentos?    @relation("solicitud_documentosTosolicitud_documentos", fields: [reemplaza_a], references: [id], onDelete: NoAction, onUpdate: NoAction)
   other_solicitud_documentos solicitud_documentos[]   @relation("solicitud_documentosTosolicitud_documentos")
   solicitudes                solicitudes              @relation(fields: [solicitud_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   requisitos_documentales    requisitos_documentales? @relation(fields: [requisito_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarios                   usuarios?                @relation(fields: [verificado_por], references: [id], onDelete: SetNull, onUpdate: NoAction)
 
   @@index([solicitud_id], map: "idx_documentos_solicitud")
   @@index([solicitud_id, requisito_id], map: "idx_documentos_requisito")
+  @@index([verificado_por], map: "idx_documentos_verificado_por")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -428,6 +433,7 @@ model solicitudes {
   solicitud_documentos      solicitud_documentos[]
   solicitud_historial       solicitud_historial[]
   solicitud_productos       solicitud_productos[]
+  solicitud_revisiones      solicitud_revisiones?
   comerciantes              comerciantes                @relation(fields: [comerciante_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
   espacios_temporales       espacios_temporales?        @relation(fields: [espacio_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   gestores                  gestores?                   @relation(fields: [revisor_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
@@ -503,6 +509,7 @@ model usuarios {
   parametros_motor                                   parametros_motor[]
   permiso_eventos                                    permiso_eventos[]
   sesiones                                           sesiones[]
+  solicitud_documentos                               solicitud_documentos[]
   solicitud_historial                                solicitud_historial[]
   tokens_seguridad                                   tokens_seguridad[]
   zona_versiones                                     zona_versiones[]
@@ -598,6 +605,20 @@ model zona_versiones {
   @@unique([zona_id, version], map: "zona_versiones_zona_version_key")
   @@index([creado_en(sort: Desc)], map: "idx_zona_versiones_fecha")
   @@index([zona_id, version(sort: Desc)], map: "idx_zona_versiones_zona")
+}
+
+/// Bloqueo temporal de revisión de una solicitud (HU-19).
+model solicitud_revisiones {
+  solicitud_id     BigInt      @id
+  gestor_id        BigInt
+  token            String      @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  iniciada_en      DateTime    @default(now()) @db.Timestamptz(6)
+  ultima_actividad DateTime    @default(now()) @db.Timestamptz(6)
+  expira_en        DateTime    @db.Timestamptz(6)
+  gestores         gestores    @relation(fields: [gestor_id], references: [usuario_id], onDelete: Cascade, onUpdate: NoAction)
+  solicitudes      solicitudes @relation(fields: [solicitud_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([expira_en], map: "idx_solicitud_revisiones_expira")
 }
 
 enum categoria_comercio {

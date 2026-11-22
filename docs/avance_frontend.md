@@ -443,3 +443,17 @@ jest.config.ts                                            (excluye frontend de J
 - **Aislamiento:** el backend filtra solicitudes y notificaciones por el usuario del JWT; el frontend nunca recibe datos de otros comerciantes.
 - **Pruebas:** Vitest para rutas y textos de estado; Playwright para filtros, línea de tiempo, cambio de estado por gestor, enlace desde la notificación, contador y aislamiento entre dos comerciantes.
 - Detalle: [`docs/Uso_solicitudes.md`](Uso_solicitudes.md) §2.5, §4.3 y §6.
+
+## 13. Revisión documental del gestor (HU-19)
+
+- **Bandeja:** `/gestor/solicitudes` con filtros por estado, sector y tipo de actividad, orden por antigüedad/reciente, paginación, tabla en escritorio y tarjetas en móvil.
+- **Detalle:** `/gestor/solicitudes/[id]` muestra comerciante, espacio, productos, fechas, historial y la lista de verificación.
+- **Visor:** descarga autenticada del documento vigente, vista previa de PDF/imagen y selector de versiones anteriores.
+- **Verificación:** botones **Cumple** / **No cumple**, observación obligatoria para No cumple y guardado explícito por requisito.
+- **Progreso:** indicador de requisitos verificados y de requisitos que no cumplen.
+- **Bloqueo:** toma automática al abrir, latido cada 60 segundos, token de sesión, liberación al salir y expiración por inactividad.
+- **Concurrencia:** el segundo gestor ve el detalle en solo lectura y recibe `409` si intenta verificar.
+- **Devolución:** modal con observación general; la solicitud pasa a **Requiere corrección** y el comerciante recibe notificación y correo.
+- **Navegación:** enlace **Solicitudes** en el menú del gestor y acceso rápido **Revisar solicitudes** en el panel.
+- **Pruebas:** Vitest de validaciones y textos; Playwright de bandeja, filtros, móvil, visor, verificación, devolución, concurrencia y expiración.
+- Detalle: [`docs/Uso_solicitudes.md`](Uso_solicitudes.md) §9.

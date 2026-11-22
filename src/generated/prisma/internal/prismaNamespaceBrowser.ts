@@ -84,7 +84,8 @@ export const ModelName = {
   zona_productos: 'zona_productos',
   zonas: 'zonas',
   sesiones: 'sesiones',
-  zona_versiones: 'zona_versiones'
+  zona_versiones: 'zona_versiones',
+  solicitud_revisiones: 'solicitud_revisiones'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -377,7 +378,9 @@ export const Solicitud_documentosScalarFieldEnum = {
   requisito_id: 'requisito_id',
   nombre_original: 'nombre_original',
   mime_type: 'mime_type',
-  tamano_bytes: 'tamano_bytes'
+  tamano_bytes: 'tamano_bytes',
+  verificado_por: 'verificado_por',
+  verificado_en: 'verificado_en'
 } as const
 
 export type Solicitud_documentosScalarFieldEnum = (typeof Solicitud_documentosScalarFieldEnum)[keyof typeof Solicitud_documentosScalarFieldEnum]
@@ -561,6 +564,18 @@ export const Zona_versionesScalarFieldEnum = {
 } as const
 
 export type Zona_versionesScalarFieldEnum = (typeof Zona_versionesScalarFieldEnum)[keyof typeof Zona_versionesScalarFieldEnum]
+
+
+export const Solicitud_revisionesScalarFieldEnum = {
+  solicitud_id: 'solicitud_id',
+  gestor_id: 'gestor_id',
+  token: 'token',
+  iniciada_en: 'iniciada_en',
+  ultima_actividad: 'ultima_actividad',
+  expira_en: 'expira_en'
+} as const
+
+export type Solicitud_revisionesScalarFieldEnum = (typeof Solicitud_revisionesScalarFieldEnum)[keyof typeof Solicitud_revisionesScalarFieldEnum]
 
 
 export const SortOrder = {

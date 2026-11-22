@@ -18,6 +18,7 @@ import type {
   FiltrosHistorialZona,
   FiltrosModulos,
   FiltrosOrganizaciones,
+  FiltrosRevisionSolicitudes,
   FiltrosUsuarios,
   FiltrosZonas,
   GestorCreado,
@@ -29,6 +30,7 @@ import type {
   ListarModulosResponse,
   ListarNotificacionesResponse,
   ListarProductosResponse,
+  ListarSolicitudesRevisionResponse,
   ListarSolicitudesResponse,
   ListarZonasResponse,
   ModuloDetalle,
@@ -37,6 +39,7 @@ import type {
   OpcionesEspacios,
   OpcionesEspaciosGestor,
   OpcionesModulos,
+  OpcionesRevisionSolicitudes,
   Organizacion,
   OrganizacionGestor,
   Paginacion,
@@ -47,6 +50,7 @@ import type {
   RespuestaActivacion,
   RespuestaCambioEstadoOrganizacion,
   RespuestaCambioEstadoUsuario,
+  RespuestaCambioEstadoRevision,
   RespuestaEstadoEspacio,
   RespuestaEstadoModulo,
   RespuestaEstadoZona,
@@ -54,11 +58,15 @@ import type {
   ProgresoSubida,
   RespuestaMensaje,
   RespuestaCargaDocumentoSolicitud,
+  RespuestaLiberarRevision,
   RespuestaRadicacion,
   RespuestaRequisitosSolicitud,
   RequisitosSolicitudResponse,
   RespuestaRegistroComerciante,
   RespuestaRegistroOrganizador,
+  RespuestaRenovarRevision,
+  RespuestaTomarRevision,
+  RespuestaVerificarRequisito,
   RespuestaZonaContenedora,
   SolicitudActivacion,
   SolicitudActualizarPerfil,
@@ -69,6 +77,7 @@ import type {
   SolicitudCorregirComerciante,
   SolicitudCrearGestor,
   SolicitudBloqueoEspacio,
+  SolicitudDevolucionRevision,
   SolicitudEspacioGestor,
   SolicitudLogin,
   SolicitudModulo,
@@ -78,6 +87,7 @@ import type {
   SolicitudRegistroComerciante,
   SolicitudRegistroOrganizador,
   SolicitudRestablecer,
+  SolicitudRevisionDetalle,
   SolicitudZona,
   SridsImportacion,
   UsuarioDetalle,
@@ -1327,4 +1337,98 @@ export async function cargarDocumentoSolicitud(
     }
     throw error;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Revisión documental del gestor (HU-19)                              */
+/* ------------------------------------------------------------------ */
+
+/** Lista la bandeja de revisión con filtros, orden y paginación. */
+export function listarSolicitudesRevision(
+  filtros: FiltrosRevisionSolicitudes = {},
+): Promise<ListarSolicitudesRevisionResponse> {
+  return peticion<ListarSolicitudesRevisionResponse>(
+    conParametros("/gestor/solicitudes", {
+      estado: filtros.estado,
+      sector: filtros.sector,
+      actividad: filtros.actividad,
+      orden: filtros.orden,
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
+}
+
+/** Opciones de sector y actividad para los filtros de la bandeja. */
+export function obtenerOpcionesRevisionSolicitudes(): Promise<OpcionesRevisionSolicitudes> {
+  return peticion<OpcionesRevisionSolicitudes>(
+    "/gestor/solicitudes/opciones",
+  );
+}
+
+/** Detalle de una solicitud para revisión, incluso en solo lectura. */
+export function obtenerSolicitudRevision(
+  id: string,
+): Promise<SolicitudRevisionDetalle> {
+  return peticion<SolicitudRevisionDetalle>(`/gestor/solicitudes/${id}`);
+}
+
+/** Toma (o renueva) el bloqueo de revisión del gestor autenticado. */
+export function tomarRevisionSolicitud(
+  id: string,
+): Promise<RespuestaTomarRevision> {
+  return peticion<RespuestaTomarRevision>(
+    `/gestor/solicitudes/${id}/revision`,
+    { method: "POST" },
+  );
+}
+
+/** Renueva el bloqueo de revisión sin cambiar el estado de la solicitud. */
+export function renovarRevisionSolicitud(
+  id: string,
+): Promise<RespuestaRenovarRevision> {
+  return peticion<RespuestaRenovarRevision>(
+    `/gestor/solicitudes/${id}/revision`,
+    { method: "PATCH" },
+  );
+}
+
+/** Libera el bloqueo de revisión del gestor autenticado. */
+export function liberarRevisionSolicitud(
+  id: string,
+  token?: string,
+): Promise<RespuestaLiberarRevision> {
+  return peticion<RespuestaLiberarRevision>(
+    conParametros(`/gestor/solicitudes/${id}/revision`, { token }),
+    { method: "DELETE" },
+  );
+}
+
+/** Marca un requisito como Cumple o No cumple. */
+export function verificarRequisitoSolicitud(
+  solicitudId: string,
+  requisitoId: string,
+  datos: { estado: "cumple" | "no_cumple"; observacion?: string },
+): Promise<RespuestaVerificarRequisito> {
+  return peticion<RespuestaVerificarRequisito>(
+    `/gestor/solicitudes/${solicitudId}/requisitos/${requisitoId}/verificacion`,
+    { method: "PATCH", cuerpo: datos },
+  );
+}
+
+/** Devuelve la solicitud para corrección con una observación general. */
+export function devolverSolicitudRevision(
+  solicitudId: string,
+  observacion: string,
+): Promise<RespuestaCambioEstadoRevision> {
+  return peticion<RespuestaCambioEstadoRevision>(
+    `/gestor/solicitudes/${solicitudId}/estado`,
+    {
+      method: "PATCH",
+      cuerpo: {
+        estado: "devuelta",
+        observacion,
+      } satisfies SolicitudDevolucionRevision,
+    },
+  );
 }

@@ -308,6 +308,13 @@ por IP** (ver `docs/Uso_zonas.md`).
 | 35 | `GET` | `/gestor/auditoria` | Gestor administrador | Consultar la auditoría sin datos sensibles |
 | 36 | `POST` | `/auth/refresh` | Público | Renovar la sesión con refresh token |
 | 37 | `PATCH` | `/gestor/solicitudes/:id/estado` | Gestor | Cambiar estado y notificar al comerciante (HU-18) |
+| 38 | `GET` | `/gestor/solicitudes` | Gestor | Bandeja de revisión con filtros y orden (HU-19) |
+| 39 | `GET` | `/gestor/solicitudes/opciones` | Gestor | Sectores y actividades para los filtros (HU-19) |
+| 40 | `GET` | `/gestor/solicitudes/:id` | Gestor | Detalle con checklist y bloqueo de revisión (HU-19) |
+| 41 | `POST` | `/gestor/solicitudes/:id/revision` | Gestor | Tomar el bloqueo de revisión (HU-19) |
+| 42 | `PATCH` | `/gestor/solicitudes/:id/revision` | Gestor | Renovar el bloqueo de revisión (HU-19) |
+| 43 | `DELETE` | `/gestor/solicitudes/:id/revision` | Gestor | Liberar el bloqueo de revisión (HU-19) |
+| 44 | `PATCH` | `/gestor/solicitudes/:id/requisitos/:requisitoId/verificacion` | Gestor | Marcar un requisito como Cumple o No cumple (HU-19) |
 
 ---
 
@@ -1702,7 +1709,88 @@ Respuesta `200`:
 
 ---
 
-### 5.16 Auditoría — `GET /gestor/auditoria`
+### 5.16 Revisión documental — `/gestor/solicitudes` (HU-19)
+
+**Acceso:** solo gestor (revisor o administrador).
+
+#### `GET /gestor/solicitudes`
+
+Bandeja de revisión. Sin `estado` devuelve las solicitudes `radicada` y `en_revision`.
+Parámetros:
+
+| Parámetro | Valores |
+|---|---|
+| `estado` | `radicada`, `en_revision`, `devuelta`, `aprobada`, `rechazada`, `cancelada` |
+| `sector` | Sector del espacio |
+| `actividad` | `actividad_permitida` del espacio |
+| `orden` | `antiguedad` (por defecto) o `reciente` |
+| `pagina` | Entero ≥ 1 |
+| `limite` | 1–100, por defecto 20 |
+
+Cada fila incluye el comerciante, el espacio, las fechas, el resumen de documentos y el bloqueo activo (`esPropio`, gestor y `expiraEn`).
+
+#### `GET /gestor/solicitudes/opciones`
+
+Devuelve `{ "sectores": [...], "actividades": [...] }` a partir de las solicitudes existentes.
+
+#### `GET /gestor/solicitudes/:id`
+
+Devuelve el detalle completo: comerciante, espacio, productos, documentos, historial, bloqueo, progreso y la lista de verificación. La lectura está permitida aunque otro gestor tenga el bloqueo; en ese caso `puedeVerificar` es `false` y `motivoBloqueo` explica quién la revisa.
+
+Cada requisito incluye:
+
+- `estado`: `faltante | cargado | cumple | no_cumple`.
+- `documentoActual` y `versiones`.
+- `observacion`, `verificadoPor`, `verificadoEn`.
+
+#### `POST /gestor/solicitudes/:id/revision`
+
+Toma o renueva el bloqueo del gestor autenticado. Si la solicitud está `radicada`, la pasa a `en_revision`, escribe historial y notifica al comerciante. Responde `409` si otro gestor tiene el bloqueo vigente o si el estado no admite revisión.
+
+Respuesta:
+
+```json
+{
+  "estado": "en_revision",
+  "transiciono": true,
+  "correoEnviado": true,
+  "mensajeCorreo": null,
+  "mensaje": "Revisión iniciada. La solicitud pasó a «En revisión».",
+  "bloqueo": { "...": "..." },
+  "tokenBloqueo": "7b0d4a4e-9f0c-4d7b-8a5e-1f2c3d4e5f6a",
+  "detalle": { "...": "..." }
+}
+```
+
+El `tokenBloqueo` identifica la sesión de la pantalla. La liberación solo borra el bloqueo si el token coincide, lo que evita que una recarga o una pestaña antigua libere el bloqueo de otra.
+
+#### `PATCH /gestor/solicitudes/:id/revision`
+
+Renueva `ultima_actividad` y `expira_en`. Responde `409` si el bloqueo expiró o es de otro gestor.
+
+#### `DELETE /gestor/solicitudes/:id/revision?token=...`
+
+Libera el bloqueo propio. Es idempotente. Si el token ya no coincide, responde `200` con `liberado: false` sin afectar el bloqueo nuevo.
+
+#### `PATCH /gestor/solicitudes/:id/requisitos/:requisitoId/verificacion`
+
+```json
+{ "estado": "cumple" }
+{ "estado": "no_cumple", "observacion": "El RUT está vencido." }
+```
+
+- Solo el gestor con bloqueo propio y la solicitud `en_revision` puede verificar.
+- `no_cumple` exige observación de 1–2000 caracteres.
+- Se actualiza el documento vigente (`validado`/`observado`), `verificado_por` y `verificado_en`.
+- La operación renueva el bloqueo y devuelve el requisito actualizado y el progreso.
+
+#### Devolución
+
+La devolución sigue usando `PATCH /gestor/solicitudes/:id/estado` con `estado: "devuelta"` y `observacion`. Si existe un bloqueo activo de otro gestor, responde `409`; si el bloqueo es del mismo gestor, se libera al cambiar de estado. Los requisitos `No cumple` conservan su observación para que el comerciante los corrija.
+
+---
+
+### 5.17 Auditoría — `GET /gestor/auditoria`
 
 **Acceso:** solo gestor administrador.
 

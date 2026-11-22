@@ -200,3 +200,8 @@ export type sesiones = Prisma.sesionesModel
  * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
  */
 export type zona_versiones = Prisma.zona_versionesModel
+/**
+ * Model solicitud_revisiones
+ * Bloqueo temporal de revisión de una solicitud (HU-19).
+ */
+export type solicitud_revisiones = Prisma.solicitud_revisionesModel

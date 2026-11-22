@@ -430,7 +430,8 @@ export const ModelName = {
   zona_productos: 'zona_productos',
   zonas: 'zonas',
   sesiones: 'sesiones',
-  zona_versiones: 'zona_versiones'
+  zona_versiones: 'zona_versiones',
+  solicitud_revisiones: 'solicitud_revisiones'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -446,7 +447,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "alertas_saturacion" | "auditoria" | "cobros" | "comerciantes" | "espacio_bloqueos" | "espacios_temporales" | "evaluacion_reglas" | "evaluaciones_factibilidad" | "excepciones_factibilidad" | "feria_productos" | "feria_vendedores" | "ferias" | "gestores" | "modulos" | "notificaciones" | "organizadores" | "parametros_motor" | "permiso_eventos" | "permisos" | "productos" | "solicitud_documentos" | "solicitud_productos" | "requisitos_documentales" | "solicitud_historial" | "solicitudes" | "spatial_ref_sys" | "tarifas" | "tokens_seguridad" | "usuarios" | "verificaciones_qr" | "zona_productos" | "zonas" | "sesiones" | "zona_versiones"
+    modelProps: "alertas_saturacion" | "auditoria" | "cobros" | "comerciantes" | "espacio_bloqueos" | "espacios_temporales" | "evaluacion_reglas" | "evaluaciones_factibilidad" | "excepciones_factibilidad" | "feria_productos" | "feria_vendedores" | "ferias" | "gestores" | "modulos" | "notificaciones" | "organizadores" | "parametros_motor" | "permiso_eventos" | "permisos" | "productos" | "solicitud_documentos" | "solicitud_productos" | "requisitos_documentales" | "solicitud_historial" | "solicitudes" | "spatial_ref_sys" | "tarifas" | "tokens_seguridad" | "usuarios" | "verificaciones_qr" | "zona_productos" | "zonas" | "sesiones" | "zona_versiones" | "solicitud_revisiones"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2886,6 +2887,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    solicitud_revisiones: {
+      payload: Prisma.$solicitud_revisionesPayload<ExtArgs>
+      fields: Prisma.solicitud_revisionesFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.solicitud_revisionesFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_revisionesPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.solicitud_revisionesFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_revisionesPayload>
+        }
+        findFirst: {
+          args: Prisma.solicitud_revisionesFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_revisionesPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.solicitud_revisionesFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_revisionesPayload>
+        }
+        findMany: {
+          args: Prisma.solicitud_revisionesFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_revisionesPayload>[]
+        }
+        create: {
+          args: Prisma.solicitud_revisionesCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_revisionesPayload>
+        }
+        createMany: {
+          args: Prisma.solicitud_revisionesCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.solicitud_revisionesCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_revisionesPayload>[]
+        }
+        delete: {
+          args: Prisma.solicitud_revisionesDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_revisionesPayload>
+        }
+        update: {
+          args: Prisma.solicitud_revisionesUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_revisionesPayload>
+        }
+        deleteMany: {
+          args: Prisma.solicitud_revisionesDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.solicitud_revisionesUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.solicitud_revisionesUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_revisionesPayload>[]
+        }
+        upsert: {
+          args: Prisma.solicitud_revisionesUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$solicitud_revisionesPayload>
+        }
+        aggregate: {
+          args: Prisma.Solicitud_revisionesAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSolicitud_revisiones>
+        }
+        groupBy: {
+          args: Prisma.solicitud_revisionesGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Solicitud_revisionesGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.solicitud_revisionesCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Solicitud_revisionesCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3199,7 +3274,9 @@ export const Solicitud_documentosScalarFieldEnum = {
   requisito_id: 'requisito_id',
   nombre_original: 'nombre_original',
   mime_type: 'mime_type',
-  tamano_bytes: 'tamano_bytes'
+  tamano_bytes: 'tamano_bytes',
+  verificado_por: 'verificado_por',
+  verificado_en: 'verificado_en'
 } as const
 
 export type Solicitud_documentosScalarFieldEnum = (typeof Solicitud_documentosScalarFieldEnum)[keyof typeof Solicitud_documentosScalarFieldEnum]
@@ -3383,6 +3460,18 @@ export const Zona_versionesScalarFieldEnum = {
 } as const
 
 export type Zona_versionesScalarFieldEnum = (typeof Zona_versionesScalarFieldEnum)[keyof typeof Zona_versionesScalarFieldEnum]
+
+
+export const Solicitud_revisionesScalarFieldEnum = {
+  solicitud_id: 'solicitud_id',
+  gestor_id: 'gestor_id',
+  token: 'token',
+  iniciada_en: 'iniciada_en',
+  ultima_actividad: 'ultima_actividad',
+  expira_en: 'expira_en'
+} as const
+
+export type Solicitud_revisionesScalarFieldEnum = (typeof Solicitud_revisionesScalarFieldEnum)[keyof typeof Solicitud_revisionesScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -3966,6 +4055,7 @@ export type GlobalOmitConfig = {
   zonas?: Prisma.zonasOmit
   sesiones?: Prisma.sesionesOmit
   zona_versiones?: Prisma.zona_versionesOmit
+  solicitud_revisiones?: Prisma.solicitud_revisionesOmit
 }
 
 /* Types for Logging */

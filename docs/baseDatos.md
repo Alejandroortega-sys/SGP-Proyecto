@@ -380,6 +380,21 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 | observacion | TEXT | Comentario del revisor al observar |
 | reemplaza_a | BIGINT | FK→solicitud_documentos(id) — versión corregida (HU-17) |
 | cargado_en | TIMESTAMPTZ | DEFAULT now() |
+| requisito_id | BIGINT | FK→requisitos_documentales(id) — requisito verificado (HU-17, HU-19) |
+| verificado_por | BIGINT | FK→usuarios(id) — gestor que marcó Cumple o No cumple (HU-19) |
+| verificado_en | TIMESTAMPTZ | Fecha de la última verificación (HU-19) |
+
+### `solicitud_revisiones` — Bloqueo de revisión concurrente (HU-19)
+| Campo | Tipo | Restricciones |
+|---|---|---|
+| solicitud_id | BIGINT | PK, FK→solicitudes(id) ON DELETE CASCADE |
+| gestor_id | BIGINT | NOT NULL, FK→gestores(usuario_id) ON DELETE CASCADE |
+| token | UUID | NOT NULL, DEFAULT gen_random_uuid() — sesión de pantalla |
+| iniciada_en | TIMESTAMPTZ | DEFAULT now() |
+| ultima_actividad | TIMESTAMPTZ | DEFAULT now() — se renueva con cada verificación o latido |
+| expira_en | TIMESTAMPTZ | Fin del bloqueo; los vencidos pueden ser tomados por otro gestor |
+
+**Regla:** una solicitud tiene como máximo un bloqueo. La liberación exige el token del bloqueo para no borrar el de otra pestaña. `REVISION_LOCK_MINUTES` define la duración (15 por defecto).
 
 ### `ferias` — Ferias y eventos agroecológicos (HU-21, HU-22)
 | Campo | Tipo | Restricciones |
