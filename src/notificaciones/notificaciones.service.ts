@@ -21,6 +21,7 @@ import {
 const SELECT_NOTIFICACION = {
   id: true,
   solicitud_id: true,
+  feria_id: true,
   tipo: true,
   asunto: true,
   cuerpo: true,
@@ -49,6 +50,15 @@ export interface DatosNotificacionCambioEstado {
 export interface ResultadoCorreoCambioEstado {
   correoEnviado: boolean;
   mensajeCorreo: string | null;
+}
+
+/** Datos de un aviso interno genérico, como la radicación de una feria. */
+export interface DatosAvisoFeria {
+  usuarioId: bigint;
+  feriaId: bigint;
+  tipo: string;
+  asunto: string;
+  cuerpo: string;
 }
 
 /**
@@ -152,6 +162,32 @@ export class NotificacionesService {
   }
 
   /**
+   * Crea una notificación interna para un evento que no es una solicitud.
+   *
+   * Debe llamarse dentro de la transacción que crea el evento para que ambos
+   * queden consistentes.
+   */
+  async crearAvisoFeria(
+    tx: Prisma.TransactionClient,
+    datos: DatosAvisoFeria,
+  ): Promise<string> {
+    const creada = await tx.notificaciones.create({
+      data: {
+        usuario_id: datos.usuarioId,
+        feria_id: datos.feriaId,
+        tipo: datos.tipo,
+        asunto: datos.asunto.slice(0, 200),
+        cuerpo: datos.cuerpo,
+        canal: 'app',
+        leida: false,
+      },
+      select: { id: true },
+    });
+
+    return creada.id.toString();
+  }
+
+  /**
    * Envía el correo de un cambio de estado.
    *
    * Es best-effort: el estado y la notificación interna ya están guardados.
@@ -243,6 +279,7 @@ export class NotificacionesService {
     return {
       id: fila.id.toString(),
       solicitudId: fila.solicitud_id?.toString() ?? null,
+      feriaId: fila.feria_id?.toString() ?? null,
       tipo: fila.tipo,
       asunto: fila.asunto,
       cuerpo: fila.cuerpo,

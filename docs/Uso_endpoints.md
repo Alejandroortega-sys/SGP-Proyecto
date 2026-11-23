@@ -9,8 +9,8 @@
 > Este documento describe **lo que ya existe** y **lo que falta** para cerrar el Sprint 1.
 > El **Sprint 2 ya está implementado** (zonas, módulos, espacios temporales, bloqueos e
 > importaciones) y se documenta en `Uso_zonas.md`, `Uso_modulos.md`, `Uso_espacios.md`,
-> `Uso_importaciones.md` e `implementaciones_Sprint2.md`. Los módulos de los Sprints 3 a 6
-> (solicitudes, ferias, factibilidad, permisos QR, cobros y dashboard analítico) siguen
+> `Uso_importaciones.md` e `implementaciones_Sprint2.md`. Del Sprint 3 ya están implementados
+> `solicitudes` y `ferias`; factibilidad, permisos QR, cobros y dashboard analítico siguen
 > fuera de este contrato hasta que se implementen.
 
 ---
@@ -48,11 +48,13 @@
 | `productos` | `/productos` | Catálogo maestro de productos (Sprint 2) |
 | `importaciones` | `/importaciones` | Importación de GeoJSON y CSV (Sprint 2) |
 | `solicitudes` | `/solicitudes` | Radicación, documentos, disponibilidad e historial (HU-16) |
+| `ferias` | `/ferias` | Solicitud, agenda y adjuntos de ferias agroecológicas (HU-21) |
 | `correo` | — | Envío de códigos, credenciales temporales y avisos |
 | `common` | — | Filtro de errores, auditoría, parseo de IDs y serialización de BigInt |
 
-> **Sprint 3 en curso:** el módulo `solicitudes` (HU-16) ya está implementado.
-> Su contrato completo está en [`docs/Uso_solicitudes.md`](Uso_solicitudes.md).
+> **Sprint 3 en curso:** los módulos `solicitudes` (HU-16 a HU-20) y `ferias` (HU-21) ya están implementados.
+> Sus contratos completos están en [`docs/Uso_solicitudes.md`](Uso_solicitudes.md) y
+> [`docs/Uso_ferias.md`](Uso_ferias.md).
 
 ### 1.3 Cobertura funcional del Sprint 1
 
@@ -1629,6 +1631,7 @@ Query params: `leida` (`true`/`false`), `pagina` (desde 1), `limite` (1–100).
     {
       "id": "12",
       "solicitudId": "5",
+      "feriaId": null,
       "tipo": "cambio_password",
       "asunto": "Contraseña actualizada",
       "cuerpo": "La contraseña de tu cuenta fue actualizada.",
@@ -1647,7 +1650,7 @@ Query params: `leida` (`true`/`false`), `pagina` (desde 1), `limite` (1–100).
 }
 ```
 
-`solicitudId` es `null` para avisos de cuenta y trae el identificador de la solicitud cuando la notificación nace de un cambio de estado. El frontend puede usarlo para abrir el detalle.
+`solicitudId` es `null` para avisos de cuenta y trae el identificador de la solicitud cuando la notificación nace de un cambio de estado. `feriaId` es `null` salvo en los avisos de radicación de una feria (HU-21). El frontend usa estos campos para abrir **Ver solicitud** o **Ver feria** según el rol y el recurso.
 
 #### `PATCH /notificaciones/:id/leida`
 
@@ -2174,16 +2177,17 @@ Estos módulos **no deben conectarse a endpoints inexistentes**. Se deben mostra
 | Eventos y ferias de la bienvenida | Sin endpoint público todavía | Contenido estático o placeholder |
 | Mapa interactivo ciudadano | **Implementado en el Sprint 2** | Usar `/mapa` y `GET /zonas/geojson` (ver `Uso_zonas.md`) |
 | Zonas, módulos, espacios e importaciones | **Implementado en el Sprint 2** | Usar los endpoints de `Uso_zonas.md`, `Uso_modulos.md`, `Uso_espacios.md` y `Uso_importaciones.md` |
-| Solicitudes de espacio | Sprint 3 | No incluir todavía; la consulta de espacios ya existe |
-| Ferias y calendario | Sprint 3 | No incluir |
+| Solicitudes de espacio | **Implementado en el Sprint 3** | Usar `/solicitudes` (ver `Uso_solicitudes.md`) |
+| Ferias (radicación) | **Implementado en el Sprint 3** | Usar `/ferias` en el panel del organizador (ver `Uso_ferias.md`) |
+| Calendario y aprobación de ferias | Pendiente (HU-22) | No incluir todavía |
 | Permisos y QR | Sprint 5 | No incluir |
 | Cobros simulados | Sprint 5 | No incluir |
 | Dashboard analítico | Sprint 6 | Solo usar los indicadores básicos de `GET /panel` |
 
 **Sobre la página de bienvenida:** el requisito de “información sobre la alcaldía,
-eventos, etc.” se cubre con contenido institucional estático. Los eventos reales llegarán
-cuando exista el módulo de ferias. El mapa ciudadano ya está implementado en `/mapa`
-(Sprint 2).
+eventos, etc.” se cubre con contenido institucional estático. El módulo de ferias ya
+permite radicar, pero aún no existe un endpoint público de eventos aprobados para la
+bienvenida. El mapa ciudadano ya está implementado en `/mapa` (Sprint 2).
 
 ---
 

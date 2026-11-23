@@ -1,15 +1,22 @@
 import { BadRequestException } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
-import { mkdir, unlink, writeFile } from 'node:fs/promises';
-import { basename, resolve, sep } from 'node:path';
-import { enteroPositivo } from '../common/entero-positivo';
+import { basename } from 'node:path';
+import {
+  MAX_ARCHIVOS_POR_DEFECTO,
+  MAX_BYTES_ARCHIVO_POR_DEFECTO,
+  directorioArchivosPrivados,
+  eliminarArchivoPrivado,
+  guardarArchivoPrivado,
+  limiteBytesArchivo,
+  maxArchivos,
+  resolverRutaArchivoPrivado,
+} from '../common/almacenamiento-archivos';
 import type { estado_documento } from '../generated/prisma/client';
 
 /** Límite por defecto de cada documento: 5 MB. */
-export const MAX_BYTES_DOCUMENTO_POR_DEFECTO = 5 * 1024 * 1024;
+export const MAX_BYTES_DOCUMENTO_POR_DEFECTO = MAX_BYTES_ARCHIVO_POR_DEFECTO;
 
 /** Cantidad máxima por defecto de documentos por solicitud. */
-export const MAX_DOCUMENTOS_POR_DEFECTO = 10;
+export const MAX_DOCUMENTOS_POR_DEFECTO = MAX_ARCHIVOS_POR_DEFECTO;
 
 /** MIME aceptados para los documentos de la solicitud. */
 export const TIPOS_MIME_DOCUMENTO = [
@@ -133,23 +140,17 @@ function tiempoDocumento(fila: FilaVersionDocumento): number {
  * autenticado que comprueba que el usuario sea el dueño o un gestor.
  */
 export function directorioDocumentosSolicitud(): string {
-  return resolve(process.env.UPLOAD_PRIVATE_DIR ?? 'uploads-privados');
+  return directorioArchivosPrivados();
 }
 
 /** Límite de tamaño configurable para los documentos. */
 export function limiteBytesDocumento(): number {
-  return enteroPositivo(
-    process.env.UPLOAD_DOCUMENT_MAX_BYTES,
-    MAX_BYTES_DOCUMENTO_POR_DEFECTO,
-  );
+  return limiteBytesArchivo();
 }
 
 /** Cantidad máxima configurable de documentos por solicitud. */
 export function maxDocumentos(): number {
-  return enteroPositivo(
-    process.env.UPLOAD_DOCUMENT_MAX_FILES,
-    MAX_DOCUMENTOS_POR_DEFECTO,
-  );
+  return maxArchivos();
 }
 
 /** Detecta el formato real de un documento por sus primeros bytes. */
@@ -255,14 +256,12 @@ export async function guardarDocumentoSolicitud(
   solicitudId: bigint | string,
   directorio = directorioDocumentosSolicitud(),
 ): Promise<string> {
-  const carpetaRelativa = `solicitudes/${solicitudId.toString()}`;
-  const carpeta = resolve(directorio, carpetaRelativa);
-  await mkdir(carpeta, { recursive: true });
-
-  const nombre = `${randomUUID()}${validado.extension}`;
-  await writeFile(resolve(carpeta, nombre), archivo.buffer);
-
-  return `${carpetaRelativa}/${nombre}`;
+  return guardarArchivoPrivado(
+    archivo.buffer,
+    validado.extension,
+    `solicitudes/${solicitudId.toString()}`,
+    directorio,
+  );
 }
 
 /** Resuelve una ruta relativa de documento y evita salir del directorio raíz. */
@@ -270,12 +269,7 @@ export function resolverRutaDocumento(
   ruta: string,
   directorio = directorioDocumentosSolicitud(),
 ): string {
-  const raiz = resolve(directorio);
-  const destino = resolve(raiz, ruta);
-  if (destino !== raiz && !destino.startsWith(`${raiz}${sep}`)) {
-    throw new BadRequestException('La ruta del documento no es válida');
-  }
-  return destino;
+  return resolverRutaArchivoPrivado(ruta, directorio);
 }
 
 /** Elimina un documento guardado, ignorando rutas externas y archivos ausentes. */
@@ -283,20 +277,7 @@ export async function eliminarDocumentoSolicitud(
   ruta: string | null | undefined,
   directorio = directorioDocumentosSolicitud(),
 ): Promise<void> {
-  if (!ruta) return;
-
-  let destino: string;
-  try {
-    destino = resolverRutaDocumento(ruta, directorio);
-  } catch {
-    return;
-  }
-
-  try {
-    await unlink(destino);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-  }
+  return eliminarArchivoPrivado(ruta, directorio);
 }
 
 /** MIME de un documento a partir de su extensión almacenada. */

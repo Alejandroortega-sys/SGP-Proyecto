@@ -97,6 +97,11 @@ export type feria_productos = Prisma.feria_productosModel
  */
 export type feria_vendedores = Prisma.feria_vendedoresModel
 /**
+ * Model feria_documentos
+ * Documentación opcional adjunta a una feria (HU-21).
+ */
+export type feria_documentos = Prisma.feria_documentosModel
+/**
  * Model ferias
  * This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
  * This table contains exclusion constraints and requires additional setup for migrations. Visit https://pris.ly/d/exclusion-constraints for more info.

@@ -38,6 +38,7 @@ const ENLACES: EnlaceSesion[] = [
   },
   { href: '/comerciante/perfil', texto: 'Mi perfil', roles: ['comerciante'] },
   { href: '/organizador/inicio', texto: 'Inicio', roles: ['organizador'] },
+  { href: '/organizador/ferias', texto: 'Ferias', roles: ['organizador'] },
   { href: '/organizador/perfil', texto: 'Mi perfil', roles: ['organizador'] },
   {
     href: '/organizador/mi-organizacion',

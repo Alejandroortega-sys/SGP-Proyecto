@@ -631,14 +631,6 @@ export type Enumestado_documentoFieldUpdateOperationsInput = {
   set?: $Enums.estado_documento
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type solicitud_documentosUpdateOneWithoutOther_solicitud_documentosNestedInput = {
   create?: Prisma.XOR<Prisma.solicitud_documentosCreateWithoutOther_solicitud_documentosInput, Prisma.solicitud_documentosUncheckedCreateWithoutOther_solicitud_documentosInput>
   connectOrCreate?: Prisma.solicitud_documentosCreateOrConnectWithoutOther_solicitud_documentosInput

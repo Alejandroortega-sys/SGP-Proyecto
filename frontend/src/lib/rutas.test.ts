@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   esGestorAdministrador,
   nombreRol,
+  rutaDetalleFeria,
   rutaDetalleSolicitud,
   rutaInicio,
 } from '@/lib/rutas';
@@ -38,5 +39,13 @@ describe('rutas por rol', () => {
     );
     expect(rutaDetalleSolicitud('gestor', '12')).toBeNull();
     expect(rutaDetalleSolicitud('organizador', '12')).toBeNull();
+  });
+
+  it('enlaza la notificación de feria al detalle del organizador', () => {
+    expect(rutaDetalleFeria('organizador', '12')).toBe(
+      '/organizador/ferias/12',
+    );
+    expect(rutaDetalleFeria('comerciante', '12')).toBeNull();
+    expect(rutaDetalleFeria('gestor', '12')).toBeNull();
   });
 });

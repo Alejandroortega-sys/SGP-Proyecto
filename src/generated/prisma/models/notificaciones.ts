@@ -30,18 +30,21 @@ export type NotificacionesAvgAggregateOutputType = {
   id: number | null
   usuario_id: number | null
   solicitud_id: number | null
+  feria_id: number | null
 }
 
 export type NotificacionesSumAggregateOutputType = {
   id: bigint | null
   usuario_id: bigint | null
   solicitud_id: bigint | null
+  feria_id: bigint | null
 }
 
 export type NotificacionesMinAggregateOutputType = {
   id: bigint | null
   usuario_id: bigint | null
   solicitud_id: bigint | null
+  feria_id: bigint | null
   tipo: string | null
   asunto: string | null
   cuerpo: string | null
@@ -54,6 +57,7 @@ export type NotificacionesMaxAggregateOutputType = {
   id: bigint | null
   usuario_id: bigint | null
   solicitud_id: bigint | null
+  feria_id: bigint | null
   tipo: string | null
   asunto: string | null
   cuerpo: string | null
@@ -66,6 +70,7 @@ export type NotificacionesCountAggregateOutputType = {
   id: number
   usuario_id: number
   solicitud_id: number
+  feria_id: number
   tipo: number
   asunto: number
   cuerpo: number
@@ -80,18 +85,21 @@ export type NotificacionesAvgAggregateInputType = {
   id?: true
   usuario_id?: true
   solicitud_id?: true
+  feria_id?: true
 }
 
 export type NotificacionesSumAggregateInputType = {
   id?: true
   usuario_id?: true
   solicitud_id?: true
+  feria_id?: true
 }
 
 export type NotificacionesMinAggregateInputType = {
   id?: true
   usuario_id?: true
   solicitud_id?: true
+  feria_id?: true
   tipo?: true
   asunto?: true
   cuerpo?: true
@@ -104,6 +112,7 @@ export type NotificacionesMaxAggregateInputType = {
   id?: true
   usuario_id?: true
   solicitud_id?: true
+  feria_id?: true
   tipo?: true
   asunto?: true
   cuerpo?: true
@@ -116,6 +125,7 @@ export type NotificacionesCountAggregateInputType = {
   id?: true
   usuario_id?: true
   solicitud_id?: true
+  feria_id?: true
   tipo?: true
   asunto?: true
   cuerpo?: true
@@ -215,6 +225,7 @@ export type NotificacionesGroupByOutputType = {
   id: bigint
   usuario_id: bigint
   solicitud_id: bigint | null
+  feria_id: bigint | null
   tipo: string
   asunto: string
   cuerpo: string | null
@@ -250,12 +261,14 @@ export type notificacionesWhereInput = {
   id?: Prisma.BigIntFilter<"notificaciones"> | bigint | number
   usuario_id?: Prisma.BigIntFilter<"notificaciones"> | bigint | number
   solicitud_id?: Prisma.BigIntNullableFilter<"notificaciones"> | bigint | number | null
+  feria_id?: Prisma.BigIntNullableFilter<"notificaciones"> | bigint | number | null
   tipo?: Prisma.StringFilter<"notificaciones"> | string
   asunto?: Prisma.StringFilter<"notificaciones"> | string
   cuerpo?: Prisma.StringNullableFilter<"notificaciones"> | string | null
   canal?: Prisma.StringFilter<"notificaciones"> | string
   leida?: Prisma.BoolFilter<"notificaciones"> | boolean
   creada_en?: Prisma.DateTimeFilter<"notificaciones"> | Date | string
+  ferias?: Prisma.XOR<Prisma.FeriasNullableScalarRelationFilter, Prisma.feriasWhereInput> | null
   solicitudes?: Prisma.XOR<Prisma.SolicitudesNullableScalarRelationFilter, Prisma.solicitudesWhereInput> | null
   usuarios?: Prisma.XOR<Prisma.UsuariosScalarRelationFilter, Prisma.usuariosWhereInput>
 }
@@ -264,12 +277,14 @@ export type notificacionesOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   usuario_id?: Prisma.SortOrder
   solicitud_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  feria_id?: Prisma.SortOrderInput | Prisma.SortOrder
   tipo?: Prisma.SortOrder
   asunto?: Prisma.SortOrder
   cuerpo?: Prisma.SortOrderInput | Prisma.SortOrder
   canal?: Prisma.SortOrder
   leida?: Prisma.SortOrder
   creada_en?: Prisma.SortOrder
+  ferias?: Prisma.feriasOrderByWithRelationInput
   solicitudes?: Prisma.solicitudesOrderByWithRelationInput
   usuarios?: Prisma.usuariosOrderByWithRelationInput
 }
@@ -281,12 +296,14 @@ export type notificacionesWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.notificacionesWhereInput | Prisma.notificacionesWhereInput[]
   usuario_id?: Prisma.BigIntFilter<"notificaciones"> | bigint | number
   solicitud_id?: Prisma.BigIntNullableFilter<"notificaciones"> | bigint | number | null
+  feria_id?: Prisma.BigIntNullableFilter<"notificaciones"> | bigint | number | null
   tipo?: Prisma.StringFilter<"notificaciones"> | string
   asunto?: Prisma.StringFilter<"notificaciones"> | string
   cuerpo?: Prisma.StringNullableFilter<"notificaciones"> | string | null
   canal?: Prisma.StringFilter<"notificaciones"> | string
   leida?: Prisma.BoolFilter<"notificaciones"> | boolean
   creada_en?: Prisma.DateTimeFilter<"notificaciones"> | Date | string
+  ferias?: Prisma.XOR<Prisma.FeriasNullableScalarRelationFilter, Prisma.feriasWhereInput> | null
   solicitudes?: Prisma.XOR<Prisma.SolicitudesNullableScalarRelationFilter, Prisma.solicitudesWhereInput> | null
   usuarios?: Prisma.XOR<Prisma.UsuariosScalarRelationFilter, Prisma.usuariosWhereInput>
 }, "id">
@@ -295,6 +312,7 @@ export type notificacionesOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   usuario_id?: Prisma.SortOrder
   solicitud_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  feria_id?: Prisma.SortOrderInput | Prisma.SortOrder
   tipo?: Prisma.SortOrder
   asunto?: Prisma.SortOrder
   cuerpo?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -315,6 +333,7 @@ export type notificacionesScalarWhereWithAggregatesInput = {
   id?: Prisma.BigIntWithAggregatesFilter<"notificaciones"> | bigint | number
   usuario_id?: Prisma.BigIntWithAggregatesFilter<"notificaciones"> | bigint | number
   solicitud_id?: Prisma.BigIntNullableWithAggregatesFilter<"notificaciones"> | bigint | number | null
+  feria_id?: Prisma.BigIntNullableWithAggregatesFilter<"notificaciones"> | bigint | number | null
   tipo?: Prisma.StringWithAggregatesFilter<"notificaciones"> | string
   asunto?: Prisma.StringWithAggregatesFilter<"notificaciones"> | string
   cuerpo?: Prisma.StringNullableWithAggregatesFilter<"notificaciones"> | string | null
@@ -331,6 +350,7 @@ export type notificacionesCreateInput = {
   canal?: string
   leida?: boolean
   creada_en?: Date | string
+  ferias?: Prisma.feriasCreateNestedOneWithoutNotificacionesInput
   solicitudes?: Prisma.solicitudesCreateNestedOneWithoutNotificacionesInput
   usuarios: Prisma.usuariosCreateNestedOneWithoutNotificacionesInput
 }
@@ -339,6 +359,7 @@ export type notificacionesUncheckedCreateInput = {
   id?: bigint | number
   usuario_id: bigint | number
   solicitud_id?: bigint | number | null
+  feria_id?: bigint | number | null
   tipo: string
   asunto: string
   cuerpo?: string | null
@@ -355,6 +376,7 @@ export type notificacionesUpdateInput = {
   canal?: Prisma.StringFieldUpdateOperationsInput | string
   leida?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ferias?: Prisma.feriasUpdateOneWithoutNotificacionesNestedInput
   solicitudes?: Prisma.solicitudesUpdateOneWithoutNotificacionesNestedInput
   usuarios?: Prisma.usuariosUpdateOneRequiredWithoutNotificacionesNestedInput
 }
@@ -363,6 +385,7 @@ export type notificacionesUncheckedUpdateInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   usuario_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   solicitud_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  feria_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   asunto?: Prisma.StringFieldUpdateOperationsInput | string
   cuerpo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -375,6 +398,7 @@ export type notificacionesCreateManyInput = {
   id?: bigint | number
   usuario_id: bigint | number
   solicitud_id?: bigint | number | null
+  feria_id?: bigint | number | null
   tipo: string
   asunto: string
   cuerpo?: string | null
@@ -397,6 +421,7 @@ export type notificacionesUncheckedUpdateManyInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   usuario_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   solicitud_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  feria_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   asunto?: Prisma.StringFieldUpdateOperationsInput | string
   cuerpo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -405,10 +430,21 @@ export type notificacionesUncheckedUpdateManyInput = {
   creada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+export type NotificacionesListRelationFilter = {
+  every?: Prisma.notificacionesWhereInput
+  some?: Prisma.notificacionesWhereInput
+  none?: Prisma.notificacionesWhereInput
+}
+
+export type notificacionesOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
 export type notificacionesCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   usuario_id?: Prisma.SortOrder
   solicitud_id?: Prisma.SortOrder
+  feria_id?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
   asunto?: Prisma.SortOrder
   cuerpo?: Prisma.SortOrder
@@ -421,12 +457,14 @@ export type notificacionesAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   usuario_id?: Prisma.SortOrder
   solicitud_id?: Prisma.SortOrder
+  feria_id?: Prisma.SortOrder
 }
 
 export type notificacionesMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   usuario_id?: Prisma.SortOrder
   solicitud_id?: Prisma.SortOrder
+  feria_id?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
   asunto?: Prisma.SortOrder
   cuerpo?: Prisma.SortOrder
@@ -439,6 +477,7 @@ export type notificacionesMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   usuario_id?: Prisma.SortOrder
   solicitud_id?: Prisma.SortOrder
+  feria_id?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
   asunto?: Prisma.SortOrder
   cuerpo?: Prisma.SortOrder
@@ -451,16 +490,49 @@ export type notificacionesSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   usuario_id?: Prisma.SortOrder
   solicitud_id?: Prisma.SortOrder
+  feria_id?: Prisma.SortOrder
 }
 
-export type NotificacionesListRelationFilter = {
-  every?: Prisma.notificacionesWhereInput
-  some?: Prisma.notificacionesWhereInput
-  none?: Prisma.notificacionesWhereInput
+export type notificacionesCreateNestedManyWithoutFeriasInput = {
+  create?: Prisma.XOR<Prisma.notificacionesCreateWithoutFeriasInput, Prisma.notificacionesUncheckedCreateWithoutFeriasInput> | Prisma.notificacionesCreateWithoutFeriasInput[] | Prisma.notificacionesUncheckedCreateWithoutFeriasInput[]
+  connectOrCreate?: Prisma.notificacionesCreateOrConnectWithoutFeriasInput | Prisma.notificacionesCreateOrConnectWithoutFeriasInput[]
+  createMany?: Prisma.notificacionesCreateManyFeriasInputEnvelope
+  connect?: Prisma.notificacionesWhereUniqueInput | Prisma.notificacionesWhereUniqueInput[]
 }
 
-export type notificacionesOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
+export type notificacionesUncheckedCreateNestedManyWithoutFeriasInput = {
+  create?: Prisma.XOR<Prisma.notificacionesCreateWithoutFeriasInput, Prisma.notificacionesUncheckedCreateWithoutFeriasInput> | Prisma.notificacionesCreateWithoutFeriasInput[] | Prisma.notificacionesUncheckedCreateWithoutFeriasInput[]
+  connectOrCreate?: Prisma.notificacionesCreateOrConnectWithoutFeriasInput | Prisma.notificacionesCreateOrConnectWithoutFeriasInput[]
+  createMany?: Prisma.notificacionesCreateManyFeriasInputEnvelope
+  connect?: Prisma.notificacionesWhereUniqueInput | Prisma.notificacionesWhereUniqueInput[]
+}
+
+export type notificacionesUpdateManyWithoutFeriasNestedInput = {
+  create?: Prisma.XOR<Prisma.notificacionesCreateWithoutFeriasInput, Prisma.notificacionesUncheckedCreateWithoutFeriasInput> | Prisma.notificacionesCreateWithoutFeriasInput[] | Prisma.notificacionesUncheckedCreateWithoutFeriasInput[]
+  connectOrCreate?: Prisma.notificacionesCreateOrConnectWithoutFeriasInput | Prisma.notificacionesCreateOrConnectWithoutFeriasInput[]
+  upsert?: Prisma.notificacionesUpsertWithWhereUniqueWithoutFeriasInput | Prisma.notificacionesUpsertWithWhereUniqueWithoutFeriasInput[]
+  createMany?: Prisma.notificacionesCreateManyFeriasInputEnvelope
+  set?: Prisma.notificacionesWhereUniqueInput | Prisma.notificacionesWhereUniqueInput[]
+  disconnect?: Prisma.notificacionesWhereUniqueInput | Prisma.notificacionesWhereUniqueInput[]
+  delete?: Prisma.notificacionesWhereUniqueInput | Prisma.notificacionesWhereUniqueInput[]
+  connect?: Prisma.notificacionesWhereUniqueInput | Prisma.notificacionesWhereUniqueInput[]
+  update?: Prisma.notificacionesUpdateWithWhereUniqueWithoutFeriasInput | Prisma.notificacionesUpdateWithWhereUniqueWithoutFeriasInput[]
+  updateMany?: Prisma.notificacionesUpdateManyWithWhereWithoutFeriasInput | Prisma.notificacionesUpdateManyWithWhereWithoutFeriasInput[]
+  deleteMany?: Prisma.notificacionesScalarWhereInput | Prisma.notificacionesScalarWhereInput[]
+}
+
+export type notificacionesUncheckedUpdateManyWithoutFeriasNestedInput = {
+  create?: Prisma.XOR<Prisma.notificacionesCreateWithoutFeriasInput, Prisma.notificacionesUncheckedCreateWithoutFeriasInput> | Prisma.notificacionesCreateWithoutFeriasInput[] | Prisma.notificacionesUncheckedCreateWithoutFeriasInput[]
+  connectOrCreate?: Prisma.notificacionesCreateOrConnectWithoutFeriasInput | Prisma.notificacionesCreateOrConnectWithoutFeriasInput[]
+  upsert?: Prisma.notificacionesUpsertWithWhereUniqueWithoutFeriasInput | Prisma.notificacionesUpsertWithWhereUniqueWithoutFeriasInput[]
+  createMany?: Prisma.notificacionesCreateManyFeriasInputEnvelope
+  set?: Prisma.notificacionesWhereUniqueInput | Prisma.notificacionesWhereUniqueInput[]
+  disconnect?: Prisma.notificacionesWhereUniqueInput | Prisma.notificacionesWhereUniqueInput[]
+  delete?: Prisma.notificacionesWhereUniqueInput | Prisma.notificacionesWhereUniqueInput[]
+  connect?: Prisma.notificacionesWhereUniqueInput | Prisma.notificacionesWhereUniqueInput[]
+  update?: Prisma.notificacionesUpdateWithWhereUniqueWithoutFeriasInput | Prisma.notificacionesUpdateWithWhereUniqueWithoutFeriasInput[]
+  updateMany?: Prisma.notificacionesUpdateManyWithWhereWithoutFeriasInput | Prisma.notificacionesUpdateManyWithWhereWithoutFeriasInput[]
+  deleteMany?: Prisma.notificacionesScalarWhereInput | Prisma.notificacionesScalarWhereInput[]
 }
 
 export type notificacionesCreateNestedManyWithoutSolicitudesInput = {
@@ -547,6 +619,72 @@ export type notificacionesUncheckedUpdateManyWithoutUsuariosNestedInput = {
   deleteMany?: Prisma.notificacionesScalarWhereInput | Prisma.notificacionesScalarWhereInput[]
 }
 
+export type notificacionesCreateWithoutFeriasInput = {
+  id?: bigint | number
+  tipo: string
+  asunto: string
+  cuerpo?: string | null
+  canal?: string
+  leida?: boolean
+  creada_en?: Date | string
+  solicitudes?: Prisma.solicitudesCreateNestedOneWithoutNotificacionesInput
+  usuarios: Prisma.usuariosCreateNestedOneWithoutNotificacionesInput
+}
+
+export type notificacionesUncheckedCreateWithoutFeriasInput = {
+  id?: bigint | number
+  usuario_id: bigint | number
+  solicitud_id?: bigint | number | null
+  tipo: string
+  asunto: string
+  cuerpo?: string | null
+  canal?: string
+  leida?: boolean
+  creada_en?: Date | string
+}
+
+export type notificacionesCreateOrConnectWithoutFeriasInput = {
+  where: Prisma.notificacionesWhereUniqueInput
+  create: Prisma.XOR<Prisma.notificacionesCreateWithoutFeriasInput, Prisma.notificacionesUncheckedCreateWithoutFeriasInput>
+}
+
+export type notificacionesCreateManyFeriasInputEnvelope = {
+  data: Prisma.notificacionesCreateManyFeriasInput | Prisma.notificacionesCreateManyFeriasInput[]
+  skipDuplicates?: boolean
+}
+
+export type notificacionesUpsertWithWhereUniqueWithoutFeriasInput = {
+  where: Prisma.notificacionesWhereUniqueInput
+  update: Prisma.XOR<Prisma.notificacionesUpdateWithoutFeriasInput, Prisma.notificacionesUncheckedUpdateWithoutFeriasInput>
+  create: Prisma.XOR<Prisma.notificacionesCreateWithoutFeriasInput, Prisma.notificacionesUncheckedCreateWithoutFeriasInput>
+}
+
+export type notificacionesUpdateWithWhereUniqueWithoutFeriasInput = {
+  where: Prisma.notificacionesWhereUniqueInput
+  data: Prisma.XOR<Prisma.notificacionesUpdateWithoutFeriasInput, Prisma.notificacionesUncheckedUpdateWithoutFeriasInput>
+}
+
+export type notificacionesUpdateManyWithWhereWithoutFeriasInput = {
+  where: Prisma.notificacionesScalarWhereInput
+  data: Prisma.XOR<Prisma.notificacionesUpdateManyMutationInput, Prisma.notificacionesUncheckedUpdateManyWithoutFeriasInput>
+}
+
+export type notificacionesScalarWhereInput = {
+  AND?: Prisma.notificacionesScalarWhereInput | Prisma.notificacionesScalarWhereInput[]
+  OR?: Prisma.notificacionesScalarWhereInput[]
+  NOT?: Prisma.notificacionesScalarWhereInput | Prisma.notificacionesScalarWhereInput[]
+  id?: Prisma.BigIntFilter<"notificaciones"> | bigint | number
+  usuario_id?: Prisma.BigIntFilter<"notificaciones"> | bigint | number
+  solicitud_id?: Prisma.BigIntNullableFilter<"notificaciones"> | bigint | number | null
+  feria_id?: Prisma.BigIntNullableFilter<"notificaciones"> | bigint | number | null
+  tipo?: Prisma.StringFilter<"notificaciones"> | string
+  asunto?: Prisma.StringFilter<"notificaciones"> | string
+  cuerpo?: Prisma.StringNullableFilter<"notificaciones"> | string | null
+  canal?: Prisma.StringFilter<"notificaciones"> | string
+  leida?: Prisma.BoolFilter<"notificaciones"> | boolean
+  creada_en?: Prisma.DateTimeFilter<"notificaciones"> | Date | string
+}
+
 export type notificacionesCreateWithoutSolicitudesInput = {
   id?: bigint | number
   tipo: string
@@ -555,12 +693,14 @@ export type notificacionesCreateWithoutSolicitudesInput = {
   canal?: string
   leida?: boolean
   creada_en?: Date | string
+  ferias?: Prisma.feriasCreateNestedOneWithoutNotificacionesInput
   usuarios: Prisma.usuariosCreateNestedOneWithoutNotificacionesInput
 }
 
 export type notificacionesUncheckedCreateWithoutSolicitudesInput = {
   id?: bigint | number
   usuario_id: bigint | number
+  feria_id?: bigint | number | null
   tipo: string
   asunto: string
   cuerpo?: string | null
@@ -595,21 +735,6 @@ export type notificacionesUpdateManyWithWhereWithoutSolicitudesInput = {
   data: Prisma.XOR<Prisma.notificacionesUpdateManyMutationInput, Prisma.notificacionesUncheckedUpdateManyWithoutSolicitudesInput>
 }
 
-export type notificacionesScalarWhereInput = {
-  AND?: Prisma.notificacionesScalarWhereInput | Prisma.notificacionesScalarWhereInput[]
-  OR?: Prisma.notificacionesScalarWhereInput[]
-  NOT?: Prisma.notificacionesScalarWhereInput | Prisma.notificacionesScalarWhereInput[]
-  id?: Prisma.BigIntFilter<"notificaciones"> | bigint | number
-  usuario_id?: Prisma.BigIntFilter<"notificaciones"> | bigint | number
-  solicitud_id?: Prisma.BigIntNullableFilter<"notificaciones"> | bigint | number | null
-  tipo?: Prisma.StringFilter<"notificaciones"> | string
-  asunto?: Prisma.StringFilter<"notificaciones"> | string
-  cuerpo?: Prisma.StringNullableFilter<"notificaciones"> | string | null
-  canal?: Prisma.StringFilter<"notificaciones"> | string
-  leida?: Prisma.BoolFilter<"notificaciones"> | boolean
-  creada_en?: Prisma.DateTimeFilter<"notificaciones"> | Date | string
-}
-
 export type notificacionesCreateWithoutUsuariosInput = {
   id?: bigint | number
   tipo: string
@@ -618,12 +743,14 @@ export type notificacionesCreateWithoutUsuariosInput = {
   canal?: string
   leida?: boolean
   creada_en?: Date | string
+  ferias?: Prisma.feriasCreateNestedOneWithoutNotificacionesInput
   solicitudes?: Prisma.solicitudesCreateNestedOneWithoutNotificacionesInput
 }
 
 export type notificacionesUncheckedCreateWithoutUsuariosInput = {
   id?: bigint | number
   solicitud_id?: bigint | number | null
+  feria_id?: bigint | number | null
   tipo: string
   asunto: string
   cuerpo?: string | null
@@ -658,9 +785,58 @@ export type notificacionesUpdateManyWithWhereWithoutUsuariosInput = {
   data: Prisma.XOR<Prisma.notificacionesUpdateManyMutationInput, Prisma.notificacionesUncheckedUpdateManyWithoutUsuariosInput>
 }
 
+export type notificacionesCreateManyFeriasInput = {
+  id?: bigint | number
+  usuario_id: bigint | number
+  solicitud_id?: bigint | number | null
+  tipo: string
+  asunto: string
+  cuerpo?: string | null
+  canal?: string
+  leida?: boolean
+  creada_en?: Date | string
+}
+
+export type notificacionesUpdateWithoutFeriasInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  tipo?: Prisma.StringFieldUpdateOperationsInput | string
+  asunto?: Prisma.StringFieldUpdateOperationsInput | string
+  cuerpo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  canal?: Prisma.StringFieldUpdateOperationsInput | string
+  leida?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  solicitudes?: Prisma.solicitudesUpdateOneWithoutNotificacionesNestedInput
+  usuarios?: Prisma.usuariosUpdateOneRequiredWithoutNotificacionesNestedInput
+}
+
+export type notificacionesUncheckedUpdateWithoutFeriasInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  usuario_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  solicitud_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  tipo?: Prisma.StringFieldUpdateOperationsInput | string
+  asunto?: Prisma.StringFieldUpdateOperationsInput | string
+  cuerpo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  canal?: Prisma.StringFieldUpdateOperationsInput | string
+  leida?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type notificacionesUncheckedUpdateManyWithoutFeriasInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  usuario_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  solicitud_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  tipo?: Prisma.StringFieldUpdateOperationsInput | string
+  asunto?: Prisma.StringFieldUpdateOperationsInput | string
+  cuerpo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  canal?: Prisma.StringFieldUpdateOperationsInput | string
+  leida?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type notificacionesCreateManySolicitudesInput = {
   id?: bigint | number
   usuario_id: bigint | number
+  feria_id?: bigint | number | null
   tipo: string
   asunto: string
   cuerpo?: string | null
@@ -677,12 +853,14 @@ export type notificacionesUpdateWithoutSolicitudesInput = {
   canal?: Prisma.StringFieldUpdateOperationsInput | string
   leida?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ferias?: Prisma.feriasUpdateOneWithoutNotificacionesNestedInput
   usuarios?: Prisma.usuariosUpdateOneRequiredWithoutNotificacionesNestedInput
 }
 
 export type notificacionesUncheckedUpdateWithoutSolicitudesInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   usuario_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  feria_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   asunto?: Prisma.StringFieldUpdateOperationsInput | string
   cuerpo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -694,6 +872,7 @@ export type notificacionesUncheckedUpdateWithoutSolicitudesInput = {
 export type notificacionesUncheckedUpdateManyWithoutSolicitudesInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   usuario_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  feria_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   asunto?: Prisma.StringFieldUpdateOperationsInput | string
   cuerpo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -705,6 +884,7 @@ export type notificacionesUncheckedUpdateManyWithoutSolicitudesInput = {
 export type notificacionesCreateManyUsuariosInput = {
   id?: bigint | number
   solicitud_id?: bigint | number | null
+  feria_id?: bigint | number | null
   tipo: string
   asunto: string
   cuerpo?: string | null
@@ -721,12 +901,14 @@ export type notificacionesUpdateWithoutUsuariosInput = {
   canal?: Prisma.StringFieldUpdateOperationsInput | string
   leida?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ferias?: Prisma.feriasUpdateOneWithoutNotificacionesNestedInput
   solicitudes?: Prisma.solicitudesUpdateOneWithoutNotificacionesNestedInput
 }
 
 export type notificacionesUncheckedUpdateWithoutUsuariosInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   solicitud_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  feria_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   asunto?: Prisma.StringFieldUpdateOperationsInput | string
   cuerpo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -738,6 +920,7 @@ export type notificacionesUncheckedUpdateWithoutUsuariosInput = {
 export type notificacionesUncheckedUpdateManyWithoutUsuariosInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   solicitud_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  feria_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   tipo?: Prisma.StringFieldUpdateOperationsInput | string
   asunto?: Prisma.StringFieldUpdateOperationsInput | string
   cuerpo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -752,12 +935,14 @@ export type notificacionesSelect<ExtArgs extends runtime.Types.Extensions.Intern
   id?: boolean
   usuario_id?: boolean
   solicitud_id?: boolean
+  feria_id?: boolean
   tipo?: boolean
   asunto?: boolean
   cuerpo?: boolean
   canal?: boolean
   leida?: boolean
   creada_en?: boolean
+  ferias?: boolean | Prisma.notificaciones$feriasArgs<ExtArgs>
   solicitudes?: boolean | Prisma.notificaciones$solicitudesArgs<ExtArgs>
   usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["notificaciones"]>
@@ -766,12 +951,14 @@ export type notificacionesSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   id?: boolean
   usuario_id?: boolean
   solicitud_id?: boolean
+  feria_id?: boolean
   tipo?: boolean
   asunto?: boolean
   cuerpo?: boolean
   canal?: boolean
   leida?: boolean
   creada_en?: boolean
+  ferias?: boolean | Prisma.notificaciones$feriasArgs<ExtArgs>
   solicitudes?: boolean | Prisma.notificaciones$solicitudesArgs<ExtArgs>
   usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["notificaciones"]>
@@ -780,12 +967,14 @@ export type notificacionesSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   id?: boolean
   usuario_id?: boolean
   solicitud_id?: boolean
+  feria_id?: boolean
   tipo?: boolean
   asunto?: boolean
   cuerpo?: boolean
   canal?: boolean
   leida?: boolean
   creada_en?: boolean
+  ferias?: boolean | Prisma.notificaciones$feriasArgs<ExtArgs>
   solicitudes?: boolean | Prisma.notificaciones$solicitudesArgs<ExtArgs>
   usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["notificaciones"]>
@@ -794,6 +983,7 @@ export type notificacionesSelectScalar = {
   id?: boolean
   usuario_id?: boolean
   solicitud_id?: boolean
+  feria_id?: boolean
   tipo?: boolean
   asunto?: boolean
   cuerpo?: boolean
@@ -802,16 +992,19 @@ export type notificacionesSelectScalar = {
   creada_en?: boolean
 }
 
-export type notificacionesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "usuario_id" | "solicitud_id" | "tipo" | "asunto" | "cuerpo" | "canal" | "leida" | "creada_en", ExtArgs["result"]["notificaciones"]>
+export type notificacionesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "usuario_id" | "solicitud_id" | "feria_id" | "tipo" | "asunto" | "cuerpo" | "canal" | "leida" | "creada_en", ExtArgs["result"]["notificaciones"]>
 export type notificacionesInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  ferias?: boolean | Prisma.notificaciones$feriasArgs<ExtArgs>
   solicitudes?: boolean | Prisma.notificaciones$solicitudesArgs<ExtArgs>
   usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
 }
 export type notificacionesIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  ferias?: boolean | Prisma.notificaciones$feriasArgs<ExtArgs>
   solicitudes?: boolean | Prisma.notificaciones$solicitudesArgs<ExtArgs>
   usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
 }
 export type notificacionesIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  ferias?: boolean | Prisma.notificaciones$feriasArgs<ExtArgs>
   solicitudes?: boolean | Prisma.notificaciones$solicitudesArgs<ExtArgs>
   usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
 }
@@ -819,6 +1012,7 @@ export type notificacionesIncludeUpdateManyAndReturn<ExtArgs extends runtime.Typ
 export type $notificacionesPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "notificaciones"
   objects: {
+    ferias: Prisma.$feriasPayload<ExtArgs> | null
     solicitudes: Prisma.$solicitudesPayload<ExtArgs> | null
     usuarios: Prisma.$usuariosPayload<ExtArgs>
   }
@@ -826,6 +1020,7 @@ export type $notificacionesPayload<ExtArgs extends runtime.Types.Extensions.Inte
     id: bigint
     usuario_id: bigint
     solicitud_id: bigint | null
+    feria_id: bigint | null
     tipo: string
     asunto: string
     cuerpo: string | null
@@ -1226,6 +1421,7 @@ readonly fields: notificacionesFieldRefs;
  */
 export interface Prisma__notificacionesClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  ferias<T extends Prisma.notificaciones$feriasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.notificaciones$feriasArgs<ExtArgs>>): Prisma.Prisma__feriasClient<runtime.Types.Result.GetResult<Prisma.$feriasPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   solicitudes<T extends Prisma.notificaciones$solicitudesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.notificaciones$solicitudesArgs<ExtArgs>>): Prisma.Prisma__solicitudesClient<runtime.Types.Result.GetResult<Prisma.$solicitudesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   usuarios<T extends Prisma.usuariosDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuariosDefaultArgs<ExtArgs>>): Prisma.Prisma__usuariosClient<runtime.Types.Result.GetResult<Prisma.$usuariosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
@@ -1260,6 +1456,7 @@ export interface notificacionesFieldRefs {
   readonly id: Prisma.FieldRef<"notificaciones", 'BigInt'>
   readonly usuario_id: Prisma.FieldRef<"notificaciones", 'BigInt'>
   readonly solicitud_id: Prisma.FieldRef<"notificaciones", 'BigInt'>
+  readonly feria_id: Prisma.FieldRef<"notificaciones", 'BigInt'>
   readonly tipo: Prisma.FieldRef<"notificaciones", 'String'>
   readonly asunto: Prisma.FieldRef<"notificaciones", 'String'>
   readonly cuerpo: Prisma.FieldRef<"notificaciones", 'String'>
@@ -1664,6 +1861,25 @@ export type notificacionesDeleteManyArgs<ExtArgs extends runtime.Types.Extension
    * Limit how many notificaciones to delete.
    */
   limit?: number
+}
+
+/**
+ * notificaciones.ferias
+ */
+export type notificaciones$feriasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ferias
+   */
+  select?: Prisma.feriasSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ferias
+   */
+  omit?: Prisma.feriasOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.feriasInclude<ExtArgs> | null
+  where?: Prisma.feriasWhereInput
 }
 
 /**

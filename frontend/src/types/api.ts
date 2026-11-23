@@ -524,6 +524,7 @@ export interface RespuestaCambioEstadoOrganizacion {
 export interface Notificacion {
   id: string;
   solicitudId: string | null;
+  feriaId: string | null;
   tipo: string;
   asunto: string;
   cuerpo?: string | null;
@@ -1584,4 +1585,126 @@ export interface RespuestaResolucionSolicitud {
   correoEnviado: boolean;
   mensajeCorreo: string | null;
   mensaje: string;
+}
+
+/* ------------------------------------------------------------------ */
+/* Ferias agroecológicas (HU-21)                                       */
+/* ------------------------------------------------------------------ */
+
+export type EstadoFeria =
+  | 'radicada'
+  | 'aprobada'
+  | 'rechazada'
+  | 'cancelada'
+  | 'realizada';
+
+export interface ProductoFeria {
+  id: string;
+  nombre: string;
+}
+
+export interface ZonaFeria {
+  id: string;
+  nombre: string;
+  tipo: 'permitida' | 'restringida' | 'alta_congestion';
+  activa: boolean;
+  aforoMaximo: number | null;
+  horarioInicio: string | null;
+  horarioFin: string | null;
+  productosPermitidos: string[];
+  admiteFerias: boolean;
+}
+
+export interface OpcionesFeria {
+  zonas: ZonaFeria[];
+  productos: ProductoFeria[];
+}
+
+export interface RangoFeria {
+  fechaInicio: string;
+  fechaFin: string;
+}
+
+export interface ConflictoFeria extends RangoFeria {
+  id?: string;
+}
+
+export interface AgendaFeria {
+  zonaId: string;
+  desde: string;
+  hasta: string;
+  ocupados: RangoFeria[];
+}
+
+export interface AforoFeria {
+  solicitado: number;
+  maximo: number | null;
+  suficiente: boolean;
+}
+
+export interface DisponibilidadFeria {
+  disponible: boolean;
+  zona: ZonaFeria;
+  aforo: AforoFeria;
+  conflicto: ConflictoFeria | null;
+  sugerencias: RangoFeria[];
+  motivo: string | null;
+}
+
+export interface DocumentoFeria {
+  id: string;
+  tipoDocumento: string;
+  nombreOriginal: string | null;
+  mimeType: string | null;
+  tamanoBytes: number | null;
+  cargadoEn: string;
+  url: string;
+}
+
+export interface FeriaListado {
+  id: string;
+  numeroRadicado: string;
+  nombre: string;
+  tipoFeria: string;
+  estado: EstadoFeria;
+  fechaInicio: string;
+  fechaFin: string;
+  numeroPuestos: number;
+  radicadaEn: string;
+  zona: ZonaFeria;
+}
+
+export interface FeriaDetalle extends FeriaListado {
+  productos: ProductoFeria[];
+  documentos: DocumentoFeria[];
+}
+
+export interface ListarFeriasResponse {
+  datos: FeriaListado[];
+  paginacion: Paginacion;
+}
+
+export interface DatosRadicacionFeria {
+  nombre: string;
+  tipoFeria: string;
+  zonaId: string;
+  fechaInicio: string;
+  fechaFin: string;
+  numeroPuestos: number;
+  productoIds: string[];
+}
+
+export interface FiltrosFerias {
+  estado?: EstadoFeria;
+  pagina?: number;
+  limite?: number;
+}
+
+export interface RespuestaRadicacionFeria {
+  id: string;
+  numeroRadicado: string;
+  estado: EstadoFeria;
+  mensaje: string;
+  correoEnviado: boolean;
+  mensajeCorreo: string | null;
 }

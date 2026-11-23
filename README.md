@@ -172,20 +172,20 @@ pnpm build     # debe compilar las 39 páginas/rutas
 |---|---|---|
 | **1** | Autenticación y gestión de usuarios (HU-01 a HU-07) | **Completo**: backend (36 endpoints) y frontend (ver `docs/avance_frontend.md`) |
 | **2** | Geo-Portal y zonas (HU-08 a HU-15) | **Completo**: mapa público; espacios con tabla, mapa, agrupación, ficha responsive y filtros; editor de zonas, baja lógica, versionado e historial; censo de módulos; administración de espacios temporales con bloqueos, estados y auditoría; importación de GeoJSON y CSV con previsualización y reporte de errores. La búsqueda de calles/barrios de HU-10 quedó fuera de alcance |
-| **3** | Solicitudes y asignación de espacio | **Pendiente** (las tablas y los datos de prueba ya existen; no hay endpoints ni pantallas) |
+| **3** | Solicitudes y asignación de espacio | **Parcial**: HU-16 a HU-21 implementadas (radicación, documentos, revisión, resolución y solicitud de ferias). HU-22 (calendario y aprobación de ferias) y HU-23 (vendedores) están pendientes |
 | **4** | Simulador de factibilidad y densidad | **Pendiente** (el motor de reglas existe en PostgreSQL, pero no está expuesto en la API ni en la interfaz) |
 | **5** | Permisos con QR y cobros simulados | **Pendiente** (el modelo y el seed existen; no hay endpoints ni pantallas) |
 | **6** | Dashboard e indicadores | **Pendiente** (el panel solo muestra los indicadores básicos de `GET /panel`) |
 
 ### Frontend: qué está implementado hoy
 
-El frontend tiene **39 rutas** de página y está verificado con `lint`, `build`, Vitest y Playwright.
+El frontend está verificado con `lint`, `build`, Vitest y Playwright.
 
 **Públicas:** `/` · `/mapa` · `/login` · `/registro` · `/registro/comerciante` · `/registro/organizador` · `/activar` · `/recuperar` · `/restablecer` · `/primer-acceso`
 
-**Comerciante:** `/comerciante/inicio` · `/comerciante/perfil` · `/comerciante/espacios`
+**Comerciante:** `/comerciante/inicio` · `/comerciante/perfil` · `/comerciante/espacios` · `/comerciante/solicitudes` · `/comerciante/solicitudes/nueva` · `/comerciante/solicitudes/[id]` · `/comerciante/solicitudes/[id]/confirmacion`
 
-**Organizador:** `/organizador/inicio` · `/organizador/perfil` · `/organizador/mi-organizacion`
+**Organizador:** `/organizador/inicio` · `/organizador/perfil` · `/organizador/mi-organizacion` · `/organizador/ferias` · `/organizador/ferias/nueva` · `/organizador/ferias/[id]`
 
 **Gestor:** `/gestor/panel` · `/gestor/perfil` · `/gestor/zonas` · `/gestor/zonas/nueva` · `/gestor/zonas/[id]/editar` · `/gestor/zonas/[id]/historial` · `/gestor/modulos` · `/gestor/modulos/nuevo` · `/gestor/modulos/[id]` · `/gestor/modulos/[id]/editar` · `/gestor/espacios` · `/gestor/espacios/nuevo` · `/gestor/espacios/[id]` · `/gestor/espacios/[id]/editar` · `/gestor/importaciones` · `/gestor/usuarios` · `/gestor/usuarios/[id]` · `/gestor/comerciantes` · `/gestor/organizaciones` · `/gestor/organizaciones/[id]` · `/gestor/gestores/nuevo` · `/gestor/auditoria`
 
@@ -195,7 +195,8 @@ Incluye: design system mobile-first (360 px, WCAG AA), estados de carga/vacío/e
 
 ### Frontend: qué falta
 
-- Módulos de los Sprints 3 a 6: solicitudes, ferias, permisos QR, cobros y dashboard analítico. La consulta de espacios ya existe, pero todavía **no hay botón ni formulario para solicitar** el uso de un espacio.
+- HU-22 y HU-23: calendario, aprobación/cancelación de ferias e inscripción de vendedores.
+- Módulos de los Sprints 4 a 6: factibilidad visible, permisos QR, cobros y dashboard analítico.
 - El buscador de calles/barrios de HU-10 quedó fuera de alcance.
 
 ---
@@ -210,5 +211,7 @@ Incluye: design system mobile-first (360 px, WCAG AA), estados de carga/vacío/e
 | `docs/Uso_espacios.md` | Consulta de espacios y administración municipal de espacios y bloqueos |
 | `docs/Uso_modulos.md` | Censo de módulos y puestos de comercio formal e informal |
 | `docs/Uso_importaciones.md` | Importación de zonas (GeoJSON) y módulos (CSV) |
+| `docs/Uso_solicitudes.md` | Radicación, documentos, revisión y resolución de solicitudes |
+| `docs/Uso_ferias.md` | Solicitud, agenda y adjuntos de ferias agroecológicas |
 | `docs/` | Guías por módulo: `baseDatos.md`, `gestor.md`, `perfil.md`, `organizadores.md`, `panel.md`, `resumen.md`, `swagger.md`, `avance_frontend.md`, `implementaciones_Sprint2.md` |
 | `.opencode/AGENTS.md` | Reglas del proyecto para agentes de IA (fuente de verdad) |

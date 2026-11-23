@@ -208,6 +208,7 @@ export async function obtenerNotificaciones(
     asunto: string;
     cuerpo: string | null;
     solicitudId: string | null;
+    feriaId: string | null;
   }>
 > {
   const url = `${API_URL}/notificaciones?limite=20${soloNoLeidas ? '&leida=false' : ''}`;
@@ -220,6 +221,7 @@ export async function obtenerNotificaciones(
       asunto: string;
       cuerpo: string | null;
       solicitudId: string | null;
+      feriaId: string | null;
     }>;
   };
   return cuerpo.datos;

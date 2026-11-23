@@ -62,6 +62,7 @@ export const ModelName = {
   excepciones_factibilidad: 'excepciones_factibilidad',
   feria_productos: 'feria_productos',
   feria_vendedores: 'feria_vendedores',
+  feria_documentos: 'feria_documentos',
   ferias: 'ferias',
   gestores: 'gestores',
   modulos: 'modulos',
@@ -239,6 +240,20 @@ export const Feria_vendedoresScalarFieldEnum = {
 export type Feria_vendedoresScalarFieldEnum = (typeof Feria_vendedoresScalarFieldEnum)[keyof typeof Feria_vendedoresScalarFieldEnum]
 
 
+export const Feria_documentosScalarFieldEnum = {
+  id: 'id',
+  feria_id: 'feria_id',
+  tipo_documento: 'tipo_documento',
+  archivo_url: 'archivo_url',
+  nombre_original: 'nombre_original',
+  mime_type: 'mime_type',
+  tamano_bytes: 'tamano_bytes',
+  cargado_en: 'cargado_en'
+} as const
+
+export type Feria_documentosScalarFieldEnum = (typeof Feria_documentosScalarFieldEnum)[keyof typeof Feria_documentosScalarFieldEnum]
+
+
 export const FeriasScalarFieldEnum = {
   id: 'id',
   numero_radicado: 'numero_radicado',
@@ -286,6 +301,7 @@ export const NotificacionesScalarFieldEnum = {
   id: 'id',
   usuario_id: 'usuario_id',
   solicitud_id: 'solicitud_id',
+  feria_id: 'feria_id',
   tipo: 'tipo',
   asunto: 'asunto',
   cuerpo: 'cuerpo',

@@ -2,7 +2,7 @@
 
 **Proyecto:** Plataforma Web de Gestión del Espacio Público, Ferias Agroecológicas y Comercio Formal/Informal de Tuluá (Equipo 6)
 **Motor:** PostgreSQL 18 + PostGIS 3.6 · **Codificación:** UTF8 · **Convención:** `snake_case`, español
-**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba) · `03_sesiones.sql` (tabla de sesiones) · `04_espacios_hu09.sql` (ficha de espacios) · `05_filtros_hu10.sql` (índices de filtros y disponibilidad) · `06_zonas_hu12.sql` (historial versionado de zonas) · `07_modulos_hu13.sql` (auditoría y códigos de módulos) · `08_espacios_hu15.sql` (asignación manual, recálculo de estado y auditoría de espacios/bloqueos)
+**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba) · `03_sesiones.sql` (tabla de sesiones) · `04_espacios_hu09.sql` (ficha de espacios) · `05_filtros_hu10.sql` (índices de filtros y disponibilidad) · `06_zonas_hu12.sql` (historial versionado de zonas) · `07_modulos_hu13.sql` (auditoría y códigos de módulos) · `08_espacios_hu15.sql` (asignación manual, recálculo de estado y auditoría de espacios/bloqueos) · `09_solicitudes_hu16.sql` a `12_revision_hu19.sql` (trámites) · `13_ferias_hu21.sql` (adjuntos y agenda de ferias)
 **Base de desarrollo verificada:** `sgp_tulua`
 
 ---
@@ -14,9 +14,9 @@
 psql -U postgres -d postgres -c 'CREATE DATABASE "sgp_tulua";'
 
 # 2) Crear la estructura base (30 tablas, 17 ENUM, 3 secuencias, índices,
-#    6 funciones, 10 triggers y 4 vistas materializadas). Las migraciones 03–11
+#    6 funciones, 10 triggers y 4 vistas materializadas). Las migraciones 03–13
 #    agregan sesiones, columnas de espacios, historial de zonas, auditoría,
-#    trámites y notificaciones enlazadas.
+#    trámites, notificaciones enlazadas, adjuntos de ferias y avisos de feria (31 tablas).
 psql -U postgres -d "sgp_tulua" -f 01_creacion_bd.sql
 
 # 3) Cargar datos de prueba (incluye 4 pruebas automáticas de reglas de negocio)
@@ -46,6 +46,15 @@ psql -U postgres -d "sgp_tulua" -f 10_solicitudes_hu17.sql
 
 # 11) HU-18: enlace de notificaciones con solicitudes:
 psql -U postgres -d "sgp_tulua" -f 11_notificaciones_hu18.sql
+
+# 12) HU-19: bloqueo de revisión y trazabilidad documental:
+psql -U postgres -d "sgp_tulua" -f 12_revision_hu19.sql
+
+# 13) HU-21: adjuntos de feria y sincronización del consecutivo FER:
+psql -U postgres -d "sgp_tulua" -f 13_ferias_hu21.sql
+
+# 14) HU-21: enlace de notificaciones con ferias:
+psql -U postgres -d "sgp_tulua" -f 14_notificaciones_feria_hu21.sql
 
 # Para repetir desde cero:
 psql -U postgres -d postgres -c 'DROP DATABASE "sgp_tulua" WITH (FORCE);'
@@ -428,6 +437,23 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 | documento | VARCHAR(30) | UNIQUE por feria (nullable) |
 | producto_principal | VARCHAR(150) | |
 
+### `feria_documentos` — Documentación del evento (HU-21)
+| Campo | Tipo | Restricciones |
+|---|---|---|
+| id | BIGINT | PK, IDENTITY |
+| feria_id | BIGINT | NOT NULL, FK→ferias(id) ON DELETE CASCADE |
+| tipo_documento | VARCHAR(100) | NOT NULL |
+| archivo_url | TEXT | NOT NULL; ruta relativa dentro de `UPLOAD_PRIVATE_DIR` |
+| nombre_original | VARCHAR(255) | Nombre visible del archivo |
+| mime_type | VARCHAR(100) | PDF, JPEG o PNG |
+| tamano_bytes | INT | Tamaño real validado |
+| cargado_en | TIMESTAMPTZ | DEFAULT now() |
+
+**Índice:** `idx_feria_documentos_feria (feria_id, cargado_en)`.
+**Seguridad:** los archivos no se sirven como recursos estáticos; la descarga pasa por `GET /ferias/:id/documentos/:documentoId/archivo` y solo la permite el organizador dueño o un gestor.
+
+**Consecutivo:** `13_ferias_hu21.sql` sincroniza `seq_radicado_feria` con el mayor `FER-AAAA-#####` existente. Sin esta sincronización, el seed (que inserta radicados explícitos) provoca un choque de `UNIQUE` en la primera feria nueva.
+
 ---
 
 ## 8. Módulo 4 — Motor de factibilidad (HU-24 a HU-30)
@@ -539,12 +565,15 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 | id | BIGINT | PK, IDENTITY |
 | usuario_id | BIGINT | NOT NULL, FK ON DELETE CASCADE |
 | solicitud_id | BIGINT | FK→solicitudes(id), nullable; enlaza el aviso con el trámite |
-| tipo | VARCHAR(60) | NOT NULL — activacion · cambio_solicitud · permiso_emitido · aviso_vencimiento |
+| feria_id | BIGINT | FK→ferias(id), nullable; enlaza el aviso con la feria (HU-21) |
+| tipo | VARCHAR(60) | NOT NULL — activacion · cambio_solicitud · feria_radicada · permiso_emitido · aviso_vencimiento |
 | asunto | VARCHAR(200) | NOT NULL |
 | cuerpo | TEXT | |
 | canal | VARCHAR(10) | DEFAULT correo (correo / app) |
 | leida | BOOLEAN | DEFAULT FALSE |
 | creada_en | TIMESTAMPTZ | DEFAULT now() |
+
+**Índices:** `idx_notificaciones_usuario (usuario_id, leida)`, `idx_notificaciones_solicitud (solicitud_id)` y `idx_notificaciones_feria (feria_id)`.
 
 ### `alertas_saturacion` (HU-29)
 | Campo | Tipo | Restricciones |

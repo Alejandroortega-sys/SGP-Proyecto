@@ -1,18 +1,23 @@
 import type {
+  AgendaFeria,
   ComercianteActualizado,
   ComercianteListado,
   ConfirmacionImportacion,
   BloqueoEspacioGestor,
   CuerpoError,
+  DatosRadicacionFeria,
   DatosRadicacionSolicitud,
+  DisponibilidadFeria,
   DisponibilidadSolicitud,
   DocumentoAdjuntoRadicacion,
   EspacioDetalle,
   EspacioGestorDetalle,
   FiltrosAuditoria,
   FiltrosComerciantes,
+  FeriaDetalle,
   FiltrosEspacios,
   FiltrosEspaciosGestor,
+  FiltrosFerias,
   FiltrosNotificaciones,
   FiltrosSolicitudes,
   FiltrosHistorialZona,
@@ -27,6 +32,7 @@ import type {
   ListarAuditoriaResponse,
   ListarEspaciosGestorResponse,
   ListarEspaciosResponse,
+  ListarFeriasResponse,
   ListarModulosResponse,
   ListarNotificacionesResponse,
   ListarProductosResponse,
@@ -38,6 +44,7 @@ import type {
   Notificacion,
   OpcionesEspacios,
   OpcionesEspaciosGestor,
+  OpcionesFeria,
   OpcionesModulos,
   OpcionesRevisionSolicitudes,
   Organizacion,
@@ -60,6 +67,7 @@ import type {
   RespuestaCargaDocumentoSolicitud,
   RespuestaLiberarRevision,
   RespuestaRadicacion,
+  RespuestaRadicacionFeria,
   RespuestaRequisitosSolicitud,
   RequisitosSolicitudResponse,
   RespuestaRegistroComerciante,
@@ -1443,5 +1451,155 @@ export function resolverSolicitudRevision(
   return peticion<RespuestaResolucionSolicitud>(
     `/gestor/solicitudes/${solicitudId}/resolucion`,
     { method: "PATCH", cuerpo: datos },
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Ferias agroecológicas (HU-21)                                       */
+/* ------------------------------------------------------------------ */
+
+/** Zonas activas y catálogo de productos para el formulario de feria. */
+export function obtenerOpcionesFeria(): Promise<OpcionesFeria> {
+  return peticion<OpcionesFeria>("/ferias/zonas");
+}
+
+/** Agenda ocupada de una zona en un rango de fechas. */
+export function obtenerAgendaFeria(
+  zonaId: string,
+  desde?: string,
+  hasta?: string,
+): Promise<AgendaFeria> {
+  return peticion<AgendaFeria>(
+    conParametros("/ferias/agenda", { zonaId, desde, hasta }),
+  );
+}
+
+/** Disponibilidad de una zona para un rango y número de puestos. */
+export function consultarDisponibilidadFeria(datos: {
+  zonaId: string;
+  fechaInicio: string;
+  fechaFin: string;
+  numeroPuestos?: number;
+}): Promise<DisponibilidadFeria> {
+  return peticion<DisponibilidadFeria>(
+    conParametros("/ferias/disponibilidad", datos),
+  );
+}
+
+/** Lista las ferias del organizador autenticado. */
+export function listarMisFerias(
+  filtros: FiltrosFerias = {},
+): Promise<ListarFeriasResponse> {
+  return peticion<ListarFeriasResponse>(
+    conParametros("/ferias/mias", {
+      estado: filtros.estado,
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
+}
+
+/** Detalle de una feria propia con productos y adjuntos. */
+export function obtenerMiFeria(id: string): Promise<FeriaDetalle> {
+  return peticion<FeriaDetalle>(`/ferias/${id}`);
+}
+
+/** Sube la feria y sus adjuntos reportando el progreso real de la petición. */
+function subirFeriaConProgreso(
+  datos: DatosRadicacionFeria,
+  adjuntos: File[],
+  onProgress?: (progreso: ProgresoSubida) => void,
+): Promise<RespuestaRadicacionFeria> {
+  return new Promise((resolver, rechazar) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${URL_BASE}/ferias`);
+    const token = obtenerAccessToken();
+    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    xhr.setRequestHeader("Accept", "application/json");
+
+    xhr.upload.onprogress = (evento) => {
+      if (!evento.lengthComputable || !onProgress) return;
+      onProgress({
+        cargados: evento.loaded,
+        total: evento.total,
+        porcentaje: Math.min(
+          100,
+          Math.round((evento.loaded / evento.total) * 100),
+        ),
+      });
+    };
+
+    xhr.onerror = () => {
+      rechazar(
+        new ApiError(
+          0,
+          "No pudimos conectar con el servidor. Verifica tu conexión e inténtalo de nuevo.",
+        ),
+      );
+    };
+    xhr.onabort = () => {
+      rechazar(new ApiError(0, "La radicación de la feria fue cancelada."));
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          resolver(JSON.parse(xhr.responseText) as RespuestaRadicacionFeria);
+        } catch {
+          rechazar(
+            new ApiError(
+              xhr.status,
+              "El servidor respondió con un formato inesperado.",
+            ),
+          );
+        }
+        return;
+      }
+      rechazar(errorDesdeXhr(xhr));
+    };
+
+    const formulario = new FormData();
+    formulario.append("datos", JSON.stringify(datos));
+    for (const adjunto of adjuntos) {
+      formulario.append("adjuntos", adjunto, adjunto.name);
+    }
+    xhr.send(formulario);
+  });
+}
+
+/**
+ * Radica una feria con sus adjuntos opcionales y progreso real de subida.
+ *
+ * Si la operación falla, el formulario conserva los datos y los archivos en
+ * memoria para que el usuario pueda corregir y reintentar.
+ */
+export async function radicarFeria(
+  datos: DatosRadicacionFeria,
+  adjuntos: File[] = [],
+  onProgress?: (progreso: ProgresoSubida) => void,
+): Promise<RespuestaRadicacionFeria> {
+  try {
+    return await subirFeriaConProgreso(datos, adjuntos, onProgress);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      const token = await rotarSesion();
+      if (token) {
+        return subirFeriaConProgreso(datos, adjuntos, onProgress);
+      }
+      limpiarSesion();
+      redirigirALogin();
+    }
+    throw error;
+  }
+}
+
+/** Descarga autenticada de un adjunto de la feria. */
+export function descargarDocumentoFeria(
+  feriaId: string,
+  documentoId: string,
+): Promise<RespuestaArchivo> {
+  return peticionArchivo(
+    `/ferias/${feriaId}/documentos/${documentoId}/archivo`,
+    false,
+    "application/pdf,image/jpeg,image/png,application/octet-stream",
   );
 }

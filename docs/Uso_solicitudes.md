@@ -335,7 +335,7 @@ El cambio de estado, el historial y la notificación en plataforma se guardan en
 - Los documentos antiguos sin requisito asociado se muestran aparte para no ocultarlos.
 - La línea de tiempo muestra el estado anterior y el nuevo, la fecha, el actor, la observación del gestor y usa etiquetas visuales por estado.
 - El centro de notificaciones muestra las notificaciones propias, permite marcar una o todas y actualiza el indicador del menú sin esperar una navegación.
-- Si la notificación tiene `solicitudId`, el comerciante puede abrir el detalle con el enlace **Ver solicitud**.
+- Si la notificación tiene `solicitudId`, el comerciante puede abrir el detalle con el enlace **Ver solicitud**. Los avisos de feria usan `feriaId` y el organizador ve **Ver feria**.
 
 ### Borrador local
 

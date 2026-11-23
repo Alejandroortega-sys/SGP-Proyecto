@@ -670,7 +670,7 @@ En esta versión ya puedes:
 - corregir documentos cuando el gestor los devuelva;
 - recibir notificaciones en la plataforma y por correo cuando cambie el estado.
 
-El gestor municipal revisa y resuelve la solicitud. La aprobación con permiso QR y las ferias llegan en los siguientes sprints.
+El gestor municipal revisa y resuelve la solicitud. Los permisos con QR llegan en un sprint posterior; la radicación de ferias ya está disponible para los organizadores (HU-21).
 
 ### 11.10 Recuperar la contraseña
 
@@ -727,9 +727,34 @@ Cada organizador puede registrar **una sola organización**.
 
 Puedes actualizar nombre, NIT, representante, tipo de feria y contacto. No puedes cambiar el estado ni los campos de validación: eso corresponde al gestor.
 
-### 12.5 Ferias
+### 12.5 Solicitar una feria
 
-El módulo de ferias, el calendario y la inscripción de vendedores **todavía no están implementados**. Cuando estén disponibles, el organizador con organización activa podrá radicar una feria con zona, fechas, número de puestos y productos, y el sistema evitará cruces de fecha y zona.
+Con la organización **activa**, abre **Ferias → Nueva feria** (`/organizador/ferias/nueva`).
+
+1. Escribe el nombre y el tipo de feria.
+2. Elige la zona. Solo se listan las zonas activas que tienen aforo definido.
+3. Indica las fechas y el número de puestos.
+4. Revisa la disponibilidad: la plataforma muestra los rangos ya ocupados por otras ferias radicadas o aprobadas.
+5. Si hay cruce, el sistema explica el conflicto y ofrece hasta tres rangos alternativos con la misma duración; pulsa uno para aplicarlo.
+6. Selecciona al menos un producto permitido por la zona.
+7. Adjunta documentación del evento si la tienes (PDF, JPG o PNG, máximo 10 archivos de 5 MB).
+8. Revisa el resumen y pulsa **Radicar feria**.
+
+La feria queda en estado **Radicada** con un número `FER-AAAA-#####`. Recibirás una notificación en la plataforma y un correo de confirmación. La Alcaldía revisará la solicitud; aprobar, mover o cancelar ferias corresponde al calendario del gestor (HU-22).
+
+Puedes consultar todas tus ferias en **Ferias** (`/organizador/ferias`), filtrar por estado y abrir el detalle con sus productos y adjuntos.
+
+> Si tu organización está pendiente o suspendida, el formulario se muestra pero la radicación queda deshabilitada. Primero debe validarla un gestor administrador.
+
+### 12.6 Ferias: reglas de negocio
+
+- Una feria ocupa una zona completa durante un rango de fechas inclusivo.
+- No se permiten dos ferias activas (`radicada` o `aprobada`) en la misma zona con fechas que se solapen.
+- El número de puestos debe ser mayor que cero y no superar el aforo máximo de la zona.
+- Si la zona no tiene aforo definido, no admite ferias.
+- Los productos deben existir, estar activos y, cuando la zona tenga catálogo, estar permitidos.
+- Los adjuntos son opcionales y se guardan en el almacenamiento privado; solo el organizador dueño o un gestor pueden descargarlos.
+- La restricción `EXCLUDE` de PostgreSQL impide cruces incluso ante dos radicaciones simultáneas.
 
 ---
 
@@ -757,7 +782,7 @@ En `/gestor/panel` verás:
 - totales de permisos por estado;
 - totales de ferias por estado.
 
-> Los indicadores de solicitudes, permisos y ferias se alimentan de la base de datos. En la demostración verás cifras del seed aunque esas pantallas todavía no existan. No interpretes esos números como trámites que puedas gestionar en esta versión.
+> Los indicadores de solicitudes, permisos y ferias se alimentan de la base de datos. En la demostración verás cifras del seed. Las pantallas de solicitudes y de radicación de ferias ya están disponibles; el calendario de ferias, su aprobación y la inscripción de vendedores siguen pendientes (HU-22 y HU-23).
 
 ### 13.3 Mi perfil
 
@@ -897,6 +922,7 @@ Ruta: `/notificaciones`.
 - Puedes marcar una como leída o marcar todas.
 - El contador del menú se actualiza al navegar y también al marcar una notificación en la bandeja.
 - Las notificaciones de cambio de estado incluyen el radicado y el enlace **Ver solicitud** para el comerciante.
+- El aviso de radicación de una feria incluye el enlace **Ver feria** para el organizador.
 
 ### 13.14 Cambiar el estado de una solicitud
 
@@ -1331,7 +1357,9 @@ vigente ──► suspendido ──► vigente
 | `revocado` | Sin efecto de forma definitiva, con motivo. |
 | `vencido` | Pasó la fecha de vigencia. |
 
-### 17.9 Feria (flujo previsto)
+### 17.9 Feria
+
+La radicación ya está implementada (HU-21). La aprobación, cancelación y el calendario pertenecen a HU-22.
 
 | Estado | Significado |
 |---|---|
@@ -1446,7 +1474,7 @@ vigente ──► suspendido ──► vigente
 | Sin solicitudes | No hay botón ni formulario para pedir un espacio. |
 | Sin permisos QR | No se emiten carnés ni se verifica QR desde la interfaz. |
 | Sin cobros | No hay pagos ni recibos en la interfaz. |
-| Sin ferias | No hay calendario ni inscripción de vendedores. |
+| Sin aprobación de ferias | El organizador puede radicar una feria, pero el calendario, la aprobación/cancelación y la inscripción de vendedores (HU-22/HU-23) aún no están en la interfaz. |
 | Sin dashboard analítico | Solo el panel básico de indicadores. |
 | Sin factibilidad visible | El motor existe en la base, pero no se puede ejecutar desde la interfaz. |
 | Sin buscador de calles/barrios | Se excluyó del alcance; el mapa se centra manualmente. |
@@ -1618,6 +1646,8 @@ Estas credenciales son solo para demostración y pruebas locales. **No deben usa
 - `docs/Uso_modulos.md`: censo de módulos y puestos.
 - `docs/Uso_espacios.md`: consulta y administración de espacios.
 - `docs/Uso_importaciones.md`: importación de GeoJSON y CSV.
+- `docs/Uso_solicitudes.md`: radicación, documentos, revisión y resolución de solicitudes.
+- `docs/Uso_ferias.md`: solicitud, agenda y adjuntos de ferias agroecológicas.
 - `docs/baseDatos.md`: modelo de datos completo.
 - `docs/Uso_endpoints.md`: contrato de la API del Sprint 1.
 - `docs/gestor.md`, `docs/perfil.md`, `docs/organizadores.md`, `docs/panel.md`: módulos de cuentas.

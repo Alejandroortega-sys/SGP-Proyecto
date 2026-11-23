@@ -45,3 +45,16 @@ export function rutaDetalleSolicitud(
   if (rol !== 'comerciante') return null;
   return `/comerciante/solicitudes/${solicitudId}`;
 }
+
+/**
+ * Ruta al detalle de una feria según el rol.
+ *
+ * Solo el organizador dueño tiene pantalla de detalle de sus ferias.
+ */
+export function rutaDetalleFeria(
+  rol: RolUsuario,
+  feriaId: string,
+): string | null {
+  if (rol !== 'organizador') return null;
+  return `/organizador/ferias/${feriaId}`;
+}

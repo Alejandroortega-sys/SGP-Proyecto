@@ -21,7 +21,7 @@ import {
 } from '@/lib/api-client';
 import { formatearFechaHora } from '@/lib/formato';
 import { avisarNotificacionesActualizadas } from '@/lib/notificaciones';
-import { rutaDetalleSolicitud } from '@/lib/rutas';
+import { rutaDetalleFeria, rutaDetalleSolicitud } from '@/lib/rutas';
 
 export function BandejaNotificaciones() {
   const { usuario } = useSesion();
@@ -126,7 +126,7 @@ export function BandejaNotificaciones() {
                   ? 'No tienes notificaciones leídas'
                   : 'No tienes notificaciones'
             }
-            descripcion="Cuando ocurra un cambio importante en tus solicitudes, aparecerá aquí."
+            descripcion="Cuando ocurra un cambio importante en tus solicitudes o ferias, aparecerá aquí."
           />
         </Tarjeta>
       ) : (
@@ -135,6 +135,10 @@ export function BandejaNotificaciones() {
             const rutaSolicitud =
               usuario && notificacion.solicitudId
                 ? rutaDetalleSolicitud(usuario.rol, notificacion.solicitudId)
+                : null;
+            const rutaFeria =
+              usuario && notificacion.feriaId
+                ? rutaDetalleFeria(usuario.rol, notificacion.feriaId)
                 : null;
 
             return (
@@ -178,6 +182,15 @@ export function BandejaNotificaciones() {
                         className="inline-flex min-h-9 items-center justify-center rounded-lg border border-primario px-3 py-1.5 text-sm font-semibold text-primario hover:bg-primario-suave"
                       >
                         Ver solicitud
+                      </Link>
+                    ) : null}
+                    {rutaFeria ? (
+                      <Link
+                        href={rutaFeria}
+                        aria-label={`Ver feria ${notificacion.asunto}`}
+                        className="inline-flex min-h-9 items-center justify-center rounded-lg border border-primario px-3 py-1.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+                      >
+                        Ver feria
                       </Link>
                     ) : null}
                     {!notificacion.leida ? (

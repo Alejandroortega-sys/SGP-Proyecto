@@ -20,6 +20,19 @@ export interface DatosConfirmacionRadicacion {
   documentos: string[];
 }
 
+/** Datos mínimos para la confirmación de una feria radicada. */
+export interface DatosConfirmacionFeria {
+  numeroRadicado: string;
+  nombre: string;
+  tipoFeria: string;
+  zona: string;
+  fechaInicio: string;
+  fechaFin: string;
+  numeroPuestos: number;
+  productos: string[];
+  documentos: string[];
+}
+
 /** Datos mínimos para avisar un cambio de estado de la solicitud. */
 export interface DatosCambioEstadoSolicitud {
   solicitudId: string;
@@ -435,6 +448,72 @@ export class CorreoService {
       html,
       `SMTP no configurado: solicitud ${datos.numeroRadicado} radicada para ` +
         `${destino} (${datos.espacio}, ${rango}, ${datos.horaInicio}-${datos.horaFin})`,
+    );
+  }
+
+  /**
+   * Envía la confirmación de una feria agroecológica radicada (HU-21).
+   *
+   * @param destino Correo del organizador autenticado.
+   * @param nombre Nombre del organizador.
+   * @param datos Radicado, zona, fechas, puestos, productos y documentos.
+   * @throws Error si no hay SMTP en producción o si el envío falla.
+   */
+  async enviarConfirmacionFeria(
+    destino: string,
+    nombre: string,
+    datos: DatosConfirmacionFeria,
+  ): Promise<void> {
+    const asunto = `Feria radicada ${datos.numeroRadicado} — SGP Tuluá`;
+    const rango = `del ${fechaCorta(datos.fechaInicio)} al ${fechaCorta(datos.fechaFin)}`;
+    const productos =
+      datos.productos.length > 0
+        ? datos.productos.join(', ')
+        : 'Sin productos registrados';
+    const documentos =
+      datos.documentos.length > 0
+        ? datos.documentos.join(', ')
+        : 'Sin documentos adjuntos';
+
+    const texto =
+      `Hola ${nombre},\n\n` +
+      `Tu solicitud de feria quedó radicada.\n\n` +
+      `Número de radicado: ${datos.numeroRadicado}\n` +
+      `Feria: ${datos.nombre}\n` +
+      `Tipo: ${datos.tipoFeria}\n` +
+      `Zona: ${datos.zona}\n` +
+      `Fechas: ${rango}\n` +
+      `Puestos: ${datos.numeroPuestos}\n` +
+      `Productos: ${productos}\n` +
+      `Documentos adjuntos: ${documentos}\n\n` +
+      `El gestor municipal revisará tu solicitud. Puedes consultar el estado ` +
+      `en la sección «Ferias» de la plataforma.\n\n` +
+      `Secretaría de Gobierno — Municipio de Tuluá`;
+
+    const html =
+      `<p>Hola <strong>${nombre}</strong>,</p>` +
+      `<p>Tu solicitud de feria quedó radicada.</p>` +
+      `<p style="font-size:20px;font-weight:bold;">${datos.numeroRadicado}</p>` +
+      `<ul>` +
+      `<li><strong>Feria:</strong> ${datos.nombre}</li>` +
+      `<li><strong>Tipo:</strong> ${datos.tipoFeria}</li>` +
+      `<li><strong>Zona:</strong> ${datos.zona}</li>` +
+      `<li><strong>Fechas:</strong> ${rango}</li>` +
+      `<li><strong>Puestos:</strong> ${datos.numeroPuestos}</li>` +
+      `<li><strong>Productos:</strong> ${productos}</li>` +
+      `<li><strong>Documentos adjuntos:</strong> ${documentos}</li>` +
+      `</ul>` +
+      `<p>El gestor municipal revisará tu solicitud. Puedes consultar el estado ` +
+      `en la sección «Ferias» de la plataforma.</p>` +
+      `<p>Secretaría de Gobierno — Municipio de Tuluá</p>`;
+
+    await this.enviar(
+      destino,
+      asunto,
+      texto,
+      html,
+      `SMTP no configurado: feria ${datos.numeroRadicado} radicada para ` +
+        `${destino} (${datos.zona}, ${rango}, ${datos.numeroPuestos} puestos)`,
     );
   }
 

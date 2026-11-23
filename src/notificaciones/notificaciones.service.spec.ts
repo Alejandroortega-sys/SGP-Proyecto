@@ -53,9 +53,10 @@ describe('NotificacionesService', () => {
       {
         id: 12n,
         solicitud_id: null,
-        tipo: 'cambio_password',
-        asunto: 'Contraseña actualizada',
-        cuerpo: 'Tu contraseña cambió',
+        feria_id: 9n,
+        tipo: 'feria_radicada',
+        asunto: 'Feria FER-2026-00003: radicada',
+        cuerpo: 'Tu feria quedó radicada.',
         canal: 'app',
         leida: false,
         creada_en: FECHA,
@@ -84,9 +85,10 @@ describe('NotificacionesService', () => {
         {
           id: '12',
           solicitudId: null,
-          tipo: 'cambio_password',
-          asunto: 'Contraseña actualizada',
-          cuerpo: 'Tu contraseña cambió',
+          feriaId: '9',
+          tipo: 'feria_radicada',
+          asunto: 'Feria FER-2026-00003: radicada',
+          cuerpo: 'Tu feria quedó radicada.',
           canal: 'app',
           leida: false,
           creadaEn: FECHA,
@@ -137,6 +139,33 @@ describe('NotificacionesService', () => {
     expect(notificaciones.create.mock.calls[0][0].data.cuerpo).toContain(
       'Kiosco Parque La Guadalupe',
     );
+  });
+
+  it('crea el aviso de feria enlazado con feria_id', async () => {
+    const { prisma, notificaciones } = crearPrisma();
+    const { correo } = crearCorreo();
+    notificaciones.create.mockResolvedValue({ id: 31n });
+
+    const service = new NotificacionesService(prisma, correo);
+    const id = await service.crearAvisoFeria({ notificaciones } as never, {
+      usuarioId: 7n,
+      feriaId: 12n,
+      tipo: 'feria_radicada',
+      asunto: 'Feria FER-2026-00003: radicada',
+      cuerpo: 'Tu feria quedó radicada.',
+    });
+
+    expect(id).toBe('31');
+    expect(notificaciones.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        usuario_id: 7n,
+        feria_id: 12n,
+        tipo: 'feria_radicada',
+        canal: 'app',
+        leida: false,
+      }),
+      select: { id: true },
+    });
   });
 
   it('envía el correo de cambio de estado y reporta éxito', async () => {

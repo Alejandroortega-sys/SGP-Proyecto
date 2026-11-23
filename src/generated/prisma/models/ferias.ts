@@ -290,8 +290,10 @@ export type feriasWhereInput = {
   estado?: Prisma.Enumestado_feriaFilter<"ferias"> | $Enums.estado_feria
   revisor_id?: Prisma.BigIntNullableFilter<"ferias"> | bigint | number | null
   radicada_en?: Prisma.DateTimeFilter<"ferias"> | Date | string
+  feria_documentos?: Prisma.Feria_documentosListRelationFilter
   feria_productos?: Prisma.Feria_productosListRelationFilter
   feria_vendedores?: Prisma.Feria_vendedoresListRelationFilter
+  notificaciones?: Prisma.NotificacionesListRelationFilter
   organizadores?: Prisma.XOR<Prisma.OrganizadoresScalarRelationFilter, Prisma.organizadoresWhereInput>
   gestores?: Prisma.XOR<Prisma.GestoresNullableScalarRelationFilter, Prisma.gestoresWhereInput> | null
   zonas?: Prisma.XOR<Prisma.ZonasScalarRelationFilter, Prisma.zonasWhereInput>
@@ -310,8 +312,10 @@ export type feriasOrderByWithRelationInput = {
   estado?: Prisma.SortOrder
   revisor_id?: Prisma.SortOrderInput | Prisma.SortOrder
   radicada_en?: Prisma.SortOrder
+  feria_documentos?: Prisma.feria_documentosOrderByRelationAggregateInput
   feria_productos?: Prisma.feria_productosOrderByRelationAggregateInput
   feria_vendedores?: Prisma.feria_vendedoresOrderByRelationAggregateInput
+  notificaciones?: Prisma.notificacionesOrderByRelationAggregateInput
   organizadores?: Prisma.organizadoresOrderByWithRelationInput
   gestores?: Prisma.gestoresOrderByWithRelationInput
   zonas?: Prisma.zonasOrderByWithRelationInput
@@ -333,8 +337,10 @@ export type feriasWhereUniqueInput = Prisma.AtLeast<{
   estado?: Prisma.Enumestado_feriaFilter<"ferias"> | $Enums.estado_feria
   revisor_id?: Prisma.BigIntNullableFilter<"ferias"> | bigint | number | null
   radicada_en?: Prisma.DateTimeFilter<"ferias"> | Date | string
+  feria_documentos?: Prisma.Feria_documentosListRelationFilter
   feria_productos?: Prisma.Feria_productosListRelationFilter
   feria_vendedores?: Prisma.Feria_vendedoresListRelationFilter
+  notificaciones?: Prisma.NotificacionesListRelationFilter
   organizadores?: Prisma.XOR<Prisma.OrganizadoresScalarRelationFilter, Prisma.organizadoresWhereInput>
   gestores?: Prisma.XOR<Prisma.GestoresNullableScalarRelationFilter, Prisma.gestoresWhereInput> | null
   zonas?: Prisma.XOR<Prisma.ZonasScalarRelationFilter, Prisma.zonasWhereInput>
@@ -388,8 +394,10 @@ export type feriasCreateInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
   organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
   zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
@@ -408,8 +416,10 @@ export type feriasUncheckedCreateInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasUpdateInput = {
@@ -422,8 +432,10 @@ export type feriasUpdateInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
   organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
   zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
@@ -442,8 +454,10 @@ export type feriasUncheckedUpdateInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasCreateManyInput = {
@@ -564,6 +578,11 @@ export type feriasOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type FeriasNullableScalarRelationFilter = {
+  is?: Prisma.feriasWhereInput | null
+  isNot?: Prisma.feriasWhereInput | null
+}
+
 export type feriasCreateNestedOneWithoutFeria_productosInput = {
   create?: Prisma.XOR<Prisma.feriasCreateWithoutFeria_productosInput, Prisma.feriasUncheckedCreateWithoutFeria_productosInput>
   connectOrCreate?: Prisma.feriasCreateOrConnectWithoutFeria_productosInput
@@ -590,6 +609,20 @@ export type feriasUpdateOneRequiredWithoutFeria_vendedoresNestedInput = {
   upsert?: Prisma.feriasUpsertWithoutFeria_vendedoresInput
   connect?: Prisma.feriasWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.feriasUpdateToOneWithWhereWithoutFeria_vendedoresInput, Prisma.feriasUpdateWithoutFeria_vendedoresInput>, Prisma.feriasUncheckedUpdateWithoutFeria_vendedoresInput>
+}
+
+export type feriasCreateNestedOneWithoutFeria_documentosInput = {
+  create?: Prisma.XOR<Prisma.feriasCreateWithoutFeria_documentosInput, Prisma.feriasUncheckedCreateWithoutFeria_documentosInput>
+  connectOrCreate?: Prisma.feriasCreateOrConnectWithoutFeria_documentosInput
+  connect?: Prisma.feriasWhereUniqueInput
+}
+
+export type feriasUpdateOneRequiredWithoutFeria_documentosNestedInput = {
+  create?: Prisma.XOR<Prisma.feriasCreateWithoutFeria_documentosInput, Prisma.feriasUncheckedCreateWithoutFeria_documentosInput>
+  connectOrCreate?: Prisma.feriasCreateOrConnectWithoutFeria_documentosInput
+  upsert?: Prisma.feriasUpsertWithoutFeria_documentosInput
+  connect?: Prisma.feriasWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.feriasUpdateToOneWithWhereWithoutFeria_documentosInput, Prisma.feriasUpdateWithoutFeria_documentosInput>, Prisma.feriasUncheckedUpdateWithoutFeria_documentosInput>
 }
 
 export type IntFieldUpdateOperationsInput = {
@@ -644,6 +677,22 @@ export type feriasUncheckedUpdateManyWithoutGestoresNestedInput = {
   update?: Prisma.feriasUpdateWithWhereUniqueWithoutGestoresInput | Prisma.feriasUpdateWithWhereUniqueWithoutGestoresInput[]
   updateMany?: Prisma.feriasUpdateManyWithWhereWithoutGestoresInput | Prisma.feriasUpdateManyWithWhereWithoutGestoresInput[]
   deleteMany?: Prisma.feriasScalarWhereInput | Prisma.feriasScalarWhereInput[]
+}
+
+export type feriasCreateNestedOneWithoutNotificacionesInput = {
+  create?: Prisma.XOR<Prisma.feriasCreateWithoutNotificacionesInput, Prisma.feriasUncheckedCreateWithoutNotificacionesInput>
+  connectOrCreate?: Prisma.feriasCreateOrConnectWithoutNotificacionesInput
+  connect?: Prisma.feriasWhereUniqueInput
+}
+
+export type feriasUpdateOneWithoutNotificacionesNestedInput = {
+  create?: Prisma.XOR<Prisma.feriasCreateWithoutNotificacionesInput, Prisma.feriasUncheckedCreateWithoutNotificacionesInput>
+  connectOrCreate?: Prisma.feriasCreateOrConnectWithoutNotificacionesInput
+  upsert?: Prisma.feriasUpsertWithoutNotificacionesInput
+  disconnect?: Prisma.feriasWhereInput | boolean
+  delete?: Prisma.feriasWhereInput | boolean
+  connect?: Prisma.feriasWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.feriasUpdateToOneWithWhereWithoutNotificacionesInput, Prisma.feriasUpdateWithoutNotificacionesInput>, Prisma.feriasUncheckedUpdateWithoutNotificacionesInput>
 }
 
 export type feriasCreateNestedManyWithoutOrganizadoresInput = {
@@ -726,7 +775,9 @@ export type feriasCreateWithoutFeria_productosInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
   organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
   zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
@@ -745,7 +796,9 @@ export type feriasUncheckedCreateWithoutFeria_productosInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasCreateOrConnectWithoutFeria_productosInput = {
@@ -774,7 +827,9 @@ export type feriasUpdateWithoutFeria_productosInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
   organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
   zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
@@ -793,7 +848,9 @@ export type feriasUncheckedUpdateWithoutFeria_productosInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasCreateWithoutFeria_vendedoresInput = {
@@ -806,7 +863,9 @@ export type feriasCreateWithoutFeria_vendedoresInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
   organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
   zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
@@ -825,7 +884,9 @@ export type feriasUncheckedCreateWithoutFeria_vendedoresInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasCreateOrConnectWithoutFeria_vendedoresInput = {
@@ -854,7 +915,9 @@ export type feriasUpdateWithoutFeria_vendedoresInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
   organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
   zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
@@ -873,7 +936,97 @@ export type feriasUncheckedUpdateWithoutFeria_vendedoresInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
+}
+
+export type feriasCreateWithoutFeria_documentosInput = {
+  id?: bigint | number
+  numero_radicado?: string
+  nombre: string
+  tipo_feria: string
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  numero_puestos: number
+  estado?: $Enums.estado_feria
+  radicada_en?: Date | string
+  feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
+  feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
+  organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
+  gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
+  zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
+}
+
+export type feriasUncheckedCreateWithoutFeria_documentosInput = {
+  id?: bigint | number
+  numero_radicado?: string
+  organizador_id: bigint | number
+  nombre: string
+  tipo_feria: string
+  zona_id: bigint | number
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  numero_puestos: number
+  estado?: $Enums.estado_feria
+  revisor_id?: bigint | number | null
+  radicada_en?: Date | string
+  feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
+  feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
+}
+
+export type feriasCreateOrConnectWithoutFeria_documentosInput = {
+  where: Prisma.feriasWhereUniqueInput
+  create: Prisma.XOR<Prisma.feriasCreateWithoutFeria_documentosInput, Prisma.feriasUncheckedCreateWithoutFeria_documentosInput>
+}
+
+export type feriasUpsertWithoutFeria_documentosInput = {
+  update: Prisma.XOR<Prisma.feriasUpdateWithoutFeria_documentosInput, Prisma.feriasUncheckedUpdateWithoutFeria_documentosInput>
+  create: Prisma.XOR<Prisma.feriasCreateWithoutFeria_documentosInput, Prisma.feriasUncheckedCreateWithoutFeria_documentosInput>
+  where?: Prisma.feriasWhereInput
+}
+
+export type feriasUpdateToOneWithWhereWithoutFeria_documentosInput = {
+  where?: Prisma.feriasWhereInput
+  data: Prisma.XOR<Prisma.feriasUpdateWithoutFeria_documentosInput, Prisma.feriasUncheckedUpdateWithoutFeria_documentosInput>
+}
+
+export type feriasUpdateWithoutFeria_documentosInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  numero_radicado?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo_feria?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
+  estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
+  radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
+  feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
+  organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
+  gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
+  zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
+}
+
+export type feriasUncheckedUpdateWithoutFeria_documentosInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  numero_radicado?: Prisma.StringFieldUpdateOperationsInput | string
+  organizador_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo_feria?: Prisma.StringFieldUpdateOperationsInput | string
+  zona_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
+  estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
+  revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
+  feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasCreateWithoutGestoresInput = {
@@ -886,8 +1039,10 @@ export type feriasCreateWithoutGestoresInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
   organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
   zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
 }
@@ -904,8 +1059,10 @@ export type feriasUncheckedCreateWithoutGestoresInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasCreateOrConnectWithoutGestoresInput = {
@@ -952,6 +1109,94 @@ export type feriasScalarWhereInput = {
   radicada_en?: Prisma.DateTimeFilter<"ferias"> | Date | string
 }
 
+export type feriasCreateWithoutNotificacionesInput = {
+  id?: bigint | number
+  numero_radicado?: string
+  nombre: string
+  tipo_feria: string
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  numero_puestos: number
+  estado?: $Enums.estado_feria
+  radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
+  feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
+  feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
+  organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
+  gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
+  zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
+}
+
+export type feriasUncheckedCreateWithoutNotificacionesInput = {
+  id?: bigint | number
+  numero_radicado?: string
+  organizador_id: bigint | number
+  nombre: string
+  tipo_feria: string
+  zona_id: bigint | number
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  numero_puestos: number
+  estado?: $Enums.estado_feria
+  revisor_id?: bigint | number | null
+  radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
+  feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
+  feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
+}
+
+export type feriasCreateOrConnectWithoutNotificacionesInput = {
+  where: Prisma.feriasWhereUniqueInput
+  create: Prisma.XOR<Prisma.feriasCreateWithoutNotificacionesInput, Prisma.feriasUncheckedCreateWithoutNotificacionesInput>
+}
+
+export type feriasUpsertWithoutNotificacionesInput = {
+  update: Prisma.XOR<Prisma.feriasUpdateWithoutNotificacionesInput, Prisma.feriasUncheckedUpdateWithoutNotificacionesInput>
+  create: Prisma.XOR<Prisma.feriasCreateWithoutNotificacionesInput, Prisma.feriasUncheckedCreateWithoutNotificacionesInput>
+  where?: Prisma.feriasWhereInput
+}
+
+export type feriasUpdateToOneWithWhereWithoutNotificacionesInput = {
+  where?: Prisma.feriasWhereInput
+  data: Prisma.XOR<Prisma.feriasUpdateWithoutNotificacionesInput, Prisma.feriasUncheckedUpdateWithoutNotificacionesInput>
+}
+
+export type feriasUpdateWithoutNotificacionesInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  numero_radicado?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo_feria?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
+  estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
+  radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
+  feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
+  feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
+  organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
+  gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
+  zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
+}
+
+export type feriasUncheckedUpdateWithoutNotificacionesInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  numero_radicado?: Prisma.StringFieldUpdateOperationsInput | string
+  organizador_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo_feria?: Prisma.StringFieldUpdateOperationsInput | string
+  zona_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
+  estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
+  revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
+  feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
+  feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
+}
+
 export type feriasCreateWithoutOrganizadoresInput = {
   id?: bigint | number
   numero_radicado?: string
@@ -962,8 +1207,10 @@ export type feriasCreateWithoutOrganizadoresInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
   zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
 }
@@ -980,8 +1227,10 @@ export type feriasUncheckedCreateWithoutOrganizadoresInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasCreateOrConnectWithoutOrganizadoresInput = {
@@ -1020,8 +1269,10 @@ export type feriasCreateWithoutZonasInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
   organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
 }
@@ -1038,8 +1289,10 @@ export type feriasUncheckedCreateWithoutZonasInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasCreateOrConnectWithoutZonasInput = {
@@ -1092,8 +1345,10 @@ export type feriasUpdateWithoutGestoresInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
   organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
   zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
 }
@@ -1110,8 +1365,10 @@ export type feriasUncheckedUpdateWithoutGestoresInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasUncheckedUpdateManyWithoutGestoresInput = {
@@ -1152,8 +1409,10 @@ export type feriasUpdateWithoutOrganizadoresInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
   zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
 }
@@ -1170,8 +1429,10 @@ export type feriasUncheckedUpdateWithoutOrganizadoresInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasUncheckedUpdateManyWithoutOrganizadoresInput = {
@@ -1198,8 +1459,10 @@ export type feriasUpdateWithoutZonasInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
   organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
 }
@@ -1216,8 +1479,10 @@ export type feriasUncheckedUpdateWithoutZonasInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasCreateManyZonasInput = {
@@ -1254,13 +1519,17 @@ export type feriasUncheckedUpdateManyWithoutZonasInput = {
  */
 
 export type FeriasCountOutputType = {
+  feria_documentos: number
   feria_productos: number
   feria_vendedores: number
+  notificaciones: number
 }
 
 export type FeriasCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  feria_documentos?: boolean | FeriasCountOutputTypeCountFeria_documentosArgs
   feria_productos?: boolean | FeriasCountOutputTypeCountFeria_productosArgs
   feria_vendedores?: boolean | FeriasCountOutputTypeCountFeria_vendedoresArgs
+  notificaciones?: boolean | FeriasCountOutputTypeCountNotificacionesArgs
 }
 
 /**
@@ -1271,6 +1540,13 @@ export type FeriasCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exten
    * Select specific fields to fetch from the FeriasCountOutputType
    */
   select?: Prisma.FeriasCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * FeriasCountOutputType without action
+ */
+export type FeriasCountOutputTypeCountFeria_documentosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.feria_documentosWhereInput
 }
 
 /**
@@ -1287,6 +1563,13 @@ export type FeriasCountOutputTypeCountFeria_vendedoresArgs<ExtArgs extends runti
   where?: Prisma.feria_vendedoresWhereInput
 }
 
+/**
+ * FeriasCountOutputType without action
+ */
+export type FeriasCountOutputTypeCountNotificacionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.notificacionesWhereInput
+}
+
 
 export type feriasSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1301,8 +1584,10 @@ export type feriasSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   estado?: boolean
   revisor_id?: boolean
   radicada_en?: boolean
+  feria_documentos?: boolean | Prisma.ferias$feria_documentosArgs<ExtArgs>
   feria_productos?: boolean | Prisma.ferias$feria_productosArgs<ExtArgs>
   feria_vendedores?: boolean | Prisma.ferias$feria_vendedoresArgs<ExtArgs>
+  notificaciones?: boolean | Prisma.ferias$notificacionesArgs<ExtArgs>
   organizadores?: boolean | Prisma.organizadoresDefaultArgs<ExtArgs>
   gestores?: boolean | Prisma.ferias$gestoresArgs<ExtArgs>
   zonas?: boolean | Prisma.zonasDefaultArgs<ExtArgs>
@@ -1362,8 +1647,10 @@ export type feriasSelectScalar = {
 
 export type feriasOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "numero_radicado" | "organizador_id" | "nombre" | "tipo_feria" | "zona_id" | "fecha_inicio" | "fecha_fin" | "numero_puestos" | "estado" | "revisor_id" | "radicada_en", ExtArgs["result"]["ferias"]>
 export type feriasInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  feria_documentos?: boolean | Prisma.ferias$feria_documentosArgs<ExtArgs>
   feria_productos?: boolean | Prisma.ferias$feria_productosArgs<ExtArgs>
   feria_vendedores?: boolean | Prisma.ferias$feria_vendedoresArgs<ExtArgs>
+  notificaciones?: boolean | Prisma.ferias$notificacionesArgs<ExtArgs>
   organizadores?: boolean | Prisma.organizadoresDefaultArgs<ExtArgs>
   gestores?: boolean | Prisma.ferias$gestoresArgs<ExtArgs>
   zonas?: boolean | Prisma.zonasDefaultArgs<ExtArgs>
@@ -1383,8 +1670,10 @@ export type feriasIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
 export type $feriasPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ferias"
   objects: {
+    feria_documentos: Prisma.$feria_documentosPayload<ExtArgs>[]
     feria_productos: Prisma.$feria_productosPayload<ExtArgs>[]
     feria_vendedores: Prisma.$feria_vendedoresPayload<ExtArgs>[]
+    notificaciones: Prisma.$notificacionesPayload<ExtArgs>[]
     organizadores: Prisma.$organizadoresPayload<ExtArgs>
     gestores: Prisma.$gestoresPayload<ExtArgs> | null
     zonas: Prisma.$zonasPayload<ExtArgs>
@@ -1796,8 +2085,10 @@ readonly fields: feriasFieldRefs;
  */
 export interface Prisma__feriasClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  feria_documentos<T extends Prisma.ferias$feria_documentosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ferias$feria_documentosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$feria_documentosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   feria_productos<T extends Prisma.ferias$feria_productosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ferias$feria_productosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$feria_productosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   feria_vendedores<T extends Prisma.ferias$feria_vendedoresArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ferias$feria_vendedoresArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$feria_vendedoresPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  notificaciones<T extends Prisma.ferias$notificacionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ferias$notificacionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$notificacionesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   organizadores<T extends Prisma.organizadoresDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.organizadoresDefaultArgs<ExtArgs>>): Prisma.Prisma__organizadoresClient<runtime.Types.Result.GetResult<Prisma.$organizadoresPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   gestores<T extends Prisma.ferias$gestoresArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ferias$gestoresArgs<ExtArgs>>): Prisma.Prisma__gestoresClient<runtime.Types.Result.GetResult<Prisma.$gestoresPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   zonas<T extends Prisma.zonasDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.zonasDefaultArgs<ExtArgs>>): Prisma.Prisma__zonasClient<runtime.Types.Result.GetResult<Prisma.$zonasPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
@@ -2243,6 +2534,30 @@ export type feriasDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 /**
+ * ferias.feria_documentos
+ */
+export type ferias$feria_documentosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the feria_documentos
+   */
+  select?: Prisma.feria_documentosSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the feria_documentos
+   */
+  omit?: Prisma.feria_documentosOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.feria_documentosInclude<ExtArgs> | null
+  where?: Prisma.feria_documentosWhereInput
+  orderBy?: Prisma.feria_documentosOrderByWithRelationInput | Prisma.feria_documentosOrderByWithRelationInput[]
+  cursor?: Prisma.feria_documentosWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.Feria_documentosScalarFieldEnum | Prisma.Feria_documentosScalarFieldEnum[]
+}
+
+/**
  * ferias.feria_productos
  */
 export type ferias$feria_productosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2288,6 +2603,30 @@ export type ferias$feria_vendedoresArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.Feria_vendedoresScalarFieldEnum | Prisma.Feria_vendedoresScalarFieldEnum[]
+}
+
+/**
+ * ferias.notificaciones
+ */
+export type ferias$notificacionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the notificaciones
+   */
+  select?: Prisma.notificacionesSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the notificaciones
+   */
+  omit?: Prisma.notificacionesOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.notificacionesInclude<ExtArgs> | null
+  where?: Prisma.notificacionesWhereInput
+  orderBy?: Prisma.notificacionesOrderByWithRelationInput | Prisma.notificacionesOrderByWithRelationInput[]
+  cursor?: Prisma.notificacionesWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.NotificacionesScalarFieldEnum | Prisma.NotificacionesScalarFieldEnum[]
 }
 
 /**

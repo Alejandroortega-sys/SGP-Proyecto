@@ -408,6 +408,7 @@ export const ModelName = {
   excepciones_factibilidad: 'excepciones_factibilidad',
   feria_productos: 'feria_productos',
   feria_vendedores: 'feria_vendedores',
+  feria_documentos: 'feria_documentos',
   ferias: 'ferias',
   gestores: 'gestores',
   modulos: 'modulos',
@@ -447,7 +448,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "alertas_saturacion" | "auditoria" | "cobros" | "comerciantes" | "espacio_bloqueos" | "espacios_temporales" | "evaluacion_reglas" | "evaluaciones_factibilidad" | "excepciones_factibilidad" | "feria_productos" | "feria_vendedores" | "ferias" | "gestores" | "modulos" | "notificaciones" | "organizadores" | "parametros_motor" | "permiso_eventos" | "permisos" | "productos" | "solicitud_documentos" | "solicitud_productos" | "requisitos_documentales" | "solicitud_historial" | "solicitudes" | "spatial_ref_sys" | "tarifas" | "tokens_seguridad" | "usuarios" | "verificaciones_qr" | "zona_productos" | "zonas" | "sesiones" | "zona_versiones" | "solicitud_revisiones"
+    modelProps: "alertas_saturacion" | "auditoria" | "cobros" | "comerciantes" | "espacio_bloqueos" | "espacios_temporales" | "evaluacion_reglas" | "evaluaciones_factibilidad" | "excepciones_factibilidad" | "feria_productos" | "feria_vendedores" | "feria_documentos" | "ferias" | "gestores" | "modulos" | "notificaciones" | "organizadores" | "parametros_motor" | "permiso_eventos" | "permisos" | "productos" | "solicitud_documentos" | "solicitud_productos" | "requisitos_documentales" | "solicitud_historial" | "solicitudes" | "spatial_ref_sys" | "tarifas" | "tokens_seguridad" | "usuarios" | "verificaciones_qr" | "zona_productos" | "zonas" | "sesiones" | "zona_versiones" | "solicitud_revisiones"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1230,6 +1231,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.feria_vendedoresCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.Feria_vendedoresCountAggregateOutputType> | number
+        }
+      }
+    }
+    feria_documentos: {
+      payload: Prisma.$feria_documentosPayload<ExtArgs>
+      fields: Prisma.feria_documentosFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.feria_documentosFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_documentosPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.feria_documentosFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_documentosPayload>
+        }
+        findFirst: {
+          args: Prisma.feria_documentosFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_documentosPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.feria_documentosFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_documentosPayload>
+        }
+        findMany: {
+          args: Prisma.feria_documentosFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_documentosPayload>[]
+        }
+        create: {
+          args: Prisma.feria_documentosCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_documentosPayload>
+        }
+        createMany: {
+          args: Prisma.feria_documentosCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.feria_documentosCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_documentosPayload>[]
+        }
+        delete: {
+          args: Prisma.feria_documentosDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_documentosPayload>
+        }
+        update: {
+          args: Prisma.feria_documentosUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_documentosPayload>
+        }
+        deleteMany: {
+          args: Prisma.feria_documentosDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.feria_documentosUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.feria_documentosUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_documentosPayload>[]
+        }
+        upsert: {
+          args: Prisma.feria_documentosUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_documentosPayload>
+        }
+        aggregate: {
+          args: Prisma.Feria_documentosAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFeria_documentos>
+        }
+        groupBy: {
+          args: Prisma.feria_documentosGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Feria_documentosGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.feria_documentosCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Feria_documentosCountAggregateOutputType> | number
         }
       }
     }
@@ -3135,6 +3210,20 @@ export const Feria_vendedoresScalarFieldEnum = {
 export type Feria_vendedoresScalarFieldEnum = (typeof Feria_vendedoresScalarFieldEnum)[keyof typeof Feria_vendedoresScalarFieldEnum]
 
 
+export const Feria_documentosScalarFieldEnum = {
+  id: 'id',
+  feria_id: 'feria_id',
+  tipo_documento: 'tipo_documento',
+  archivo_url: 'archivo_url',
+  nombre_original: 'nombre_original',
+  mime_type: 'mime_type',
+  tamano_bytes: 'tamano_bytes',
+  cargado_en: 'cargado_en'
+} as const
+
+export type Feria_documentosScalarFieldEnum = (typeof Feria_documentosScalarFieldEnum)[keyof typeof Feria_documentosScalarFieldEnum]
+
+
 export const FeriasScalarFieldEnum = {
   id: 'id',
   numero_radicado: 'numero_radicado',
@@ -3182,6 +3271,7 @@ export const NotificacionesScalarFieldEnum = {
   id: 'id',
   usuario_id: 'usuario_id',
   solicitud_id: 'solicitud_id',
+  feria_id: 'feria_id',
   tipo: 'tipo',
   asunto: 'asunto',
   cuerpo: 'cuerpo',
@@ -4032,6 +4122,7 @@ export type GlobalOmitConfig = {
   excepciones_factibilidad?: Prisma.excepciones_factibilidadOmit
   feria_productos?: Prisma.feria_productosOmit
   feria_vendedores?: Prisma.feria_vendedoresOmit
+  feria_documentos?: Prisma.feria_documentosOmit
   ferias?: Prisma.feriasOmit
   gestores?: Prisma.gestoresOmit
   modulos?: Prisma.modulosOmit

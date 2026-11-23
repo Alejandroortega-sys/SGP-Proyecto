@@ -52,9 +52,13 @@ export class NotificacionResponseDto {
   @ApiProperty({ example: '12' })
   id!: string;
 
-  /** Solicitud relacionada, o `null` para avisos de cuenta. */
+  /** Solicitud relacionada, o `null` para avisos de cuenta o ferias. */
   @ApiProperty({ example: null, nullable: true })
   solicitudId!: string | null;
+
+  /** Feria relacionada, o `null` para avisos de cuenta o solicitudes. */
+  @ApiProperty({ example: null, nullable: true })
+  feriaId!: string | null;
 
   /** Tipo interno de la notificación. */
   @ApiProperty({ example: 'cambio_password' })

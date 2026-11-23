@@ -32,6 +32,7 @@ function notificacion(id: bigint, usuarioId: bigint, leida = false) {
   return {
     id,
     solicitud_id: 12n,
+    feria_id: null,
     tipo: 'solicitud_aprobada',
     asunto: 'Solicitud SOL-2026-00012: Aprobada',
     cuerpo: 'Tu solicitud fue aprobada.',
@@ -136,6 +137,7 @@ describe('Notificaciones (e2e)', () => {
     expect(respuesta.body.datos[0]).toMatchObject({
       id: '11',
       solicitudId: '12',
+      feriaId: null,
       leida: false,
     });
   });

@@ -48,6 +48,9 @@ registro, activación, recuperación y primer acceso). Ahora incluye:
 | `/organizador/inicio` | `GET /perfil`, `GET /auth/me`, `GET /notificaciones` |
 | `/organizador/perfil` | `GET /perfil`, `PATCH /perfil`, `PATCH /perfil/password` |
 | `/organizador/mi-organizacion` | `POST/GET/PATCH /organizadores/mi-organizacion` |
+| `/organizador/ferias` | `GET /ferias/mias` (HU-21) |
+| `/organizador/ferias/nueva` | `GET /ferias/zonas`, `GET /ferias/agenda`, `GET /ferias/disponibilidad`, `POST /ferias` (HU-21) |
+| `/organizador/ferias/[id]` | `GET /ferias/:id`, `GET /ferias/:id/documentos/:documentoId/archivo` (HU-21) |
 
 ### Gestor
 
