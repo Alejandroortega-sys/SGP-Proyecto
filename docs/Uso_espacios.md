@@ -462,6 +462,7 @@ la zona anterior, lo actualiza con la nueva zona. El estado manual solo puede se
 - La restricción `EXCLUDE` de `espacio_bloqueos` sigue siendo la última barrera de la BD.
 - Crear, editar o eliminar un bloqueo dispara el recálculo del estado.
 - El calendario es propio, sin librerías adicionales; en móvil se muestra además la lista de bloqueos.
+- Los bloqueos creados por una feria aprobada (`espacio_bloqueos.feria_id` no nulo) son administrados por `/gestor/ferias`: no se editan ni eliminan desde esta pantalla. Se liberan al cancelar o mover la feria.
 
 ### 10.4 Borrado
 

@@ -73,10 +73,13 @@ model espacio_bloqueos {
   motivo              String?             @db.VarChar(300)
   creado_por          BigInt
   creado_en           DateTime            @default(now()) @db.Timestamptz(6)
+  feria_id            BigInt?
   usuarios            usuarios            @relation(fields: [creado_por], references: [id], onDelete: NoAction, onUpdate: NoAction)
   espacios_temporales espacios_temporales @relation(fields: [espacio_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  ferias              ferias?             @relation(fields: [feria_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([espacio_id, fecha_inicio, fecha_fin], map: "idx_bloqueos_espacio_fechas")
+  @@index([feria_id], map: "idx_bloqueos_feria")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -190,25 +193,32 @@ model feria_documentos {
 /// This table contains exclusion constraints and requires additional setup for migrations. Visit https://pris.ly/d/exclusion-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model ferias {
-  id               BigInt             @id @default(autoincrement())
-  numero_radicado  String             @unique @default(dbgenerated("('FER-2026-'::text || lpad((nextval('seq_radicado_feria'::regclass))::text, 5, '0'::text))")) @db.VarChar(30)
-  organizador_id   BigInt
-  nombre           String             @db.VarChar(200)
-  tipo_feria       String             @db.VarChar(100)
-  zona_id          BigInt
-  fecha_inicio     DateTime           @db.Date
-  fecha_fin        DateTime           @db.Date
-  numero_puestos   Int
-  estado           estado_feria       @default(radicada)
-  revisor_id       BigInt?
-  radicada_en      DateTime           @default(now()) @db.Timestamptz(6)
-  feria_documentos feria_documentos[]
-  feria_productos  feria_productos[]
-  feria_vendedores feria_vendedores[]
-  notificaciones   notificaciones[]
-  organizadores    organizadores      @relation(fields: [organizador_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
-  gestores         gestores?          @relation(fields: [revisor_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
-  zonas            zonas              @relation(fields: [zona_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                     BigInt             @id @default(autoincrement())
+  numero_radicado        String             @unique @default(dbgenerated("('FER-2026-'::text || lpad((nextval('seq_radicado_feria'::regclass))::text, 5, '0'::text))")) @db.VarChar(30)
+  organizador_id         BigInt
+  nombre                 String             @db.VarChar(200)
+  tipo_feria             String             @db.VarChar(100)
+  zona_id                BigInt
+  fecha_inicio           DateTime           @db.Date
+  fecha_fin              DateTime           @db.Date
+  numero_puestos         Int
+  estado                 estado_feria       @default(radicada)
+  revisor_id             BigInt?
+  radicada_en            DateTime           @default(now()) @db.Timestamptz(6)
+  motivo_cancelacion     String?
+  aprobada_en            DateTime?          @db.Timestamptz(6)
+  cancelada_en           DateTime?          @db.Timestamptz(6)
+  cancelada_por          BigInt?
+  actualizado_en         DateTime           @default(now()) @db.Timestamptz(6)
+  feria_documentos       feria_documentos[]
+  feria_productos        feria_productos[]
+  feria_vendedores       feria_vendedores[]
+  notificaciones         notificaciones[]
+  espacio_bloqueos       espacio_bloqueos[]
+  organizadores          organizadores      @relation(fields: [organizador_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  gestores               gestores?          @relation(fields: [revisor_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  gestores_cancelada_por gestores?          @relation("ferias_cancelada_por", fields: [cancelada_por], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  zonas                  zonas              @relation(fields: [zona_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([zona_id], map: "idx_ferias_zona")
 }
@@ -220,6 +230,7 @@ model gestores {
   creado_por                             BigInt?
   excepciones_factibilidad               excepciones_factibilidad[]
   ferias                                 ferias[]
+  ferias_canceladas                      ferias[]                   @relation("ferias_cancelada_por")
   usuarios_gestores_creado_porTousuarios usuarios?                  @relation("gestores_creado_porTousuarios", fields: [creado_por], references: [id], onDelete: NoAction, onUpdate: NoAction)
   usuarios_gestores_usuario_idTousuarios usuarios                   @relation("gestores_usuario_idTousuarios", fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   permisos                               permisos[]
@@ -502,30 +513,30 @@ model tokens_seguridad {
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model usuarios {
-  id                                                 BigInt                @id @default(autoincrement())
+  id                                                 BigInt                 @id @default(autoincrement())
   rol                                                rol_usuario
-  nombre                                             String                @db.VarChar(150)
-  apellido                                           String?               @db.VarChar(150)
-  tipo_documento                                     String?               @db.VarChar(30)
-  documento                                          String?               @unique @db.VarChar(30)
-  telefono                                           String?               @db.VarChar(30)
-  correo                                             String                @unique @db.Citext
-  password_hash                                      String?               @db.VarChar(255)
-  estado                                             estado_usuario        @default(pendiente_activacion)
-  intentos_fallidos                                  Int                   @default(0) @db.SmallInt
-  bloqueado_hasta                                    DateTime?             @db.Timestamptz(6)
-  creado_en                                          DateTime              @default(now()) @db.Timestamptz(6)
-  actualizado_en                                     DateTime              @default(now()) @db.Timestamptz(6)
+  nombre                                             String                 @db.VarChar(150)
+  apellido                                           String?                @db.VarChar(150)
+  tipo_documento                                     String?                @db.VarChar(30)
+  documento                                          String?                @unique @db.VarChar(30)
+  telefono                                           String?                @db.VarChar(30)
+  correo                                             String                 @unique @db.Citext
+  password_hash                                      String?                @db.VarChar(255)
+  estado                                             estado_usuario         @default(pendiente_activacion)
+  intentos_fallidos                                  Int                    @default(0) @db.SmallInt
+  bloqueado_hasta                                    DateTime?              @db.Timestamptz(6)
+  creado_en                                          DateTime               @default(now()) @db.Timestamptz(6)
+  actualizado_en                                     DateTime               @default(now()) @db.Timestamptz(6)
   auditoria                                          auditoria[]
   comerciantes                                       comerciantes?
   espacio_bloqueos                                   espacio_bloqueos[]
   espacios_temporales                                espacios_temporales[]
-  gestores_gestores_creado_porTousuarios             gestores[]            @relation("gestores_creado_porTousuarios")
-  gestores_gestores_usuario_idTousuarios             gestores?             @relation("gestores_usuario_idTousuarios")
+  gestores_gestores_creado_porTousuarios             gestores[]             @relation("gestores_creado_porTousuarios")
+  gestores_gestores_usuario_idTousuarios             gestores?              @relation("gestores_usuario_idTousuarios")
   modulos                                            modulos[]
   notificaciones                                     notificaciones[]
-  organizadores_organizadores_usuario_idTousuarios   organizadores?        @relation("organizadores_usuario_idTousuarios")
-  organizadores_organizadores_validado_porTousuarios organizadores[]       @relation("organizadores_validado_porTousuarios")
+  organizadores_organizadores_usuario_idTousuarios   organizadores?         @relation("organizadores_usuario_idTousuarios")
+  organizadores_organizadores_validado_porTousuarios organizadores[]        @relation("organizadores_validado_porTousuarios")
   parametros_motor                                   parametros_motor[]
   permiso_eventos                                    permiso_eventos[]
   sesiones                                           sesiones[]

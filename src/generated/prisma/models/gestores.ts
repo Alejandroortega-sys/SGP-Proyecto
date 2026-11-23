@@ -206,6 +206,7 @@ export type gestoresWhereInput = {
   creado_por?: Prisma.BigIntNullableFilter<"gestores"> | bigint | number | null
   excepciones_factibilidad?: Prisma.Excepciones_factibilidadListRelationFilter
   ferias?: Prisma.FeriasListRelationFilter
+  ferias_canceladas?: Prisma.FeriasListRelationFilter
   usuarios_gestores_creado_porTousuarios?: Prisma.XOR<Prisma.UsuariosNullableScalarRelationFilter, Prisma.usuariosWhereInput> | null
   usuarios_gestores_usuario_idTousuarios?: Prisma.XOR<Prisma.UsuariosScalarRelationFilter, Prisma.usuariosWhereInput>
   permisos?: Prisma.PermisosListRelationFilter
@@ -219,6 +220,7 @@ export type gestoresOrderByWithRelationInput = {
   creado_por?: Prisma.SortOrderInput | Prisma.SortOrder
   excepciones_factibilidad?: Prisma.excepciones_factibilidadOrderByRelationAggregateInput
   ferias?: Prisma.feriasOrderByRelationAggregateInput
+  ferias_canceladas?: Prisma.feriasOrderByRelationAggregateInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosOrderByWithRelationInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosOrderByWithRelationInput
   permisos?: Prisma.permisosOrderByRelationAggregateInput
@@ -235,6 +237,7 @@ export type gestoresWhereUniqueInput = Prisma.AtLeast<{
   creado_por?: Prisma.BigIntNullableFilter<"gestores"> | bigint | number | null
   excepciones_factibilidad?: Prisma.Excepciones_factibilidadListRelationFilter
   ferias?: Prisma.FeriasListRelationFilter
+  ferias_canceladas?: Prisma.FeriasListRelationFilter
   usuarios_gestores_creado_porTousuarios?: Prisma.XOR<Prisma.UsuariosNullableScalarRelationFilter, Prisma.usuariosWhereInput> | null
   usuarios_gestores_usuario_idTousuarios?: Prisma.XOR<Prisma.UsuariosScalarRelationFilter, Prisma.usuariosWhereInput>
   permisos?: Prisma.PermisosListRelationFilter
@@ -266,6 +269,7 @@ export type gestoresCreateInput = {
   perfil?: $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasCreateNestedManyWithoutGestores_cancelada_porInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
   usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
   permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
@@ -279,6 +283,7 @@ export type gestoresUncheckedCreateInput = {
   creado_por?: bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasUncheckedCreateNestedManyWithoutGestores_cancelada_porInput
   permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
@@ -288,6 +293,7 @@ export type gestoresUpdateInput = {
   perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUpdateManyWithoutGestores_cancelada_porNestedInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
   permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
@@ -301,6 +307,7 @@ export type gestoresUncheckedUpdateInput = {
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUncheckedUpdateManyWithoutGestores_cancelada_porNestedInput
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
@@ -390,6 +397,12 @@ export type gestoresCreateNestedOneWithoutFeriasInput = {
   connect?: Prisma.gestoresWhereUniqueInput
 }
 
+export type gestoresCreateNestedOneWithoutFerias_canceladasInput = {
+  create?: Prisma.XOR<Prisma.gestoresCreateWithoutFerias_canceladasInput, Prisma.gestoresUncheckedCreateWithoutFerias_canceladasInput>
+  connectOrCreate?: Prisma.gestoresCreateOrConnectWithoutFerias_canceladasInput
+  connect?: Prisma.gestoresWhereUniqueInput
+}
+
 export type gestoresUpdateOneWithoutFeriasNestedInput = {
   create?: Prisma.XOR<Prisma.gestoresCreateWithoutFeriasInput, Prisma.gestoresUncheckedCreateWithoutFeriasInput>
   connectOrCreate?: Prisma.gestoresCreateOrConnectWithoutFeriasInput
@@ -398,6 +411,16 @@ export type gestoresUpdateOneWithoutFeriasNestedInput = {
   delete?: Prisma.gestoresWhereInput | boolean
   connect?: Prisma.gestoresWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.gestoresUpdateToOneWithWhereWithoutFeriasInput, Prisma.gestoresUpdateWithoutFeriasInput>, Prisma.gestoresUncheckedUpdateWithoutFeriasInput>
+}
+
+export type gestoresUpdateOneWithoutFerias_canceladasNestedInput = {
+  create?: Prisma.XOR<Prisma.gestoresCreateWithoutFerias_canceladasInput, Prisma.gestoresUncheckedCreateWithoutFerias_canceladasInput>
+  connectOrCreate?: Prisma.gestoresCreateOrConnectWithoutFerias_canceladasInput
+  upsert?: Prisma.gestoresUpsertWithoutFerias_canceladasInput
+  disconnect?: Prisma.gestoresWhereInput | boolean
+  delete?: Prisma.gestoresWhereInput | boolean
+  connect?: Prisma.gestoresWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.gestoresUpdateToOneWithWhereWithoutFerias_canceladasInput, Prisma.gestoresUpdateWithoutFerias_canceladasInput>, Prisma.gestoresUncheckedUpdateWithoutFerias_canceladasInput>
 }
 
 export type Enumperfil_gestorFieldUpdateOperationsInput = {
@@ -525,6 +548,7 @@ export type gestoresUpdateOneRequiredWithoutSolicitud_revisionesNestedInput = {
 export type gestoresCreateWithoutExcepciones_factibilidadInput = {
   perfil?: $Enums.perfil_gestor
   ferias?: Prisma.feriasCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasCreateNestedManyWithoutGestores_cancelada_porInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
   usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
   permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
@@ -537,6 +561,7 @@ export type gestoresUncheckedCreateWithoutExcepciones_factibilidadInput = {
   perfil?: $Enums.perfil_gestor
   creado_por?: bigint | number | null
   ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasUncheckedCreateNestedManyWithoutGestores_cancelada_porInput
   permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
@@ -561,6 +586,7 @@ export type gestoresUpdateToOneWithWhereWithoutExcepciones_factibilidadInput = {
 export type gestoresUpdateWithoutExcepciones_factibilidadInput = {
   perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
   ferias?: Prisma.feriasUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUpdateManyWithoutGestores_cancelada_porNestedInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
   permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
@@ -573,6 +599,7 @@ export type gestoresUncheckedUpdateWithoutExcepciones_factibilidadInput = {
   perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUncheckedUpdateManyWithoutGestores_cancelada_porNestedInput
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
@@ -581,6 +608,7 @@ export type gestoresUncheckedUpdateWithoutExcepciones_factibilidadInput = {
 export type gestoresCreateWithoutFeriasInput = {
   perfil?: $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasCreateNestedManyWithoutGestores_cancelada_porInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
   usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
   permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
@@ -593,6 +621,7 @@ export type gestoresUncheckedCreateWithoutFeriasInput = {
   perfil?: $Enums.perfil_gestor
   creado_por?: bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasUncheckedCreateNestedManyWithoutGestores_cancelada_porInput
   permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
@@ -601,6 +630,33 @@ export type gestoresUncheckedCreateWithoutFeriasInput = {
 export type gestoresCreateOrConnectWithoutFeriasInput = {
   where: Prisma.gestoresWhereUniqueInput
   create: Prisma.XOR<Prisma.gestoresCreateWithoutFeriasInput, Prisma.gestoresUncheckedCreateWithoutFeriasInput>
+}
+
+export type gestoresCreateWithoutFerias_canceladasInput = {
+  perfil?: $Enums.perfil_gestor
+  excepciones_factibilidad?: Prisma.excepciones_factibilidadCreateNestedManyWithoutGestoresInput
+  ferias?: Prisma.feriasCreateNestedManyWithoutGestoresInput
+  usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
+  usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
+  permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesCreateNestedManyWithoutGestoresInput
+  solicitudes?: Prisma.solicitudesCreateNestedManyWithoutGestoresInput
+}
+
+export type gestoresUncheckedCreateWithoutFerias_canceladasInput = {
+  usuario_id: bigint | number
+  perfil?: $Enums.perfil_gestor
+  creado_por?: bigint | number | null
+  excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
+  ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
+  permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
+  solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
+}
+
+export type gestoresCreateOrConnectWithoutFerias_canceladasInput = {
+  where: Prisma.gestoresWhereUniqueInput
+  create: Prisma.XOR<Prisma.gestoresCreateWithoutFerias_canceladasInput, Prisma.gestoresUncheckedCreateWithoutFerias_canceladasInput>
 }
 
 export type gestoresUpsertWithoutFeriasInput = {
@@ -617,6 +673,7 @@ export type gestoresUpdateToOneWithWhereWithoutFeriasInput = {
 export type gestoresUpdateWithoutFeriasInput = {
   perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUpdateManyWithoutGestores_cancelada_porNestedInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
   permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
@@ -629,6 +686,40 @@ export type gestoresUncheckedUpdateWithoutFeriasInput = {
   perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUncheckedUpdateManyWithoutGestores_cancelada_porNestedInput
+  permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
+  solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
+}
+
+export type gestoresUpsertWithoutFerias_canceladasInput = {
+  update: Prisma.XOR<Prisma.gestoresUpdateWithoutFerias_canceladasInput, Prisma.gestoresUncheckedUpdateWithoutFerias_canceladasInput>
+  create: Prisma.XOR<Prisma.gestoresCreateWithoutFerias_canceladasInput, Prisma.gestoresUncheckedCreateWithoutFerias_canceladasInput>
+  where?: Prisma.gestoresWhereInput
+}
+
+export type gestoresUpdateToOneWithWhereWithoutFerias_canceladasInput = {
+  where?: Prisma.gestoresWhereInput
+  data: Prisma.XOR<Prisma.gestoresUpdateWithoutFerias_canceladasInput, Prisma.gestoresUncheckedUpdateWithoutFerias_canceladasInput>
+}
+
+export type gestoresUpdateWithoutFerias_canceladasInput = {
+  perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
+  excepciones_factibilidad?: Prisma.excepciones_factibilidadUpdateManyWithoutGestoresNestedInput
+  ferias?: Prisma.feriasUpdateManyWithoutGestoresNestedInput
+  usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
+  usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
+  permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
+  solicitud_revisiones?: Prisma.solicitud_revisionesUpdateManyWithoutGestoresNestedInput
+  solicitudes?: Prisma.solicitudesUpdateManyWithoutGestoresNestedInput
+}
+
+export type gestoresUncheckedUpdateWithoutFerias_canceladasInput = {
+  usuario_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
+  creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
+  ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
@@ -638,6 +729,7 @@ export type gestoresCreateWithoutPermisosInput = {
   perfil?: $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasCreateNestedManyWithoutGestores_cancelada_porInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
   usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
   solicitud_revisiones?: Prisma.solicitud_revisionesCreateNestedManyWithoutGestoresInput
@@ -650,6 +742,7 @@ export type gestoresUncheckedCreateWithoutPermisosInput = {
   creado_por?: bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasUncheckedCreateNestedManyWithoutGestores_cancelada_porInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
 }
@@ -674,6 +767,7 @@ export type gestoresUpdateWithoutPermisosInput = {
   perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUpdateManyWithoutGestores_cancelada_porNestedInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUpdateManyWithoutGestoresNestedInput
@@ -686,6 +780,7 @@ export type gestoresUncheckedUpdateWithoutPermisosInput = {
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUncheckedUpdateManyWithoutGestores_cancelada_porNestedInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
 }
@@ -694,6 +789,7 @@ export type gestoresCreateWithoutSolicitudesInput = {
   perfil?: $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasCreateNestedManyWithoutGestores_cancelada_porInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
   usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
   permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
@@ -706,6 +802,7 @@ export type gestoresUncheckedCreateWithoutSolicitudesInput = {
   creado_por?: bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasUncheckedCreateNestedManyWithoutGestores_cancelada_porInput
   permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
 }
@@ -730,6 +827,7 @@ export type gestoresUpdateWithoutSolicitudesInput = {
   perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUpdateManyWithoutGestores_cancelada_porNestedInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
   permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
@@ -742,6 +840,7 @@ export type gestoresUncheckedUpdateWithoutSolicitudesInput = {
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUncheckedUpdateManyWithoutGestores_cancelada_porNestedInput
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
 }
@@ -750,6 +849,7 @@ export type gestoresCreateWithoutUsuarios_gestores_creado_porTousuariosInput = {
   perfil?: $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasCreateNestedManyWithoutGestores_cancelada_porInput
   usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
   permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
   solicitud_revisiones?: Prisma.solicitud_revisionesCreateNestedManyWithoutGestoresInput
@@ -761,6 +861,7 @@ export type gestoresUncheckedCreateWithoutUsuarios_gestores_creado_porTousuarios
   perfil?: $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasUncheckedCreateNestedManyWithoutGestores_cancelada_porInput
   permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
@@ -780,6 +881,7 @@ export type gestoresCreateWithoutUsuarios_gestores_usuario_idTousuariosInput = {
   perfil?: $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasCreateNestedManyWithoutGestores_cancelada_porInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
   permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
   solicitud_revisiones?: Prisma.solicitud_revisionesCreateNestedManyWithoutGestoresInput
@@ -791,6 +893,7 @@ export type gestoresUncheckedCreateWithoutUsuarios_gestores_usuario_idTousuarios
   creado_por?: bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasUncheckedCreateNestedManyWithoutGestores_cancelada_porInput
   permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
@@ -841,6 +944,7 @@ export type gestoresUpdateWithoutUsuarios_gestores_usuario_idTousuariosInput = {
   perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUpdateManyWithoutGestores_cancelada_porNestedInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
   permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUpdateManyWithoutGestoresNestedInput
@@ -852,6 +956,7 @@ export type gestoresUncheckedUpdateWithoutUsuarios_gestores_usuario_idTousuarios
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUncheckedUpdateManyWithoutGestores_cancelada_porNestedInput
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
@@ -861,6 +966,7 @@ export type gestoresCreateWithoutSolicitud_revisionesInput = {
   perfil?: $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasCreateNestedManyWithoutGestores_cancelada_porInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_creado_porTousuariosInput
   usuarios_gestores_usuario_idTousuarios: Prisma.usuariosCreateNestedOneWithoutGestores_gestores_usuario_idTousuariosInput
   permisos?: Prisma.permisosCreateNestedManyWithoutGestoresInput
@@ -873,6 +979,7 @@ export type gestoresUncheckedCreateWithoutSolicitud_revisionesInput = {
   creado_por?: bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedCreateNestedManyWithoutGestoresInput
   ferias?: Prisma.feriasUncheckedCreateNestedManyWithoutGestoresInput
+  ferias_canceladas?: Prisma.feriasUncheckedCreateNestedManyWithoutGestores_cancelada_porInput
   permisos?: Prisma.permisosUncheckedCreateNestedManyWithoutGestoresInput
   solicitudes?: Prisma.solicitudesUncheckedCreateNestedManyWithoutGestoresInput
 }
@@ -897,6 +1004,7 @@ export type gestoresUpdateWithoutSolicitud_revisionesInput = {
   perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUpdateManyWithoutGestores_cancelada_porNestedInput
   usuarios_gestores_creado_porTousuarios?: Prisma.usuariosUpdateOneWithoutGestores_gestores_creado_porTousuariosNestedInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
   permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
@@ -909,6 +1017,7 @@ export type gestoresUncheckedUpdateWithoutSolicitud_revisionesInput = {
   creado_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUncheckedUpdateManyWithoutGestores_cancelada_porNestedInput
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
 }
@@ -922,6 +1031,7 @@ export type gestoresUpdateWithoutUsuarios_gestores_creado_porTousuariosInput = {
   perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUpdateManyWithoutGestores_cancelada_porNestedInput
   usuarios_gestores_usuario_idTousuarios?: Prisma.usuariosUpdateOneRequiredWithoutGestores_gestores_usuario_idTousuariosNestedInput
   permisos?: Prisma.permisosUpdateManyWithoutGestoresNestedInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUpdateManyWithoutGestoresNestedInput
@@ -933,6 +1043,7 @@ export type gestoresUncheckedUpdateWithoutUsuarios_gestores_creado_porTousuarios
   perfil?: Prisma.Enumperfil_gestorFieldUpdateOperationsInput | $Enums.perfil_gestor
   excepciones_factibilidad?: Prisma.excepciones_factibilidadUncheckedUpdateManyWithoutGestoresNestedInput
   ferias?: Prisma.feriasUncheckedUpdateManyWithoutGestoresNestedInput
+  ferias_canceladas?: Prisma.feriasUncheckedUpdateManyWithoutGestores_cancelada_porNestedInput
   permisos?: Prisma.permisosUncheckedUpdateManyWithoutGestoresNestedInput
   solicitud_revisiones?: Prisma.solicitud_revisionesUncheckedUpdateManyWithoutGestoresNestedInput
   solicitudes?: Prisma.solicitudesUncheckedUpdateManyWithoutGestoresNestedInput
@@ -951,6 +1062,7 @@ export type gestoresUncheckedUpdateManyWithoutUsuarios_gestores_creado_porTousua
 export type GestoresCountOutputType = {
   excepciones_factibilidad: number
   ferias: number
+  ferias_canceladas: number
   permisos: number
   solicitud_revisiones: number
   solicitudes: number
@@ -959,6 +1071,7 @@ export type GestoresCountOutputType = {
 export type GestoresCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   excepciones_factibilidad?: boolean | GestoresCountOutputTypeCountExcepciones_factibilidadArgs
   ferias?: boolean | GestoresCountOutputTypeCountFeriasArgs
+  ferias_canceladas?: boolean | GestoresCountOutputTypeCountFerias_canceladasArgs
   permisos?: boolean | GestoresCountOutputTypeCountPermisosArgs
   solicitud_revisiones?: boolean | GestoresCountOutputTypeCountSolicitud_revisionesArgs
   solicitudes?: boolean | GestoresCountOutputTypeCountSolicitudesArgs
@@ -991,6 +1104,13 @@ export type GestoresCountOutputTypeCountFeriasArgs<ExtArgs extends runtime.Types
 /**
  * GestoresCountOutputType without action
  */
+export type GestoresCountOutputTypeCountFerias_canceladasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.feriasWhereInput
+}
+
+/**
+ * GestoresCountOutputType without action
+ */
 export type GestoresCountOutputTypeCountPermisosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.permisosWhereInput
 }
@@ -1016,6 +1136,7 @@ export type gestoresSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   creado_por?: boolean
   excepciones_factibilidad?: boolean | Prisma.gestores$excepciones_factibilidadArgs<ExtArgs>
   ferias?: boolean | Prisma.gestores$feriasArgs<ExtArgs>
+  ferias_canceladas?: boolean | Prisma.gestores$ferias_canceladasArgs<ExtArgs>
   usuarios_gestores_creado_porTousuarios?: boolean | Prisma.gestores$usuarios_gestores_creado_porTousuariosArgs<ExtArgs>
   usuarios_gestores_usuario_idTousuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
   permisos?: boolean | Prisma.gestores$permisosArgs<ExtArgs>
@@ -1050,6 +1171,7 @@ export type gestoresOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 export type gestoresInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   excepciones_factibilidad?: boolean | Prisma.gestores$excepciones_factibilidadArgs<ExtArgs>
   ferias?: boolean | Prisma.gestores$feriasArgs<ExtArgs>
+  ferias_canceladas?: boolean | Prisma.gestores$ferias_canceladasArgs<ExtArgs>
   usuarios_gestores_creado_porTousuarios?: boolean | Prisma.gestores$usuarios_gestores_creado_porTousuariosArgs<ExtArgs>
   usuarios_gestores_usuario_idTousuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
   permisos?: boolean | Prisma.gestores$permisosArgs<ExtArgs>
@@ -1071,6 +1193,7 @@ export type $gestoresPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   objects: {
     excepciones_factibilidad: Prisma.$excepciones_factibilidadPayload<ExtArgs>[]
     ferias: Prisma.$feriasPayload<ExtArgs>[]
+    ferias_canceladas: Prisma.$feriasPayload<ExtArgs>[]
     usuarios_gestores_creado_porTousuarios: Prisma.$usuariosPayload<ExtArgs> | null
     usuarios_gestores_usuario_idTousuarios: Prisma.$usuariosPayload<ExtArgs>
     permisos: Prisma.$permisosPayload<ExtArgs>[]
@@ -1477,6 +1600,7 @@ export interface Prisma__gestoresClient<T, Null = never, ExtArgs extends runtime
   readonly [Symbol.toStringTag]: "PrismaPromise"
   excepciones_factibilidad<T extends Prisma.gestores$excepciones_factibilidadArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.gestores$excepciones_factibilidadArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$excepciones_factibilidadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ferias<T extends Prisma.gestores$feriasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.gestores$feriasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$feriasPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ferias_canceladas<T extends Prisma.gestores$ferias_canceladasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.gestores$ferias_canceladasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$feriasPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   usuarios_gestores_creado_porTousuarios<T extends Prisma.gestores$usuarios_gestores_creado_porTousuariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.gestores$usuarios_gestores_creado_porTousuariosArgs<ExtArgs>>): Prisma.Prisma__usuariosClient<runtime.Types.Result.GetResult<Prisma.$usuariosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   usuarios_gestores_usuario_idTousuarios<T extends Prisma.usuariosDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuariosDefaultArgs<ExtArgs>>): Prisma.Prisma__usuariosClient<runtime.Types.Result.GetResult<Prisma.$usuariosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   permisos<T extends Prisma.gestores$permisosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.gestores$permisosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$permisosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1942,6 +2066,30 @@ export type gestores$excepciones_factibilidadArgs<ExtArgs extends runtime.Types.
  * gestores.ferias
  */
 export type gestores$feriasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ferias
+   */
+  select?: Prisma.feriasSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ferias
+   */
+  omit?: Prisma.feriasOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.feriasInclude<ExtArgs> | null
+  where?: Prisma.feriasWhereInput
+  orderBy?: Prisma.feriasOrderByWithRelationInput | Prisma.feriasOrderByWithRelationInput[]
+  cursor?: Prisma.feriasWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FeriasScalarFieldEnum | Prisma.FeriasScalarFieldEnum[]
+}
+
+/**
+ * gestores.ferias_canceladas
+ */
+export type gestores$ferias_canceladasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the ferias
    */

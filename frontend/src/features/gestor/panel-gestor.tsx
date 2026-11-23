@@ -194,6 +194,12 @@ export function PanelGestor() {
             Gestionar zonas
           </Link>
           <Link
+            href="/gestor/ferias"
+            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+          >
+            Calendario de ferias
+          </Link>
+          <Link
             href="/gestor/modulos"
             className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
           >

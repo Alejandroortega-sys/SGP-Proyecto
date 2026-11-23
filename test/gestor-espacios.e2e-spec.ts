@@ -321,6 +321,7 @@ describe('Gestión de espacios temporales (e2e)', () => {
                 {
                   fecha_inicio: bloqueosMock[0].fecha_inicio,
                   fecha_fin: bloqueosMock[0].fecha_fin,
+                  feria_id: null,
                 },
               ]
             : [],
@@ -658,6 +659,7 @@ describe('Gestión de espacios temporales (e2e)', () => {
         motivo: 'Evento navideño',
         creado_por: 1n,
         creado_en: FECHA,
+        feria_id: null,
       },
     ];
 
@@ -685,6 +687,7 @@ describe('Gestión de espacios temporales (e2e)', () => {
         motivo: 'Evento navideño',
         creado_por: 1n,
         creado_en: FECHA,
+        feria_id: null,
       },
     ];
     permisosMock = [];

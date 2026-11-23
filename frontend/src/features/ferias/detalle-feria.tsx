@@ -136,8 +136,27 @@ export function DetalleFeria({ id }: { id: string }) {
             <span className="font-semibold text-titulo">Radicada:</span>{" "}
             {formatearFechaHora(datos.radicadaEn)}
           </p>
+          {datos.aprobadaEn ? (
+            <p>
+              <span className="font-semibold text-titulo">Aprobada:</span>{" "}
+              {formatearFechaHora(datos.aprobadaEn)}
+            </p>
+          ) : null}
+          {datos.canceladaEn ? (
+            <p>
+              <span className="font-semibold text-titulo">Cancelada:</span>{" "}
+              {formatearFechaHora(datos.canceladaEn)}
+            </p>
+          ) : null}
         </TarjetaCuerpo>
       </Tarjeta>
+
+      {datos.motivoCancelacion ? (
+        <Alerta tono="error">
+          <p className="font-semibold">Motivo de la cancelación</p>
+          <p className="mt-1 whitespace-pre-line">{datos.motivoCancelacion}</p>
+        </Alerta>
+      ) : null}
 
       <Tarjeta>
         <TarjetaEncabezado>

@@ -48,11 +48,11 @@
 | `productos` | `/productos` | Catálogo maestro de productos (Sprint 2) |
 | `importaciones` | `/importaciones` | Importación de GeoJSON y CSV (Sprint 2) |
 | `solicitudes` | `/solicitudes` | Radicación, documentos, disponibilidad e historial (HU-16) |
-| `ferias` | `/ferias` | Solicitud, agenda y adjuntos de ferias agroecológicas (HU-21) |
+| `ferias` | `/ferias`, `/gestor/ferias` | Radicación, agenda, adjuntos y administración del calendario (HU-21, HU-22) |
 | `correo` | — | Envío de códigos, credenciales temporales y avisos |
 | `common` | — | Filtro de errores, auditoría, parseo de IDs y serialización de BigInt |
 
-> **Sprint 3 en curso:** los módulos `solicitudes` (HU-16 a HU-20) y `ferias` (HU-21) ya están implementados.
+> **Sprint 3 en curso:** los módulos `solicitudes` (HU-16 a HU-20) y `ferias` (HU-21 y HU-22) ya están implementados.
 > Sus contratos completos están en [`docs/Uso_solicitudes.md`](Uso_solicitudes.md) y
 > [`docs/Uso_ferias.md`](Uso_ferias.md).
 
@@ -2179,7 +2179,7 @@ Estos módulos **no deben conectarse a endpoints inexistentes**. Se deben mostra
 | Zonas, módulos, espacios e importaciones | **Implementado en el Sprint 2** | Usar los endpoints de `Uso_zonas.md`, `Uso_modulos.md`, `Uso_espacios.md` y `Uso_importaciones.md` |
 | Solicitudes de espacio | **Implementado en el Sprint 3** | Usar `/solicitudes` (ver `Uso_solicitudes.md`) |
 | Ferias (radicación) | **Implementado en el Sprint 3** | Usar `/ferias` en el panel del organizador (ver `Uso_ferias.md`) |
-| Calendario y aprobación de ferias | Pendiente (HU-22) | No incluir todavía |
+| Calendario y administración de ferias | **Implementado en el Sprint 3** | Usar `/gestor/ferias` en el panel del gestor (ver `Uso_ferias.md` §10) |
 | Permisos y QR | Sprint 5 | No incluir |
 | Cobros simulados | Sprint 5 | No incluir |
 | Dashboard analítico | Sprint 6 | Solo usar los indicadores básicos de `GET /panel` |

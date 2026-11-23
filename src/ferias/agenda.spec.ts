@@ -1,9 +1,11 @@
 import {
   buscarConflicto,
+  buscarTodosLosConflictos,
   diasInclusive,
   rangosSolapan,
   sugerirFechasLibres,
   sumarDias,
+  unirRangos,
 } from './agenda';
 
 describe('agenda de ferias', () => {
@@ -55,6 +57,37 @@ describe('agenda de ferias', () => {
           { fechaInicio: '2026-12-10', fechaFin: '2026-12-12' },
         ]),
       ).toBeNull();
+    });
+  });
+
+  describe('buscarTodosLosConflictos', () => {
+    it('devuelve todos los cruces y no solo el primero', () => {
+      const conflictos = buscarTodosLosConflictos(
+        { fechaInicio: '2026-12-10', fechaFin: '2026-12-15' },
+        [
+          { fechaInicio: '2026-12-01', fechaFin: '2026-12-10' },
+          { fechaInicio: '2026-12-12', fechaFin: '2026-12-13' },
+          { fechaInicio: '2026-12-20', fechaFin: '2026-12-21' },
+        ],
+      );
+
+      expect(conflictos).toHaveLength(2);
+    });
+  });
+
+  describe('unirRangos', () => {
+    it('une rangos solapados y contiguos sin alterar los separados', () => {
+      expect(
+        unirRangos([
+          { fechaInicio: '2026-12-13', fechaFin: '2026-12-15' },
+          { fechaInicio: '2026-12-10', fechaFin: '2026-12-12' },
+          { fechaInicio: '2026-12-14', fechaFin: '2026-12-16' },
+          { fechaInicio: '2026-12-20', fechaFin: '2026-12-21' },
+        ]),
+      ).toEqual([
+        { fechaInicio: '2026-12-10', fechaFin: '2026-12-16' },
+        { fechaInicio: '2026-12-20', fechaFin: '2026-12-21' },
+      ]);
     });
   });
 

@@ -3131,7 +3131,8 @@ export const Espacio_bloqueosScalarFieldEnum = {
   fecha_fin: 'fecha_fin',
   motivo: 'motivo',
   creado_por: 'creado_por',
-  creado_en: 'creado_en'
+  creado_en: 'creado_en',
+  feria_id: 'feria_id'
 } as const
 
 export type Espacio_bloqueosScalarFieldEnum = (typeof Espacio_bloqueosScalarFieldEnum)[keyof typeof Espacio_bloqueosScalarFieldEnum]
@@ -3236,7 +3237,12 @@ export const FeriasScalarFieldEnum = {
   numero_puestos: 'numero_puestos',
   estado: 'estado',
   revisor_id: 'revisor_id',
-  radicada_en: 'radicada_en'
+  radicada_en: 'radicada_en',
+  motivo_cancelacion: 'motivo_cancelacion',
+  aprobada_en: 'aprobada_en',
+  cancelada_en: 'cancelada_en',
+  cancelada_por: 'cancelada_por',
+  actualizado_en: 'actualizado_en'
 } as const
 
 export type FeriasScalarFieldEnum = (typeof FeriasScalarFieldEnum)[keyof typeof FeriasScalarFieldEnum]

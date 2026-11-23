@@ -322,6 +322,21 @@ export class FeriaListadoDto {
   @ApiProperty({ example: '2026-11-22T10:00:00.000Z' })
   radicadaEn!: Date;
 
+  @ApiPropertyOptional({ example: null, nullable: true })
+  motivoCancelacion!: string | null;
+
+  @ApiPropertyOptional({
+    example: '2026-11-22T10:00:00.000Z',
+    nullable: true,
+  })
+  aprobadaEn!: Date | null;
+
+  @ApiPropertyOptional({
+    example: '2026-11-22T10:00:00.000Z',
+    nullable: true,
+  })
+  canceladaEn!: Date | null;
+
   @ApiProperty({ type: ZonaFeriaDto })
   zona!: ZonaFeriaDto;
 }

@@ -1671,6 +1671,9 @@ export interface FeriaListado {
   fechaFin: string;
   numeroPuestos: number;
   radicadaEn: string;
+  motivoCancelacion: string | null;
+  aprobadaEn: string | null;
+  canceladaEn: string | null;
   zona: ZonaFeria;
 }
 
@@ -1707,4 +1710,186 @@ export interface RespuestaRadicacionFeria {
   mensaje: string;
   correoEnviado: boolean;
   mensajeCorreo: string | null;
+}
+
+/* ------------------------------------------------------------------ */
+/* Calendario y administración de ferias (HU-22)                       */
+/* ------------------------------------------------------------------ */
+
+export interface ZonaFeriaGestor {
+  id: string;
+  nombre: string;
+  tipo: 'permitida' | 'restringida' | 'alta_congestion';
+  activa: boolean;
+  aforoMaximo: number | null;
+  horarioInicio: string | null;
+  horarioFin: string | null;
+}
+
+export interface OrganizadorFeriaGestor {
+  id: string;
+  nombre: string;
+  apellido: string | null;
+  correo: string;
+  organizacion: string;
+  nit: string;
+}
+
+export interface EventoAgendaFeria {
+  id: string;
+  numeroRadicado: string;
+  nombre: string;
+  tipoFeria: string;
+  estado: EstadoFeria;
+  fechaInicio: string;
+  fechaFin: string;
+  numeroPuestos: number;
+  zona: ZonaFeriaGestor;
+  organizador: OrganizadorFeriaGestor;
+  tieneCruces: boolean;
+  motivoCancelacion: string | null;
+  aprobadaEn: string | null;
+  canceladaEn: string | null;
+}
+
+export type TipoConflictoAgenda =
+  | 'feria'
+  | 'espacio'
+  | 'permiso'
+  | 'solicitud'
+  | 'bloqueo';
+
+export interface ConflictoAgendaFeria {
+  tipo: TipoConflictoAgenda;
+  feriaId: string | null;
+  feriaNombre: string | null;
+  espacioId: string | null;
+  espacioNombre: string | null;
+  referencia: string | null;
+  fechaInicio: string;
+  fechaFin: string;
+  mensaje: string;
+}
+
+export interface ResumenAgendaFeria {
+  total: number;
+  radicadas: number;
+  aprobadas: number;
+  canceladas: number;
+  rechazadas: number;
+  realizadas: number;
+}
+
+export interface AgendaFeriaGestor {
+  desde: string;
+  hasta: string;
+  zonaId: string | null;
+  zonas: ZonaFeriaGestor[];
+  eventos: EventoAgendaFeria[];
+  cruces: ConflictoAgendaFeria[];
+  resumen: ResumenAgendaFeria;
+}
+
+export interface FeriaGestorListado extends EventoAgendaFeria {
+  radicadaEn: string;
+  actualizadoEn: string;
+}
+
+export interface ListarFeriasGestorResponse {
+  datos: FeriaGestorListado[];
+  paginacion: Paginacion;
+}
+
+export interface DocumentoFeriaGestor {
+  id: string;
+  tipoDocumento: string;
+  nombreOriginal: string | null;
+  mimeType: string | null;
+  tamanoBytes: number | null;
+  cargadoEn: string;
+  url: string;
+}
+
+export interface EspacioBloqueadoFeria {
+  id: string;
+  nombre: string;
+}
+
+export interface FeriaGestorDetalle extends FeriaGestorListado {
+  productos: ProductoFeria[];
+  documentos: DocumentoFeriaGestor[];
+  espaciosBloqueados: EspacioBloqueadoFeria[];
+  aprobadaPor: string | null;
+}
+
+export interface CrucesFeria {
+  disponible: boolean;
+  conflictos: ConflictoAgendaFeria[];
+  sugerencias: RangoFeria[];
+}
+
+export interface FiltrosFeriasGestor {
+  estado?: EstadoFeria;
+  zonaId?: string;
+  desde?: string;
+  hasta?: string;
+  busqueda?: string;
+  pagina?: number;
+  limite?: number;
+}
+
+export interface FiltrosAgendaFeria {
+  desde: string;
+  hasta: string;
+  zonaId?: string;
+  incluirTodos?: boolean;
+}
+
+export interface SolicitudMoverFeria {
+  zonaId: string;
+  fechaInicio: string;
+  fechaFin: string;
+  motivo?: string;
+}
+
+export interface RespuestaAprobarFeria {
+  id: string;
+  numeroRadicado: string;
+  estadoAnterior: EstadoFeria;
+  estado: EstadoFeria;
+  aprobadaEn: string | null;
+  espaciosBloqueados: EspacioBloqueadoFeria[];
+  correoEnviado: boolean;
+  mensajeCorreo: string | null;
+  mensaje: string;
+}
+
+export interface RespuestaCancelarFeria {
+  id: string;
+  numeroRadicado: string;
+  estadoAnterior: EstadoFeria;
+  estado: EstadoFeria;
+  motivoCancelacion: string;
+  canceladaEn: string | null;
+  espaciosLiberados: number;
+  correoEnviado: boolean;
+  mensajeCorreo: string | null;
+  mensaje: string;
+}
+
+export interface RespuestaMoverFeria {
+  id: string;
+  numeroRadicado: string;
+  estado: EstadoFeria;
+  fechaInicioAnterior: string;
+  fechaFinAnterior: string;
+  zonaAnteriorId: string;
+  zonaAnteriorNombre: string;
+  fechaInicio: string;
+  fechaFin: string;
+  zona: ZonaFeriaGestor;
+  espaciosBloqueados: EspacioBloqueadoFeria[];
+  correoEnviado: boolean;
+  mensajeCorreo: string | null;
+  mensaje: string;
 }

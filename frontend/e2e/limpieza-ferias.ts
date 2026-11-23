@@ -77,11 +77,8 @@ export async function eliminarFeriasPrueba(
 
     if (ids.length > 0) {
       await cliente.query(
-        `DELETE FROM notificaciones
-          WHERE usuario_id = (SELECT id FROM usuarios WHERE correo = $1)
-            AND tipo = 'feria_radicada'
-            AND creada_en > now() - interval '1 day'`,
-        [correo],
+        "DELETE FROM notificaciones WHERE feria_id = ANY($1::bigint[])",
+        [ids],
       );
       await cliente.query(
         "DELETE FROM feria_documentos WHERE feria_id = ANY($1::bigint[])",

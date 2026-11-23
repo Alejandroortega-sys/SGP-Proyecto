@@ -197,6 +197,95 @@ export function cabecerasApi(token: string): {
   return { headers: { Authorization: `Bearer ${token}` } };
 }
 
+/** Zonas y productos disponibles para radicar una feria. */
+export async function obtenerOpcionesFeriaApi(
+  request: APIRequestContext,
+  token: string,
+): Promise<{
+  zonas: Array<{
+    id: string;
+    nombre: string;
+    aforoMaximo: number | null;
+    productosPermitidos: string[];
+  }>;
+  productos: Array<{ id: string; nombre: string }>;
+}> {
+  const respuesta = await request.get(`${API_URL}/ferias/zonas`, {
+    ...cabecerasApi(token),
+  });
+  expect(respuesta.ok()).toBeTruthy();
+  return (await respuesta.json()) as {
+    zonas: Array<{
+      id: string;
+      nombre: string;
+      aforoMaximo: number | null;
+      productosPermitidos: string[];
+    }>;
+    productos: Array<{ id: string; nombre: string }>;
+  };
+}
+
+/** Radica una feria por la API para preparar un escenario de calendario. */
+export async function crearFeriaApi(
+  request: APIRequestContext,
+  token: string,
+  datos: {
+    nombre: string;
+    tipoFeria: string;
+    zonaId: string;
+    fechaInicio: string;
+    fechaFin: string;
+    numeroPuestos: number;
+    productoIds: string[];
+  },
+): Promise<{ id: string; numeroRadicado: string }> {
+  const formulario = new FormData();
+  formulario.append('datos', JSON.stringify(datos));
+  const respuesta = await request.post(`${API_URL}/ferias`, {
+    ...cabecerasApi(token),
+    multipart: formulario,
+  });
+  if (!respuesta.ok()) {
+    throw new Error(
+      `No se pudo crear la feria de prueba (${respuesta.status()}): ${await respuesta.text()}`,
+    );
+  }
+  return (await respuesta.json()) as { id: string; numeroRadicado: string };
+}
+
+/** Consulta los espacios con su disponibilidad efectiva en una fecha. */
+export async function obtenerEspaciosApi(
+  request: APIRequestContext,
+  token: string,
+  fecha: string,
+): Promise<
+  Array<{
+    id: string;
+    nombre: string;
+    disponible: boolean;
+    estadoEfectivo: string;
+    motivoEstado: string | null;
+    zona: { id: string; nombre: string } | null;
+  }>
+> {
+  const respuesta = await request.get(
+    `${API_URL}/espacios?fecha=${fecha}&incluirNoDisponibles=true`,
+    cabecerasApi(token),
+  );
+  expect(respuesta.ok()).toBeTruthy();
+  const cuerpo = (await respuesta.json()) as {
+    datos: Array<{
+      id: string;
+      nombre: string;
+      disponible: boolean;
+      estadoEfectivo: string;
+      motivoEstado: string | null;
+      zona: { id: string; nombre: string } | null;
+    }>;
+  };
+  return cuerpo.datos;
+}
+
 export async function obtenerNotificaciones(
   request: APIRequestContext,
   token: string,

@@ -6,6 +6,7 @@ import {
 } from '../common/estados-solicitud';
 import {
   CorreoService,
+  type DatosCambioEstadoFeria,
   type DatosCambioEstadoSolicitud,
 } from '../correo/correo.service';
 import { Prisma, type estado_solicitud } from '../generated/prisma/client';
@@ -185,6 +186,39 @@ export class NotificacionesService {
     });
 
     return creada.id.toString();
+  }
+
+  /**
+   * Envía el correo de una decisión o movimiento de feria (HU-22).
+   *
+   * Es best-effort: la feria, sus bloqueos y la notificación interna ya están
+   * guardados. Un fallo de SMTP se registra y se informa, pero no revierte la
+   * operación.
+   */
+  async enviarCorreoFeria(
+    destinatario: { correo: string; nombre: string },
+    datos: DatosCambioEstadoFeria,
+  ): Promise<ResultadoCorreoCambioEstado> {
+    try {
+      await this.correo.enviarCambioEstadoFeria(
+        destinatario.correo,
+        destinatario.nombre,
+        datos,
+      );
+
+      return { correoEnviado: true, mensajeCorreo: null };
+    } catch (error) {
+      this.logger.error(
+        `No se pudo enviar el correo de la feria ` +
+          `${datos.numeroRadicado} (${datos.accion}) a ${destinatario.correo}: ` +
+          `${String(error)}`,
+      );
+      return {
+        correoEnviado: false,
+        mensajeCorreo:
+          'La operación quedó guardada, pero no pudimos enviar el correo de aviso.',
+      };
+    }
   }
 
   /**

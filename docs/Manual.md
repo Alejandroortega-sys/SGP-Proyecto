@@ -782,7 +782,19 @@ En `/gestor/panel` verás:
 - totales de permisos por estado;
 - totales de ferias por estado.
 
-> Los indicadores de solicitudes, permisos y ferias se alimentan de la base de datos. En la demostración verás cifras del seed. Las pantallas de solicitudes y de radicación de ferias ya están disponibles; el calendario de ferias, su aprobación y la inscripción de vendedores siguen pendientes (HU-22 y HU-23).
+> Los indicadores de solicitudes, permisos y ferias se alimentan de la base de datos. En la demostración verás cifras del seed. Las pantallas de solicitudes, radicación y calendario de ferias ya están disponibles; la inscripción de vendedores sigue pendiente (HU-23).
+
+### 13.2.1 Calendario de ferias (HU-22)
+
+En **Ferias** (`/gestor/ferias`) puedes administrar la agenda de ferias y eventos:
+
+1. Elige la vista **Mes** o **Semana**. La semana muestra una fila por zona; en celular se convierte en una lista.
+2. Filtra por zona o activa **Ver también canceladas, rechazadas y realizadas**. Por defecto ves solo las ferias activas.
+3. Abre un evento para consultar organizador, productos, documentos, espacios bloqueados y fechas de decisión.
+4. **Aprobar** bloquea todos los espacios de la zona en las fechas de la feria. Si hay un cruce o un espacio ocupado, el sistema lo impide y no cambia nada.
+5. **Mover** permite cambiar zona y fechas. Antes de guardar se consultan los cruces y se ofrecen fechas alternativas.
+6. **Cancelar** exige un motivo. La feria pasa a cancelada, los espacios se liberan y el organizador recibe el motivo.
+7. El organizador recibe una notificación en la plataforma y un correo por aprobación, movimiento o cancelación.
 
 ### 13.3 Mi perfil
 
@@ -1359,12 +1371,12 @@ vigente ──► suspendido ──► vigente
 
 ### 17.9 Feria
 
-La radicación ya está implementada (HU-21). La aprobación, cancelación y el calendario pertenecen a HU-22.
+La radicación (HU-21) y la administración del calendario (HU-22) están implementadas.
 
 | Estado | Significado |
 |---|---|
-| `radicada` | Solicitud de feria enviada. |
-| `aprobada` | Aprobada. |
+| `radicada` | Solicitud de feria enviada, pendiente de aprobación. |
+| `aprobada` | Aprobada; los espacios de la zona quedan bloqueados. |
 | `rechazada` | Rechazada. |
 | `cancelada` | Cancelada. |
 | `realizada` | Ya se realizó. |
@@ -1474,7 +1486,7 @@ La radicación ya está implementada (HU-21). La aprobación, cancelación y el 
 | Sin solicitudes | No hay botón ni formulario para pedir un espacio. |
 | Sin permisos QR | No se emiten carnés ni se verifica QR desde la interfaz. |
 | Sin cobros | No hay pagos ni recibos en la interfaz. |
-| Sin aprobación de ferias | El organizador puede radicar una feria, pero el calendario, la aprobación/cancelación y la inscripción de vendedores (HU-22/HU-23) aún no están en la interfaz. |
+| Sin inscripción de vendedores | El calendario y la aprobación/cancelación de ferias ya están en la interfaz (HU-22); la inscripción de vendedores (HU-23) sigue pendiente. |
 | Sin dashboard analítico | Solo el panel básico de indicadores. |
 | Sin factibilidad visible | El motor existe en la base, pero no se puede ejecutar desde la interfaz. |
 | Sin buscador de calles/barrios | Se excluyó del alcance; el mapa se centra manualmente. |

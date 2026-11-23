@@ -33,6 +33,24 @@ export interface DatosConfirmacionFeria {
   documentos: string[];
 }
 
+/** Acción administrativa aplicada a una feria (HU-22). */
+export type AccionCambioFeria = 'aprobada' | 'cancelada' | 'movida';
+
+/** Datos mínimos para avisar un cambio de estado o de agenda de una feria. */
+export interface DatosCambioEstadoFeria {
+  feriaId: string;
+  numeroRadicado: string;
+  nombreFeria: string;
+  zona: string;
+  fechaInicio: string;
+  fechaFin: string;
+  accion: AccionCambioFeria;
+  motivo?: string | null;
+  fechaInicioAnterior?: string | null;
+  fechaFinAnterior?: string | null;
+  zonaAnterior?: string | null;
+}
+
 /** Datos mínimos para avisar un cambio de estado de la solicitud. */
 export interface DatosCambioEstadoSolicitud {
   solicitudId: string;
@@ -514,6 +532,99 @@ export class CorreoService {
       html,
       `SMTP no configurado: feria ${datos.numeroRadicado} radicada para ` +
         `${destino} (${datos.zona}, ${rango}, ${datos.numeroPuestos} puestos)`,
+    );
+  }
+
+  /**
+   * Envía el aviso de una decisión o movimiento sobre una feria (HU-22).
+   *
+   * El estado, los bloqueos y la notificación interna ya quedaron guardados:
+   * un fallo de correo no revierte la operación.
+   *
+   * @param destino Correo del organizador dueño de la feria.
+   * @param nombre Nombre del organizador.
+   * @param datos Acción aplicada, fechas, zona y motivo.
+   * @throws Error si no hay SMTP en producción o si el envío falla.
+   */
+  async enviarCambioEstadoFeria(
+    destino: string,
+    nombre: string,
+    datos: DatosCambioEstadoFeria,
+  ): Promise<void> {
+    const rango = `del ${fechaCorta(datos.fechaInicio)} al ${fechaCorta(
+      datos.fechaFin,
+    )}`;
+    const anterior =
+      datos.fechaInicioAnterior && datos.fechaFinAnterior
+        ? `del ${fechaCorta(datos.fechaInicioAnterior)} al ${fechaCorta(
+            datos.fechaFinAnterior,
+          )}`
+        : null;
+    const enlace = `${this.urlFrontend}/organizador/ferias/${datos.feriaId}`;
+
+    const asunto =
+      datos.accion === 'aprobada'
+        ? `Feria ${datos.numeroRadicado}: aprobada — SGP Tuluá`
+        : datos.accion === 'cancelada'
+          ? `Feria ${datos.numeroRadicado}: cancelada — SGP Tuluá`
+          : `Feria ${datos.numeroRadicado}: cambio de fechas — SGP Tuluá`;
+
+    const introduccion =
+      datos.accion === 'aprobada'
+        ? 'Tu feria fue aprobada y los espacios de la zona quedaron reservados.'
+        : datos.accion === 'cancelada'
+          ? 'Tu feria fue cancelada y los espacios de la zona quedaron liberados.'
+          : 'La agenda de tu feria cambió.';
+
+    const detalleMovimiento =
+      datos.accion === 'movida' && anterior
+        ? `Fechas anteriores: ${anterior}\n` +
+          (datos.zonaAnterior ? `Zona anterior: ${datos.zonaAnterior}\n` : '')
+        : '';
+    const detalleMotivo = datos.motivo
+      ? `Motivo: ${datos.motivo}\n`
+      : '';
+
+    const texto =
+      `Hola ${nombre},\n\n` +
+      `${introduccion}\n\n` +
+      `Número de radicado: ${datos.numeroRadicado}\n` +
+      `Feria: ${datos.nombreFeria}\n` +
+      `Zona: ${datos.zona}\n` +
+      `Fechas: ${rango}\n` +
+      `${detalleMovimiento}` +
+      `${detalleMotivo}\n` +
+      `Puedes consultar el detalle en:\n${enlace}\n\n` +
+      `Secretaría de Gobierno — Municipio de Tuluá`;
+
+    const html =
+      `<p>Hola <strong>${nombre}</strong>,</p>` +
+      `<p>${introduccion}</p>` +
+      `<p style="font-size:20px;font-weight:bold;">${datos.numeroRadicado}</p>` +
+      `<ul>` +
+      `<li><strong>Feria:</strong> ${datos.nombreFeria}</li>` +
+      `<li><strong>Zona:</strong> ${datos.zona}</li>` +
+      `<li><strong>Fechas:</strong> ${rango}</li>` +
+      (datos.accion === 'movida' && anterior
+        ? `<li><strong>Fechas anteriores:</strong> ${anterior}</li>`
+        : '') +
+      (datos.zonaAnterior
+        ? `<li><strong>Zona anterior:</strong> ${datos.zonaAnterior}</li>`
+        : '') +
+      (datos.motivo
+        ? `<li><strong>Motivo:</strong> ${datos.motivo}</li>`
+        : '') +
+      `</ul>` +
+      `<p><a href="${enlace}">Ver el detalle de la feria</a></p>` +
+      `<p>Secretaría de Gobierno — Municipio de Tuluá</p>`;
+
+    await this.enviar(
+      destino,
+      asunto,
+      texto,
+      html,
+      `SMTP no configurado: feria ${datos.numeroRadicado} ${datos.accion} ` +
+        `para ${destino} (${datos.zona}, ${rango}${datos.motivo ? `, motivo: ${datos.motivo}` : ''})`,
     );
   }
 

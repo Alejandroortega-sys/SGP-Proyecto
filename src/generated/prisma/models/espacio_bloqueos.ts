@@ -32,12 +32,14 @@ export type Espacio_bloqueosAvgAggregateOutputType = {
   id: number | null
   espacio_id: number | null
   creado_por: number | null
+  feria_id: number | null
 }
 
 export type Espacio_bloqueosSumAggregateOutputType = {
   id: bigint | null
   espacio_id: bigint | null
   creado_por: bigint | null
+  feria_id: bigint | null
 }
 
 export type Espacio_bloqueosMinAggregateOutputType = {
@@ -48,6 +50,7 @@ export type Espacio_bloqueosMinAggregateOutputType = {
   motivo: string | null
   creado_por: bigint | null
   creado_en: Date | null
+  feria_id: bigint | null
 }
 
 export type Espacio_bloqueosMaxAggregateOutputType = {
@@ -58,6 +61,7 @@ export type Espacio_bloqueosMaxAggregateOutputType = {
   motivo: string | null
   creado_por: bigint | null
   creado_en: Date | null
+  feria_id: bigint | null
 }
 
 export type Espacio_bloqueosCountAggregateOutputType = {
@@ -68,6 +72,7 @@ export type Espacio_bloqueosCountAggregateOutputType = {
   motivo: number
   creado_por: number
   creado_en: number
+  feria_id: number
   _all: number
 }
 
@@ -76,12 +81,14 @@ export type Espacio_bloqueosAvgAggregateInputType = {
   id?: true
   espacio_id?: true
   creado_por?: true
+  feria_id?: true
 }
 
 export type Espacio_bloqueosSumAggregateInputType = {
   id?: true
   espacio_id?: true
   creado_por?: true
+  feria_id?: true
 }
 
 export type Espacio_bloqueosMinAggregateInputType = {
@@ -92,6 +99,7 @@ export type Espacio_bloqueosMinAggregateInputType = {
   motivo?: true
   creado_por?: true
   creado_en?: true
+  feria_id?: true
 }
 
 export type Espacio_bloqueosMaxAggregateInputType = {
@@ -102,6 +110,7 @@ export type Espacio_bloqueosMaxAggregateInputType = {
   motivo?: true
   creado_por?: true
   creado_en?: true
+  feria_id?: true
 }
 
 export type Espacio_bloqueosCountAggregateInputType = {
@@ -112,6 +121,7 @@ export type Espacio_bloqueosCountAggregateInputType = {
   motivo?: true
   creado_por?: true
   creado_en?: true
+  feria_id?: true
   _all?: true
 }
 
@@ -209,6 +219,7 @@ export type Espacio_bloqueosGroupByOutputType = {
   motivo: string | null
   creado_por: bigint
   creado_en: Date
+  feria_id: bigint | null
   _count: Espacio_bloqueosCountAggregateOutputType | null
   _avg: Espacio_bloqueosAvgAggregateOutputType | null
   _sum: Espacio_bloqueosSumAggregateOutputType | null
@@ -242,8 +253,10 @@ export type espacio_bloqueosWhereInput = {
   motivo?: Prisma.StringNullableFilter<"espacio_bloqueos"> | string | null
   creado_por?: Prisma.BigIntFilter<"espacio_bloqueos"> | bigint | number
   creado_en?: Prisma.DateTimeFilter<"espacio_bloqueos"> | Date | string
+  feria_id?: Prisma.BigIntNullableFilter<"espacio_bloqueos"> | bigint | number | null
   usuarios?: Prisma.XOR<Prisma.UsuariosScalarRelationFilter, Prisma.usuariosWhereInput>
   espacios_temporales?: Prisma.XOR<Prisma.Espacios_temporalesScalarRelationFilter, Prisma.espacios_temporalesWhereInput>
+  ferias?: Prisma.XOR<Prisma.FeriasNullableScalarRelationFilter, Prisma.feriasWhereInput> | null
 }
 
 export type espacio_bloqueosOrderByWithRelationInput = {
@@ -254,8 +267,10 @@ export type espacio_bloqueosOrderByWithRelationInput = {
   motivo?: Prisma.SortOrderInput | Prisma.SortOrder
   creado_por?: Prisma.SortOrder
   creado_en?: Prisma.SortOrder
+  feria_id?: Prisma.SortOrderInput | Prisma.SortOrder
   usuarios?: Prisma.usuariosOrderByWithRelationInput
   espacios_temporales?: Prisma.espacios_temporalesOrderByWithRelationInput
+  ferias?: Prisma.feriasOrderByWithRelationInput
 }
 
 export type espacio_bloqueosWhereUniqueInput = Prisma.AtLeast<{
@@ -269,8 +284,10 @@ export type espacio_bloqueosWhereUniqueInput = Prisma.AtLeast<{
   motivo?: Prisma.StringNullableFilter<"espacio_bloqueos"> | string | null
   creado_por?: Prisma.BigIntFilter<"espacio_bloqueos"> | bigint | number
   creado_en?: Prisma.DateTimeFilter<"espacio_bloqueos"> | Date | string
+  feria_id?: Prisma.BigIntNullableFilter<"espacio_bloqueos"> | bigint | number | null
   usuarios?: Prisma.XOR<Prisma.UsuariosScalarRelationFilter, Prisma.usuariosWhereInput>
   espacios_temporales?: Prisma.XOR<Prisma.Espacios_temporalesScalarRelationFilter, Prisma.espacios_temporalesWhereInput>
+  ferias?: Prisma.XOR<Prisma.FeriasNullableScalarRelationFilter, Prisma.feriasWhereInput> | null
 }, "id">
 
 export type espacio_bloqueosOrderByWithAggregationInput = {
@@ -281,6 +298,7 @@ export type espacio_bloqueosOrderByWithAggregationInput = {
   motivo?: Prisma.SortOrderInput | Prisma.SortOrder
   creado_por?: Prisma.SortOrder
   creado_en?: Prisma.SortOrder
+  feria_id?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.espacio_bloqueosCountOrderByAggregateInput
   _avg?: Prisma.espacio_bloqueosAvgOrderByAggregateInput
   _max?: Prisma.espacio_bloqueosMaxOrderByAggregateInput
@@ -299,6 +317,7 @@ export type espacio_bloqueosScalarWhereWithAggregatesInput = {
   motivo?: Prisma.StringNullableWithAggregatesFilter<"espacio_bloqueos"> | string | null
   creado_por?: Prisma.BigIntWithAggregatesFilter<"espacio_bloqueos"> | bigint | number
   creado_en?: Prisma.DateTimeWithAggregatesFilter<"espacio_bloqueos"> | Date | string
+  feria_id?: Prisma.BigIntNullableWithAggregatesFilter<"espacio_bloqueos"> | bigint | number | null
 }
 
 export type espacio_bloqueosCreateInput = {
@@ -309,6 +328,7 @@ export type espacio_bloqueosCreateInput = {
   creado_en?: Date | string
   usuarios: Prisma.usuariosCreateNestedOneWithoutEspacio_bloqueosInput
   espacios_temporales: Prisma.espacios_temporalesCreateNestedOneWithoutEspacio_bloqueosInput
+  ferias?: Prisma.feriasCreateNestedOneWithoutEspacio_bloqueosInput
 }
 
 export type espacio_bloqueosUncheckedCreateInput = {
@@ -319,6 +339,7 @@ export type espacio_bloqueosUncheckedCreateInput = {
   motivo?: string | null
   creado_por: bigint | number
   creado_en?: Date | string
+  feria_id?: bigint | number | null
 }
 
 export type espacio_bloqueosUpdateInput = {
@@ -329,6 +350,7 @@ export type espacio_bloqueosUpdateInput = {
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usuarios?: Prisma.usuariosUpdateOneRequiredWithoutEspacio_bloqueosNestedInput
   espacios_temporales?: Prisma.espacios_temporalesUpdateOneRequiredWithoutEspacio_bloqueosNestedInput
+  ferias?: Prisma.feriasUpdateOneWithoutEspacio_bloqueosNestedInput
 }
 
 export type espacio_bloqueosUncheckedUpdateInput = {
@@ -339,6 +361,7 @@ export type espacio_bloqueosUncheckedUpdateInput = {
   motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creado_por?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
 }
 
 export type espacio_bloqueosCreateManyInput = {
@@ -349,6 +372,7 @@ export type espacio_bloqueosCreateManyInput = {
   motivo?: string | null
   creado_por: bigint | number
   creado_en?: Date | string
+  feria_id?: bigint | number | null
 }
 
 export type espacio_bloqueosUpdateManyMutationInput = {
@@ -367,6 +391,7 @@ export type espacio_bloqueosUncheckedUpdateManyInput = {
   motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creado_por?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
 }
 
 export type espacio_bloqueosCountOrderByAggregateInput = {
@@ -377,12 +402,14 @@ export type espacio_bloqueosCountOrderByAggregateInput = {
   motivo?: Prisma.SortOrder
   creado_por?: Prisma.SortOrder
   creado_en?: Prisma.SortOrder
+  feria_id?: Prisma.SortOrder
 }
 
 export type espacio_bloqueosAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   espacio_id?: Prisma.SortOrder
   creado_por?: Prisma.SortOrder
+  feria_id?: Prisma.SortOrder
 }
 
 export type espacio_bloqueosMaxOrderByAggregateInput = {
@@ -393,6 +420,7 @@ export type espacio_bloqueosMaxOrderByAggregateInput = {
   motivo?: Prisma.SortOrder
   creado_por?: Prisma.SortOrder
   creado_en?: Prisma.SortOrder
+  feria_id?: Prisma.SortOrder
 }
 
 export type espacio_bloqueosMinOrderByAggregateInput = {
@@ -403,12 +431,14 @@ export type espacio_bloqueosMinOrderByAggregateInput = {
   motivo?: Prisma.SortOrder
   creado_por?: Prisma.SortOrder
   creado_en?: Prisma.SortOrder
+  feria_id?: Prisma.SortOrder
 }
 
 export type espacio_bloqueosSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   espacio_id?: Prisma.SortOrder
   creado_por?: Prisma.SortOrder
+  feria_id?: Prisma.SortOrder
 }
 
 export type Espacio_bloqueosListRelationFilter = {
@@ -446,6 +476,48 @@ export type espacio_bloqueosUncheckedUpdateManyWithoutEspacios_temporalesNestedI
   connect?: Prisma.espacio_bloqueosWhereUniqueInput | Prisma.espacio_bloqueosWhereUniqueInput[]
   update?: Prisma.espacio_bloqueosUpdateWithWhereUniqueWithoutEspacios_temporalesInput | Prisma.espacio_bloqueosUpdateWithWhereUniqueWithoutEspacios_temporalesInput[]
   updateMany?: Prisma.espacio_bloqueosUpdateManyWithWhereWithoutEspacios_temporalesInput | Prisma.espacio_bloqueosUpdateManyWithWhereWithoutEspacios_temporalesInput[]
+  deleteMany?: Prisma.espacio_bloqueosScalarWhereInput | Prisma.espacio_bloqueosScalarWhereInput[]
+}
+
+export type espacio_bloqueosCreateNestedManyWithoutFeriasInput = {
+  create?: Prisma.XOR<Prisma.espacio_bloqueosCreateWithoutFeriasInput, Prisma.espacio_bloqueosUncheckedCreateWithoutFeriasInput> | Prisma.espacio_bloqueosCreateWithoutFeriasInput[] | Prisma.espacio_bloqueosUncheckedCreateWithoutFeriasInput[]
+  connectOrCreate?: Prisma.espacio_bloqueosCreateOrConnectWithoutFeriasInput | Prisma.espacio_bloqueosCreateOrConnectWithoutFeriasInput[]
+  createMany?: Prisma.espacio_bloqueosCreateManyFeriasInputEnvelope
+  connect?: Prisma.espacio_bloqueosWhereUniqueInput | Prisma.espacio_bloqueosWhereUniqueInput[]
+}
+
+export type espacio_bloqueosUncheckedCreateNestedManyWithoutFeriasInput = {
+  create?: Prisma.XOR<Prisma.espacio_bloqueosCreateWithoutFeriasInput, Prisma.espacio_bloqueosUncheckedCreateWithoutFeriasInput> | Prisma.espacio_bloqueosCreateWithoutFeriasInput[] | Prisma.espacio_bloqueosUncheckedCreateWithoutFeriasInput[]
+  connectOrCreate?: Prisma.espacio_bloqueosCreateOrConnectWithoutFeriasInput | Prisma.espacio_bloqueosCreateOrConnectWithoutFeriasInput[]
+  createMany?: Prisma.espacio_bloqueosCreateManyFeriasInputEnvelope
+  connect?: Prisma.espacio_bloqueosWhereUniqueInput | Prisma.espacio_bloqueosWhereUniqueInput[]
+}
+
+export type espacio_bloqueosUpdateManyWithoutFeriasNestedInput = {
+  create?: Prisma.XOR<Prisma.espacio_bloqueosCreateWithoutFeriasInput, Prisma.espacio_bloqueosUncheckedCreateWithoutFeriasInput> | Prisma.espacio_bloqueosCreateWithoutFeriasInput[] | Prisma.espacio_bloqueosUncheckedCreateWithoutFeriasInput[]
+  connectOrCreate?: Prisma.espacio_bloqueosCreateOrConnectWithoutFeriasInput | Prisma.espacio_bloqueosCreateOrConnectWithoutFeriasInput[]
+  upsert?: Prisma.espacio_bloqueosUpsertWithWhereUniqueWithoutFeriasInput | Prisma.espacio_bloqueosUpsertWithWhereUniqueWithoutFeriasInput[]
+  createMany?: Prisma.espacio_bloqueosCreateManyFeriasInputEnvelope
+  set?: Prisma.espacio_bloqueosWhereUniqueInput | Prisma.espacio_bloqueosWhereUniqueInput[]
+  disconnect?: Prisma.espacio_bloqueosWhereUniqueInput | Prisma.espacio_bloqueosWhereUniqueInput[]
+  delete?: Prisma.espacio_bloqueosWhereUniqueInput | Prisma.espacio_bloqueosWhereUniqueInput[]
+  connect?: Prisma.espacio_bloqueosWhereUniqueInput | Prisma.espacio_bloqueosWhereUniqueInput[]
+  update?: Prisma.espacio_bloqueosUpdateWithWhereUniqueWithoutFeriasInput | Prisma.espacio_bloqueosUpdateWithWhereUniqueWithoutFeriasInput[]
+  updateMany?: Prisma.espacio_bloqueosUpdateManyWithWhereWithoutFeriasInput | Prisma.espacio_bloqueosUpdateManyWithWhereWithoutFeriasInput[]
+  deleteMany?: Prisma.espacio_bloqueosScalarWhereInput | Prisma.espacio_bloqueosScalarWhereInput[]
+}
+
+export type espacio_bloqueosUncheckedUpdateManyWithoutFeriasNestedInput = {
+  create?: Prisma.XOR<Prisma.espacio_bloqueosCreateWithoutFeriasInput, Prisma.espacio_bloqueosUncheckedCreateWithoutFeriasInput> | Prisma.espacio_bloqueosCreateWithoutFeriasInput[] | Prisma.espacio_bloqueosUncheckedCreateWithoutFeriasInput[]
+  connectOrCreate?: Prisma.espacio_bloqueosCreateOrConnectWithoutFeriasInput | Prisma.espacio_bloqueosCreateOrConnectWithoutFeriasInput[]
+  upsert?: Prisma.espacio_bloqueosUpsertWithWhereUniqueWithoutFeriasInput | Prisma.espacio_bloqueosUpsertWithWhereUniqueWithoutFeriasInput[]
+  createMany?: Prisma.espacio_bloqueosCreateManyFeriasInputEnvelope
+  set?: Prisma.espacio_bloqueosWhereUniqueInput | Prisma.espacio_bloqueosWhereUniqueInput[]
+  disconnect?: Prisma.espacio_bloqueosWhereUniqueInput | Prisma.espacio_bloqueosWhereUniqueInput[]
+  delete?: Prisma.espacio_bloqueosWhereUniqueInput | Prisma.espacio_bloqueosWhereUniqueInput[]
+  connect?: Prisma.espacio_bloqueosWhereUniqueInput | Prisma.espacio_bloqueosWhereUniqueInput[]
+  update?: Prisma.espacio_bloqueosUpdateWithWhereUniqueWithoutFeriasInput | Prisma.espacio_bloqueosUpdateWithWhereUniqueWithoutFeriasInput[]
+  updateMany?: Prisma.espacio_bloqueosUpdateManyWithWhereWithoutFeriasInput | Prisma.espacio_bloqueosUpdateManyWithWhereWithoutFeriasInput[]
   deleteMany?: Prisma.espacio_bloqueosScalarWhereInput | Prisma.espacio_bloqueosScalarWhereInput[]
 }
 
@@ -498,6 +570,7 @@ export type espacio_bloqueosCreateWithoutEspacios_temporalesInput = {
   motivo?: string | null
   creado_en?: Date | string
   usuarios: Prisma.usuariosCreateNestedOneWithoutEspacio_bloqueosInput
+  ferias?: Prisma.feriasCreateNestedOneWithoutEspacio_bloqueosInput
 }
 
 export type espacio_bloqueosUncheckedCreateWithoutEspacios_temporalesInput = {
@@ -507,6 +580,7 @@ export type espacio_bloqueosUncheckedCreateWithoutEspacios_temporalesInput = {
   motivo?: string | null
   creado_por: bigint | number
   creado_en?: Date | string
+  feria_id?: bigint | number | null
 }
 
 export type espacio_bloqueosCreateOrConnectWithoutEspacios_temporalesInput = {
@@ -546,6 +620,53 @@ export type espacio_bloqueosScalarWhereInput = {
   motivo?: Prisma.StringNullableFilter<"espacio_bloqueos"> | string | null
   creado_por?: Prisma.BigIntFilter<"espacio_bloqueos"> | bigint | number
   creado_en?: Prisma.DateTimeFilter<"espacio_bloqueos"> | Date | string
+  feria_id?: Prisma.BigIntNullableFilter<"espacio_bloqueos"> | bigint | number | null
+}
+
+export type espacio_bloqueosCreateWithoutFeriasInput = {
+  id?: bigint | number
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  motivo?: string | null
+  creado_en?: Date | string
+  usuarios: Prisma.usuariosCreateNestedOneWithoutEspacio_bloqueosInput
+  espacios_temporales: Prisma.espacios_temporalesCreateNestedOneWithoutEspacio_bloqueosInput
+}
+
+export type espacio_bloqueosUncheckedCreateWithoutFeriasInput = {
+  id?: bigint | number
+  espacio_id: bigint | number
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  motivo?: string | null
+  creado_por: bigint | number
+  creado_en?: Date | string
+}
+
+export type espacio_bloqueosCreateOrConnectWithoutFeriasInput = {
+  where: Prisma.espacio_bloqueosWhereUniqueInput
+  create: Prisma.XOR<Prisma.espacio_bloqueosCreateWithoutFeriasInput, Prisma.espacio_bloqueosUncheckedCreateWithoutFeriasInput>
+}
+
+export type espacio_bloqueosCreateManyFeriasInputEnvelope = {
+  data: Prisma.espacio_bloqueosCreateManyFeriasInput | Prisma.espacio_bloqueosCreateManyFeriasInput[]
+  skipDuplicates?: boolean
+}
+
+export type espacio_bloqueosUpsertWithWhereUniqueWithoutFeriasInput = {
+  where: Prisma.espacio_bloqueosWhereUniqueInput
+  update: Prisma.XOR<Prisma.espacio_bloqueosUpdateWithoutFeriasInput, Prisma.espacio_bloqueosUncheckedUpdateWithoutFeriasInput>
+  create: Prisma.XOR<Prisma.espacio_bloqueosCreateWithoutFeriasInput, Prisma.espacio_bloqueosUncheckedCreateWithoutFeriasInput>
+}
+
+export type espacio_bloqueosUpdateWithWhereUniqueWithoutFeriasInput = {
+  where: Prisma.espacio_bloqueosWhereUniqueInput
+  data: Prisma.XOR<Prisma.espacio_bloqueosUpdateWithoutFeriasInput, Prisma.espacio_bloqueosUncheckedUpdateWithoutFeriasInput>
+}
+
+export type espacio_bloqueosUpdateManyWithWhereWithoutFeriasInput = {
+  where: Prisma.espacio_bloqueosScalarWhereInput
+  data: Prisma.XOR<Prisma.espacio_bloqueosUpdateManyMutationInput, Prisma.espacio_bloqueosUncheckedUpdateManyWithoutFeriasInput>
 }
 
 export type espacio_bloqueosCreateWithoutUsuariosInput = {
@@ -555,6 +676,7 @@ export type espacio_bloqueosCreateWithoutUsuariosInput = {
   motivo?: string | null
   creado_en?: Date | string
   espacios_temporales: Prisma.espacios_temporalesCreateNestedOneWithoutEspacio_bloqueosInput
+  ferias?: Prisma.feriasCreateNestedOneWithoutEspacio_bloqueosInput
 }
 
 export type espacio_bloqueosUncheckedCreateWithoutUsuariosInput = {
@@ -564,6 +686,7 @@ export type espacio_bloqueosUncheckedCreateWithoutUsuariosInput = {
   fecha_fin: Date | string
   motivo?: string | null
   creado_en?: Date | string
+  feria_id?: bigint | number | null
 }
 
 export type espacio_bloqueosCreateOrConnectWithoutUsuariosInput = {
@@ -599,6 +722,7 @@ export type espacio_bloqueosUpdateWithoutEspacios_temporalesInput = {
   motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usuarios?: Prisma.usuariosUpdateOneRequiredWithoutEspacio_bloqueosNestedInput
+  ferias?: Prisma.feriasUpdateOneWithoutEspacio_bloqueosNestedInput
 }
 
 export type espacio_bloqueosUncheckedUpdateWithoutEspacios_temporalesInput = {
@@ -608,6 +732,7 @@ export type espacio_bloqueosUncheckedUpdateWithoutEspacios_temporalesInput = {
   motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creado_por?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
 }
 
 export type espacio_bloqueosCreateManyEspacios_temporalesInput = {
@@ -617,10 +742,52 @@ export type espacio_bloqueosCreateManyEspacios_temporalesInput = {
   motivo?: string | null
   creado_por: bigint | number
   creado_en?: Date | string
+  feria_id?: bigint | number | null
 }
 
 export type espacio_bloqueosUncheckedUpdateManyWithoutEspacios_temporalesInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creado_por?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+}
+
+export type espacio_bloqueosCreateManyFeriasInput = {
+  id?: bigint | number
+  espacio_id: bigint | number
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  motivo?: string | null
+  creado_por: bigint | number
+  creado_en?: Date | string
+}
+
+export type espacio_bloqueosUpdateWithoutFeriasInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  usuarios?: Prisma.usuariosUpdateOneRequiredWithoutEspacio_bloqueosNestedInput
+  espacios_temporales?: Prisma.espacios_temporalesUpdateOneRequiredWithoutEspacio_bloqueosNestedInput
+}
+
+export type espacio_bloqueosUncheckedUpdateWithoutFeriasInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  espacio_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  creado_por?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type espacio_bloqueosUncheckedUpdateManyWithoutFeriasInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  espacio_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -635,6 +802,7 @@ export type espacio_bloqueosCreateManyUsuariosInput = {
   fecha_fin: Date | string
   motivo?: string | null
   creado_en?: Date | string
+  feria_id?: bigint | number | null
 }
 
 export type espacio_bloqueosUpdateWithoutUsuariosInput = {
@@ -644,6 +812,7 @@ export type espacio_bloqueosUpdateWithoutUsuariosInput = {
   motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   espacios_temporales?: Prisma.espacios_temporalesUpdateOneRequiredWithoutEspacio_bloqueosNestedInput
+  ferias?: Prisma.feriasUpdateOneWithoutEspacio_bloqueosNestedInput
 }
 
 export type espacio_bloqueosUncheckedUpdateWithoutUsuariosInput = {
@@ -653,6 +822,7 @@ export type espacio_bloqueosUncheckedUpdateWithoutUsuariosInput = {
   fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
 }
 
 export type espacio_bloqueosUncheckedUpdateManyWithoutUsuariosInput = {
@@ -662,6 +832,7 @@ export type espacio_bloqueosUncheckedUpdateManyWithoutUsuariosInput = {
   fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   motivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
 }
 
 
@@ -674,8 +845,10 @@ export type espacio_bloqueosSelect<ExtArgs extends runtime.Types.Extensions.Inte
   motivo?: boolean
   creado_por?: boolean
   creado_en?: boolean
+  feria_id?: boolean
   usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
   espacios_temporales?: boolean | Prisma.espacios_temporalesDefaultArgs<ExtArgs>
+  ferias?: boolean | Prisma.espacio_bloqueos$feriasArgs<ExtArgs>
 }, ExtArgs["result"]["espacio_bloqueos"]>
 
 export type espacio_bloqueosSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -686,8 +859,10 @@ export type espacio_bloqueosSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   motivo?: boolean
   creado_por?: boolean
   creado_en?: boolean
+  feria_id?: boolean
   usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
   espacios_temporales?: boolean | Prisma.espacios_temporalesDefaultArgs<ExtArgs>
+  ferias?: boolean | Prisma.espacio_bloqueos$feriasArgs<ExtArgs>
 }, ExtArgs["result"]["espacio_bloqueos"]>
 
 export type espacio_bloqueosSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -698,8 +873,10 @@ export type espacio_bloqueosSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   motivo?: boolean
   creado_por?: boolean
   creado_en?: boolean
+  feria_id?: boolean
   usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
   espacios_temporales?: boolean | Prisma.espacios_temporalesDefaultArgs<ExtArgs>
+  ferias?: boolean | Prisma.espacio_bloqueos$feriasArgs<ExtArgs>
 }, ExtArgs["result"]["espacio_bloqueos"]>
 
 export type espacio_bloqueosSelectScalar = {
@@ -710,20 +887,24 @@ export type espacio_bloqueosSelectScalar = {
   motivo?: boolean
   creado_por?: boolean
   creado_en?: boolean
+  feria_id?: boolean
 }
 
-export type espacio_bloqueosOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "espacio_id" | "fecha_inicio" | "fecha_fin" | "motivo" | "creado_por" | "creado_en", ExtArgs["result"]["espacio_bloqueos"]>
+export type espacio_bloqueosOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "espacio_id" | "fecha_inicio" | "fecha_fin" | "motivo" | "creado_por" | "creado_en" | "feria_id", ExtArgs["result"]["espacio_bloqueos"]>
 export type espacio_bloqueosInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
   espacios_temporales?: boolean | Prisma.espacios_temporalesDefaultArgs<ExtArgs>
+  ferias?: boolean | Prisma.espacio_bloqueos$feriasArgs<ExtArgs>
 }
 export type espacio_bloqueosIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
   espacios_temporales?: boolean | Prisma.espacios_temporalesDefaultArgs<ExtArgs>
+  ferias?: boolean | Prisma.espacio_bloqueos$feriasArgs<ExtArgs>
 }
 export type espacio_bloqueosIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usuarios?: boolean | Prisma.usuariosDefaultArgs<ExtArgs>
   espacios_temporales?: boolean | Prisma.espacios_temporalesDefaultArgs<ExtArgs>
+  ferias?: boolean | Prisma.espacio_bloqueos$feriasArgs<ExtArgs>
 }
 
 export type $espacio_bloqueosPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -731,6 +912,7 @@ export type $espacio_bloqueosPayload<ExtArgs extends runtime.Types.Extensions.In
   objects: {
     usuarios: Prisma.$usuariosPayload<ExtArgs>
     espacios_temporales: Prisma.$espacios_temporalesPayload<ExtArgs>
+    ferias: Prisma.$feriasPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: bigint
@@ -740,6 +922,7 @@ export type $espacio_bloqueosPayload<ExtArgs extends runtime.Types.Extensions.In
     motivo: string | null
     creado_por: bigint
     creado_en: Date
+    feria_id: bigint | null
   }, ExtArgs["result"]["espacio_bloqueos"]>
   composites: {}
 }
@@ -1136,6 +1319,7 @@ export interface Prisma__espacio_bloqueosClient<T, Null = never, ExtArgs extends
   readonly [Symbol.toStringTag]: "PrismaPromise"
   usuarios<T extends Prisma.usuariosDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.usuariosDefaultArgs<ExtArgs>>): Prisma.Prisma__usuariosClient<runtime.Types.Result.GetResult<Prisma.$usuariosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   espacios_temporales<T extends Prisma.espacios_temporalesDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.espacios_temporalesDefaultArgs<ExtArgs>>): Prisma.Prisma__espacios_temporalesClient<runtime.Types.Result.GetResult<Prisma.$espacios_temporalesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  ferias<T extends Prisma.espacio_bloqueos$feriasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.espacio_bloqueos$feriasArgs<ExtArgs>>): Prisma.Prisma__feriasClient<runtime.Types.Result.GetResult<Prisma.$feriasPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1172,6 +1356,7 @@ export interface espacio_bloqueosFieldRefs {
   readonly motivo: Prisma.FieldRef<"espacio_bloqueos", 'String'>
   readonly creado_por: Prisma.FieldRef<"espacio_bloqueos", 'BigInt'>
   readonly creado_en: Prisma.FieldRef<"espacio_bloqueos", 'DateTime'>
+  readonly feria_id: Prisma.FieldRef<"espacio_bloqueos", 'BigInt'>
 }
     
 
@@ -1570,6 +1755,25 @@ export type espacio_bloqueosDeleteManyArgs<ExtArgs extends runtime.Types.Extensi
    * Limit how many espacio_bloqueos to delete.
    */
   limit?: number
+}
+
+/**
+ * espacio_bloqueos.ferias
+ */
+export type espacio_bloqueos$feriasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ferias
+   */
+  select?: Prisma.feriasSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ferias
+   */
+  omit?: Prisma.feriasOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.feriasInclude<ExtArgs> | null
+  where?: Prisma.feriasWhereInput
 }
 
 /**

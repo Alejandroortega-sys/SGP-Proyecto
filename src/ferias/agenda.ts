@@ -78,6 +78,52 @@ export function buscarConflicto<T extends RangoFechas>(
   );
 }
 
+/** Devuelve todos los rangos ocupados que se cruzan con el solicitado. */
+export function buscarTodosLosConflictos<T extends RangoFechas>(
+  rango: RangoFechas,
+  ocupados: readonly T[],
+): T[] {
+  return ocupados.filter((ocupado) =>
+    rangosSolapan(
+      rango.fechaInicio,
+      rango.fechaFin,
+      ocupado.fechaInicio,
+      ocupado.fechaFin,
+    ),
+  );
+}
+
+/**
+ * Une rangos solapados o contiguos para que una lista de ocupaciones se pueda
+ * usar como bloqueo continuo en las sugerencias de fechas.
+ */
+export function unirRangos(ocupados: readonly RangoFechas[]): RangoFechas[] {
+  const ordenados = [...ocupados]
+    .filter((rango) => FORMATO_FECHA.test(rango.fechaInicio))
+    .filter((rango) => FORMATO_FECHA.test(rango.fechaFin))
+    .sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio));
+
+  const unidos: RangoFechas[] = [];
+  for (const rango of ordenados) {
+    const ultimo = unidos[unidos.length - 1];
+    if (!ultimo) {
+      unidos.push({ ...rango });
+      continue;
+    }
+
+    if (rango.fechaInicio <= sumarDias(ultimo.fechaFin, 1)) {
+      if (rango.fechaFin > ultimo.fechaFin) {
+        ultimo.fechaFin = rango.fechaFin;
+      }
+      continue;
+    }
+
+    unidos.push({ ...rango });
+  }
+
+  return unidos;
+}
+
 /**
  * Busca fechas libres para la misma zona conservando la duración solicitada.
  *

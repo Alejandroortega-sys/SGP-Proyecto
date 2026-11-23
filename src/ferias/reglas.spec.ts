@@ -3,7 +3,11 @@ import {
   ESTADOS_FERIA_ACTIVA,
   etiquetaEstadoFeria,
   hoyBogotaISO,
+  puedeAprobarFeria,
+  puedeCancelarFeria,
+  puedeMoverFeria,
   validarFechasFeria,
+  validarMotivoCancelacion,
   validarPuestosContraAforo,
 } from './reglas';
 
@@ -68,5 +72,28 @@ describe('reglas de feria', () => {
     expect(etiquetaEstadoFeria('radicada')).toBe('Radicada');
     expect(etiquetaEstadoFeria('aprobada')).toBe('Aprobada');
     expect(etiquetaEstadoFeria('cancelada')).toBe('Cancelada');
+  });
+
+  it('solo permite aprobar una feria radicada', () => {
+    expect(puedeAprobarFeria('radicada')).toBe(true);
+    expect(puedeAprobarFeria('aprobada')).toBe(false);
+    expect(puedeAprobarFeria('cancelada')).toBe(false);
+  });
+
+  it('permite mover y cancelar ferias radicadas o aprobadas', () => {
+    expect(puedeMoverFeria('radicada')).toBe(true);
+    expect(puedeMoverFeria('aprobada')).toBe(true);
+    expect(puedeMoverFeria('realizada')).toBe(false);
+    expect(puedeCancelarFeria('radicada')).toBe(true);
+    expect(puedeCancelarFeria('aprobada')).toBe(true);
+    expect(puedeCancelarFeria('cancelada')).toBe(false);
+  });
+
+  it('exige un motivo de cancelación no vacío', () => {
+    expect(validarMotivoCancelacion('   ')).toContain('Debes escribir');
+    expect(validarMotivoCancelacion('Jornada institucional')).toBeNull();
+    expect(validarMotivoCancelacion('x'.repeat(2001))).toContain(
+      'no puede superar',
+    );
   });
 });

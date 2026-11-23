@@ -1,5 +1,6 @@
 import type {
   AgendaFeria,
+  AgendaFeriaGestor,
   ComercianteActualizado,
   ComercianteListado,
   ConfirmacionImportacion,
@@ -18,6 +19,15 @@ import type {
   FiltrosEspacios,
   FiltrosEspaciosGestor,
   FiltrosFerias,
+  FiltrosFeriasGestor,
+  FiltrosAgendaFeria,
+  CrucesFeria,
+  FeriaGestorDetalle,
+  ListarFeriasGestorResponse,
+  RespuestaAprobarFeria,
+  RespuestaCancelarFeria,
+  RespuestaMoverFeria,
+  SolicitudMoverFeria,
   FiltrosNotificaciones,
   FiltrosSolicitudes,
   FiltrosHistorialZona,
@@ -1602,4 +1612,90 @@ export function descargarDocumentoFeria(
     false,
     "application/pdf,image/jpeg,image/png,application/octet-stream",
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* Calendario y administración de ferias (HU-22)                       */
+/* ------------------------------------------------------------------ */
+
+/** Listado administrativo de ferias. */
+export function listarFeriasGestor(
+  filtros: FiltrosFeriasGestor = {},
+): Promise<ListarFeriasGestorResponse> {
+  return peticion<ListarFeriasGestorResponse>(
+    conParametros("/gestor/ferias", {
+      estado: filtros.estado,
+      zonaId: filtros.zonaId,
+      desde: filtros.desde,
+      hasta: filtros.hasta,
+      busqueda: filtros.busqueda,
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
+}
+
+/** Agenda de ferias por rango de fechas y zona. */
+export function obtenerAgendaFeriasGestor(
+  filtros: FiltrosAgendaFeria,
+): Promise<AgendaFeriaGestor> {
+  return peticion<AgendaFeriaGestor>(
+    conParametros("/gestor/ferias/agenda", {
+      desde: filtros.desde,
+      hasta: filtros.hasta,
+      zonaId: filtros.zonaId,
+      incluirTodos: filtros.incluirTodos,
+    }),
+  );
+}
+
+/** Detalle administrativo de una feria. */
+export function obtenerFeriaGestor(id: string): Promise<FeriaGestorDetalle> {
+  return peticion<FeriaGestorDetalle>(`/gestor/ferias/${id}`);
+}
+
+/** Vista previa de cruces para aprobar o mover una feria. */
+export function consultarCrucesFeria(
+  id: string,
+  datos: {
+    zonaId?: string;
+    fechaInicio: string;
+    fechaFin: string;
+    paraAprobacion?: boolean;
+  },
+): Promise<CrucesFeria> {
+  return peticion<CrucesFeria>(
+    conParametros(`/gestor/ferias/${id}/cruces`, datos),
+  );
+}
+
+/** Aprueba una feria y bloquea los espacios de su zona. */
+export function aprobarFeriaGestor(
+  id: string,
+): Promise<RespuestaAprobarFeria> {
+  return peticion<RespuestaAprobarFeria>(`/gestor/ferias/${id}/aprobar`, {
+    method: "POST",
+  });
+}
+
+/** Mueve una feria a otra zona o rango de fechas. */
+export function moverFeriaGestor(
+  id: string,
+  datos: SolicitudMoverFeria,
+): Promise<RespuestaMoverFeria> {
+  return peticion<RespuestaMoverFeria>(`/gestor/ferias/${id}/agenda`, {
+    method: "PATCH",
+    cuerpo: datos,
+  });
+}
+
+/** Cancela una feria con un motivo obligatorio. */
+export function cancelarFeriaGestor(
+  id: string,
+  motivo: string,
+): Promise<RespuestaCancelarFeria> {
+  return peticion<RespuestaCancelarFeria>(`/gestor/ferias/${id}/cancelar`, {
+    method: "POST",
+    cuerpo: { motivo },
+  });
 }

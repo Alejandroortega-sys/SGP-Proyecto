@@ -1,9 +1,9 @@
-# Módulo de Ferias — HU-21
+# Módulo de Ferias — HU-21 y HU-22
 
 **Proyecto:** Plataforma Web de Gestión del Espacio Público, Ferias Agroecológicas y Comercio Formal/Informal de Tuluá (Equipo 6)
-**Módulo NestJS:** `src/ferias/` · **Ruta base:** `/ferias`
-**Frontend:** `/organizador/ferias` · **Componentes:** `frontend/src/features/ferias/`
-**Migración:** `dataBase/13_ferias_hu21.sql`
+**Módulo NestJS:** `src/ferias/` · **Rutas base:** `/ferias` y `/gestor/ferias`
+**Frontend:** `/organizador/ferias` y `/gestor/ferias` · **Componentes:** `frontend/src/features/ferias/` y `frontend/src/features/ferias-gestor/`
+**Migraciones:** `dataBase/13_ferias_hu21.sql`, `dataBase/14_notificaciones_feria_hu21.sql` y `dataBase/15_ferias_hu22.sql`
 
 ---
 
@@ -20,8 +20,15 @@ Este módulo permite al **organizador de feria autenticado** solicitar el uso de
 | `GET` | `/ferias/:id` | Organizador dueño | Detalle con productos y adjuntos |
 | `POST` | `/ferias` | Organizador | Radica la feria con adjuntos opcionales |
 | `GET` | `/ferias/:id/documentos/:documentoId/archivo` | Organizador dueño / Gestor | Descarga autenticada |
+| `GET` | `/gestor/ferias` | Gestor | Listado administrativo con filtros y paginación |
+| `GET` | `/gestor/ferias/agenda` | Gestor | Agenda por rango de fechas, zona y estados |
+| `GET` | `/gestor/ferias/:id` | Gestor | Detalle administrativo |
+| `GET` | `/gestor/ferias/:id/cruces` | Gestor | Vista previa de cruces y sugerencias |
+| `POST` | `/gestor/ferias/:id/aprobar` | Gestor | Aprueba y bloquea los espacios de la zona |
+| `PATCH` | `/gestor/ferias/:id/agenda` | Gestor | Mueve la feria y reubica sus bloqueos |
+| `POST` | `/gestor/ferias/:id/cancelar` | Gestor | Cancela con motivo y libera los espacios |
 
-La aprobación, el movimiento y la cancelación de ferias pertenecen a HU-22 y **no forman parte de esta entrega**.
+La administración del calendario, la aprobación, el movimiento y la cancelación pertenecen a HU-22 y se documentan en la sección 10.
 
 ---
 
@@ -42,20 +49,36 @@ Ya existía en `01_creacion_bd.sql`:
 | `fecha_inicio` / `fecha_fin` | DATE | `fin >= inicio` |
 | `numero_puestos` | INT | `> 0` y `<= aforo_maximo` |
 | `estado` | `estado_feria` | `radicada` al crear |
-| `revisor_id` | BIGINT | FK a `gestores` (HU-22) |
+| `revisor_id` | BIGINT | FK a `gestores`; gestor que aprobó (HU-22) |
 | `radicada_en` | TIMESTAMPTZ | `now()` |
+| `motivo_cancelacion` | TEXT | Motivo obligatorio al cancelar (HU-22) |
+| `aprobada_en` / `cancelada_en` | TIMESTAMPTZ | Fechas de decisión (HU-22) |
+| `cancelada_por` | BIGINT | FK a `gestores`; gestor que canceló (HU-22) |
+| `actualizado_en` | TIMESTAMPTZ | Última modificación (HU-22) |
+
+`espacio_bloqueos.feria_id` vincula cada bloqueo de espacio con la feria que lo originó. La migración 15 agrega la columna, su FK con borrado en cascada, el índice y los triggers de actualización y auditoría de `ferias`.
 
 ### 2.2 Estados
 
 | Estado | Significado |
 |---|---|
-| `radicada` | Solicitud enviada y pendiente de revisión |
-| `aprobada` | Aprobada por el gestor |
-| `rechazada` | Rechazada |
-| `cancelada` | Cancelada |
-| `realizada` | Ya se realizó |
+| `radicada` | Solicitud enviada y pendiente de aprobación |
+| `aprobada` | Aprobada por el gestor; bloquea los espacios de la zona |
+| `rechazada` | Estado histórico, sin acción en HU-22 |
+| `cancelada` | Cancelada con motivo; libera los espacios |
+| `realizada` | Estado histórico de una feria ya realizada |
 
-Solo `radicada` y `aprobada` ocupan la agenda. La interfaz muestra las etiquetas en español.
+Solo `radicada` y `aprobada` ocupan la agenda. Las acciones de HU-22 son:
+
+| Desde | Acción | Hacia |
+|---|---|---|
+| `radicada` | Aprobar | `aprobada` |
+| `radicada` | Mover | `radicada` con nuevas fechas/zona |
+| `radicada` | Cancelar | `cancelada` |
+| `aprobada` | Mover | `aprobada` con bloqueos reubicados |
+| `aprobada` | Cancelar | `cancelada` |
+
+No existe acción para `rechazada` ni `realizada`; se muestran en el calendario cuando se activa **Ver todos**.
 
 ### 2.3 `feria_documentos`
 
@@ -274,6 +297,13 @@ Al radicar:
 
 La bandeja de notificaciones expone `feriaId`. Cuando el usuario es el organizador dueño, muestra el enlace **Ver feria** hacia `/organizador/ferias/[id]`. La migración `14_notificaciones_feria_hu21.sql` agrega la columna y su índice.
 
+Al aprobar, mover o cancelar (HU-22):
+
+- Se crea una notificación interna con `feria_id` y tipo `feria_aprobada`, `feria_movida` o `feria_cancelada`.
+- Se envía un correo al organizador con la acción, la zona, las fechas y el motivo cuando aplica.
+- El detalle del organizador muestra `aprobadaEn`, `canceladaEn` y `motivoCancelacion`.
+- Si el correo falla, la operación queda aplicada y la respuesta incluye `correoEnviado: false`.
+
 ---
 
 ## 6. Interfaz del organizador
@@ -319,7 +349,7 @@ Comportamientos:
 
 ```powershell
 pnpm test -- --runInBand src/ferias
-pnpm test:e2e -- --runInBand test/ferias.e2e-spec.ts
+pnpm test:e2e -- --runInBand test/ferias.e2e-spec.ts test/gestor-ferias.e2e-spec.ts
 ```
 
 Cubren:
@@ -357,6 +387,7 @@ Cubren:
 ```powershell
 psql -U postgres -d "sgp_tulua" -f dataBase/13_ferias_hu21.sql
 psql -U postgres -d "sgp_tulua" -f dataBase/14_notificaciones_feria_hu21.sql
+psql -U postgres -d "sgp_tulua" -f dataBase/15_ferias_hu22.sql
 pnpm exec prisma generate
 ```
 
@@ -371,7 +402,7 @@ Prueba manual:
 7. Abre el detalle y descarga el adjunto.
 8. Intenta 26 puestos en Parque La Guadua: el formulario debe impedirlo.
 
-> Para las pruebas Playwright debe estar aplicada la migración 13. El seed incluye una feria aprobada en Parque La Guadua (10–12 dic 2026) y una radicada en Centro - Calle 30 (15–17 ene 2027), útiles para probar cruces.
+> Para las pruebas Playwright deben estar aplicadas las migraciones 13, 14 y 15. El seed incluye una feria aprobada en Parque La Guadua (10–12 dic 2026) y una radicada en Centro - Calle 30 (15–17 ene 2027), útiles para probar cruces y aprobación.
 
 ---
 
@@ -383,18 +414,22 @@ Prueba manual:
 |---|---|
 | `dataBase/13_ferias_hu21.sql` | `feria_documentos`, índice de agenda, sincronización del consecutivo y verificación de la restricción EXCLUDE |
 | `dataBase/14_notificaciones_feria_hu21.sql` | `notificaciones.feria_id`, FK e índice |
-| `prisma/schema.prisma` | Modelo `feria_documentos` y relación con `ferias` |
-| `src/ferias/ferias.module.ts` | Módulo Nest |
-| `src/ferias/ferias.controller.ts` | Endpoints, roles, Multer y Swagger |
+| `dataBase/15_ferias_hu22.sql` | Campos de decisión, `espacio_bloqueos.feria_id`, triggers y bloqueos retroactivos |
+| `prisma/schema.prisma` | Modelos `feria_documentos`, `espacio_bloqueos` y relación con `ferias` |
+| `src/ferias/ferias.module.ts` | Módulo Nest con los controladores del organizador y del gestor |
+| `src/ferias/ferias.controller.ts` | Endpoints del organizador, roles, Multer y Swagger |
+| `src/ferias/gestor-ferias.controller.ts` | Agenda, aprobación, movimiento y cancelación |
+| `src/ferias/gestor-ferias.service.ts` | Transacciones, cruces, bloqueo y liberación de espacios |
 | `src/ferias/ferias.service.ts` | Reglas, transacción, agenda, adjuntos y notificaciones |
-| `src/ferias/agenda.ts` | Solapes, conflictos y sugerencias puras |
-| `src/ferias/reglas.ts` | Fechas, aforo, estados y etiquetas |
-| `src/ferias/dto/ferias.dto.ts` | DTOs de entrada y respuesta |
+| `src/ferias/agenda.ts` | Solapes, conflictos, unión de rangos y sugerencias puras |
+| `src/ferias/reglas.ts` | Fechas, aforo, estados, transiciones y motivo de cancelación |
+| `src/ferias/dto/ferias.dto.ts` | DTOs del organizador |
+| `src/ferias/dto/gestor-ferias.dto.ts` | DTOs del calendario y las acciones del gestor |
 | `src/common/almacenamiento-archivos.ts` | Almacenamiento privado compartido |
-| `src/correo/correo.service.ts` | `enviarConfirmacionFeria` |
-| `src/notificaciones/notificaciones.service.ts` | `crearAvisoFeria` |
+| `src/correo/correo.service.ts` | `enviarConfirmacionFeria` y `enviarCambioEstadoFeria` |
+| `src/notificaciones/notificaciones.service.ts` | `crearAvisoFeria` y `enviarCorreoFeria` |
 | `src/ferias/*.spec.ts` | Pruebas unitarias |
-| `test/ferias.e2e-spec.ts` | Pruebas e2e del backend |
+| `test/ferias.e2e-spec.ts` · `test/gestor-ferias.e2e-spec.ts` | Pruebas e2e del backend |
 
 ### Frontend
 
@@ -409,5 +444,155 @@ Prueba manual:
 | `frontend/src/features/ferias/lista-ferias.tsx` | Listado |
 | `frontend/src/features/ferias/detalle-feria.tsx` | Detalle y descarga |
 | `frontend/src/features/ferias/validaciones-feria.ts` | Validaciones y etiquetas |
-| `frontend/e2e/ferias.spec.ts` | Playwright |
+| `frontend/src/app/(gestor)/gestor/ferias/page.tsx` | Ruta del calendario del gestor |
+| `frontend/src/features/ferias-gestor/calendario-ferias.tsx` | Contenedor, filtros, resumen y acciones |
+| `frontend/src/features/ferias-gestor/calendario-mensual-ferias.tsx` | Vista mensual |
+| `frontend/src/features/ferias-gestor/calendario-semanal-ferias.tsx` | Vista semanal por zona |
+| `frontend/src/features/ferias-gestor/panel-feria.tsx` | Detalle y acciones del evento |
+| `frontend/src/features/ferias-gestor/acciones-feria.tsx` | Modales de aprobar, mover y cancelar |
+| `frontend/src/features/ferias-gestor/calendario-ferias-utilidades.ts` | Utilidades puras del calendario |
+| `frontend/src/features/ferias-gestor/estilos-estado-feria.ts` | Colores, símbolos y etiquetas |
+| `frontend/e2e/ferias.spec.ts` · `frontend/e2e/gestor-calendario-ferias.spec.ts` | Playwright |
 | `frontend/e2e/limpieza-ferias.ts` | Limpieza de datos de prueba |
+
+---
+
+## 10. Calendario y administración de ferias (HU-22)
+
+### 10.1 Acceso
+
+Todos los endpoints de `/gestor/ferias` exigen `rol = gestor`. Los perfiles **revisor** y **administrador** pueden consultar, aprobar, mover y cancelar, siguiendo el criterio de HU-15, HU-19 y HU-20.
+
+### 10.2 Endpoints
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/gestor/ferias` | Listado con `estado`, `zonaId`, `desde`, `hasta`, `busqueda`, `pagina` y `limite` |
+| `GET` | `/gestor/ferias/agenda` | Eventos del rango, zonas activas, resumen y cruces. Por defecto solo `radicada` y `aprobada`; `incluirTodos=true` agrega el resto |
+| `GET` | `/gestor/ferias/:id` | Detalle con organizador, productos, documentos, espacios bloqueados y motivo de cancelación |
+| `GET` | `/gestor/ferias/:id/cruces` | Vista previa. Recibe `zonaId`, `fechaInicio`, `fechaFin` y `paraAprobacion=true` para revisar espacios individuales |
+| `POST` | `/gestor/ferias/:id/aprobar` | Cambia a `aprobada` y crea los bloqueos |
+| `PATCH` | `/gestor/ferias/:id/agenda` | Recibe `zonaId`, `fechaInicio`, `fechaFin` y `motivo?` |
+| `POST` | `/gestor/ferias/:id/cancelar` | Recibe `motivo` obligatorio (1–2000 caracteres) |
+
+Ejemplo de agenda:
+
+```http
+GET /gestor/ferias/agenda?desde=2026-12-01&hasta=2026-12-31&zonaId=4
+```
+
+```json
+{
+  "desde": "2026-12-01",
+  "hasta": "2026-12-31",
+  "zonaId": "4",
+  "zonas": [{ "id": "4", "nombre": "Parque La Guadua", "activa": true }],
+  "eventos": [
+    {
+      "id": "1",
+      "numeroRadicado": "FER-2026-00001",
+      "nombre": "Feria Agroecológica de Diciembre",
+      "estado": "aprobada",
+      "fechaInicio": "2026-12-10",
+      "fechaFin": "2026-12-12",
+      "zona": { "id": "4", "nombre": "Parque La Guadua" },
+      "tieneCruces": false
+    }
+  ],
+  "cruces": [],
+  "resumen": {
+    "total": 1,
+    "radicadas": 0,
+    "aprobadas": 1,
+    "canceladas": 0,
+    "rechazadas": 0,
+    "realizadas": 0
+  }
+}
+```
+
+### 10.3 Reglas de aprobación
+
+1. La feria debe estar en `radicada`.
+2. La zona debe estar activa y el número de puestos no puede superar el aforo.
+3. La fecha de inicio no puede ser anterior a hoy.
+4. No debe existir otra feria `radicada` o `aprobada` en la misma zona con fechas solapadas.
+5. Todos los espacios de la zona deben estar libres: sin otro bloqueo, permiso `vigente`, solicitud `aprobada` ni asignación manual en el rango.
+6. Si hay cualquier conflicto, responde `409` y **no** modifica la feria ni crea bloqueos.
+7. Si todo está libre, en una sola transacción:
+   - cambia a `aprobada`, guarda `revisor_id` y `aprobada_en`;
+   - inserta un registro en `espacio_bloqueos` por cada espacio de la zona, con `feria_id` y el motivo «Feria FER-... — nombre»;
+   - crea la notificación interna.
+8. El correo se envía después del commit; su fallo no revierte la aprobación.
+
+### 10.4 Reglas de cancelación y movimiento
+
+- **Cancelar:** exige `radicada` o `aprobada`; el motivo es obligatorio; guarda `cancelada_en` y `cancelada_por`; elimina solo los bloqueos con `feria_id` de esa feria. Los triggers de HU-15 recalculan el estado de cada espacio.
+- **Mover:** exige `radicada` o `aprobada`; valida la zona y el aforo; vuelve a consultar cruces excluyendo la propia feria; si estaba aprobada, elimina y recrea sus bloqueos en la misma transacción.
+- **Concurrencia:** se bloquean la feria (`FOR UPDATE`), la zona y los espacios en orden de `id`. Las restricciones `EXCLUDE` de `ferias` y `espacio_bloqueos` siguen siendo la última barrera.
+- **Estados terminales:** `cancelada`, `rechazada` y `realizada` no admiten aprobación, movimiento ni cancelación.
+
+### 10.5 Interfaz del gestor
+
+Ruta: **`/gestor/ferias`**.
+
+- Vista **Mes** con una cuadrícula de 42 días y los eventos de cada día.
+- Vista **Semana** con una fila por zona y siete columnas de días; en móvil se convierte en una lista vertical.
+- Filtros por zona y por estados. Por defecto solo se muestran `radicada` y `aprobada`; **Ver también canceladas, rechazadas y realizadas** amplía la vista.
+- Navegación anterior, siguiente y **Hoy**; resumen de eventos, pendientes y aprobadas.
+- Leyenda con color, símbolo y texto, sin depender solo del color.
+- Panel **Por aprobar** con las ferias `radicada`.
+- Al abrir un evento se muestra su detalle y las acciones **Aprobar**, **Mover** y **Cancelar**, habilitadas según el estado.
+- **Mover** consulta la vista previa de cruces, explica cada conflicto, permite aplicar una fecha sugerida y bloquea el guardado mientras haya conflicto.
+- **Cancelar** exige un motivo y muestra los espacios que se liberarán.
+- Responsive desde 360 px, sin desplazamiento horizontal, con áreas táctiles de al menos 44 px.
+
+### 10.6 Bloqueos de espacios y administración de espacios
+
+- `espacio_bloqueos.feria_id` identifica los bloqueos administrados por el calendario.
+- Esos bloqueos no se editan ni se eliminan desde `/gestor/espacios`; se liberan al cancelar o mover la feria.
+- El listado y la ficha del comerciante muestran el espacio como `bloqueado` con el motivo de la feria.
+
+### 10.7 Pruebas
+
+```powershell
+# Backend
+pnpm test -- --runInBand src/ferias
+pnpm test:e2e -- --runInBand test/gestor-ferias.e2e-spec.ts
+
+# Frontend
+cd frontend
+pnpm test
+pnpm test:e2e e2e/gestor-calendario-ferias.spec.ts
+```
+
+Cubren:
+
+- Agenda por rango, filtros y detección de cruces.
+- Aprobación con bloqueo de todos los espacios.
+- Rechazo de la aprobación si hay feria, permiso, solicitud, bloqueo o asignación manual en conflicto.
+- Cancelación con motivo obligatorio y liberación exacta de los bloqueos.
+- Movimiento con reubicación de bloqueos y `409` ante cruces.
+- Notificación interna y correo para aprobación, movimiento y cancelación.
+- Roles: revisor y administrador permitidos; comerciante y organizador rechazados.
+- UI mensual, semanal por zona, acciones desde el calendario y vista a 360 px.
+
+### 10.8 Migración y prueba manual
+
+```powershell
+psql -U postgres -d "sgp_tulua" -f dataBase/15_ferias_hu22.sql
+pnpm exec prisma generate
+```
+
+La migración es idempotente. Agrega los campos de decisión, `espacio_bloqueos.feria_id`, los triggers de auditoría de `ferias` y crea bloqueos retroactivos para las ferias ya aprobadas cuando sus espacios están libres.
+
+Prueba manual:
+
+1. Inicia sesión como `revisor@tulua.gov.co` / `Admin1234`.
+2. Abre **Ferias** en el menú del gestor.
+3. En diciembre de 2026 verifica la feria aprobada de Parque La Guadua; en enero de 2027, la feria radicada de Centro - Calle 30.
+4. Aprueba una feria radicada y comprueba que sus espacios aparecen bloqueados en la ficha del comerciante.
+5. Intenta moverla a las fechas de otra feria activa: el sistema debe mostrar el cruce y no guardar.
+6. Muévela a una fecha libre y comprueba las nuevas fechas.
+7. Cancélala con un motivo y verifica que los espacios vuelven a estar disponibles.
+8. Revisa la bandeja del organizador: debe tener los avisos de aprobación, movimiento y cancelación.

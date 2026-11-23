@@ -34,6 +34,7 @@ export type FeriasAvgAggregateOutputType = {
   zona_id: number | null
   numero_puestos: number | null
   revisor_id: number | null
+  cancelada_por: number | null
 }
 
 export type FeriasSumAggregateOutputType = {
@@ -42,6 +43,7 @@ export type FeriasSumAggregateOutputType = {
   zona_id: bigint | null
   numero_puestos: number | null
   revisor_id: bigint | null
+  cancelada_por: bigint | null
 }
 
 export type FeriasMinAggregateOutputType = {
@@ -57,6 +59,11 @@ export type FeriasMinAggregateOutputType = {
   estado: $Enums.estado_feria | null
   revisor_id: bigint | null
   radicada_en: Date | null
+  motivo_cancelacion: string | null
+  aprobada_en: Date | null
+  cancelada_en: Date | null
+  cancelada_por: bigint | null
+  actualizado_en: Date | null
 }
 
 export type FeriasMaxAggregateOutputType = {
@@ -72,6 +79,11 @@ export type FeriasMaxAggregateOutputType = {
   estado: $Enums.estado_feria | null
   revisor_id: bigint | null
   radicada_en: Date | null
+  motivo_cancelacion: string | null
+  aprobada_en: Date | null
+  cancelada_en: Date | null
+  cancelada_por: bigint | null
+  actualizado_en: Date | null
 }
 
 export type FeriasCountAggregateOutputType = {
@@ -87,6 +99,11 @@ export type FeriasCountAggregateOutputType = {
   estado: number
   revisor_id: number
   radicada_en: number
+  motivo_cancelacion: number
+  aprobada_en: number
+  cancelada_en: number
+  cancelada_por: number
+  actualizado_en: number
   _all: number
 }
 
@@ -97,6 +114,7 @@ export type FeriasAvgAggregateInputType = {
   zona_id?: true
   numero_puestos?: true
   revisor_id?: true
+  cancelada_por?: true
 }
 
 export type FeriasSumAggregateInputType = {
@@ -105,6 +123,7 @@ export type FeriasSumAggregateInputType = {
   zona_id?: true
   numero_puestos?: true
   revisor_id?: true
+  cancelada_por?: true
 }
 
 export type FeriasMinAggregateInputType = {
@@ -120,6 +139,11 @@ export type FeriasMinAggregateInputType = {
   estado?: true
   revisor_id?: true
   radicada_en?: true
+  motivo_cancelacion?: true
+  aprobada_en?: true
+  cancelada_en?: true
+  cancelada_por?: true
+  actualizado_en?: true
 }
 
 export type FeriasMaxAggregateInputType = {
@@ -135,6 +159,11 @@ export type FeriasMaxAggregateInputType = {
   estado?: true
   revisor_id?: true
   radicada_en?: true
+  motivo_cancelacion?: true
+  aprobada_en?: true
+  cancelada_en?: true
+  cancelada_por?: true
+  actualizado_en?: true
 }
 
 export type FeriasCountAggregateInputType = {
@@ -150,6 +179,11 @@ export type FeriasCountAggregateInputType = {
   estado?: true
   revisor_id?: true
   radicada_en?: true
+  motivo_cancelacion?: true
+  aprobada_en?: true
+  cancelada_en?: true
+  cancelada_por?: true
+  actualizado_en?: true
   _all?: true
 }
 
@@ -252,6 +286,11 @@ export type FeriasGroupByOutputType = {
   estado: $Enums.estado_feria
   revisor_id: bigint | null
   radicada_en: Date
+  motivo_cancelacion: string | null
+  aprobada_en: Date | null
+  cancelada_en: Date | null
+  cancelada_por: bigint | null
+  actualizado_en: Date
   _count: FeriasCountAggregateOutputType | null
   _avg: FeriasAvgAggregateOutputType | null
   _sum: FeriasSumAggregateOutputType | null
@@ -290,12 +329,19 @@ export type feriasWhereInput = {
   estado?: Prisma.Enumestado_feriaFilter<"ferias"> | $Enums.estado_feria
   revisor_id?: Prisma.BigIntNullableFilter<"ferias"> | bigint | number | null
   radicada_en?: Prisma.DateTimeFilter<"ferias"> | Date | string
+  motivo_cancelacion?: Prisma.StringNullableFilter<"ferias"> | string | null
+  aprobada_en?: Prisma.DateTimeNullableFilter<"ferias"> | Date | string | null
+  cancelada_en?: Prisma.DateTimeNullableFilter<"ferias"> | Date | string | null
+  cancelada_por?: Prisma.BigIntNullableFilter<"ferias"> | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFilter<"ferias"> | Date | string
   feria_documentos?: Prisma.Feria_documentosListRelationFilter
   feria_productos?: Prisma.Feria_productosListRelationFilter
   feria_vendedores?: Prisma.Feria_vendedoresListRelationFilter
   notificaciones?: Prisma.NotificacionesListRelationFilter
+  espacio_bloqueos?: Prisma.Espacio_bloqueosListRelationFilter
   organizadores?: Prisma.XOR<Prisma.OrganizadoresScalarRelationFilter, Prisma.organizadoresWhereInput>
   gestores?: Prisma.XOR<Prisma.GestoresNullableScalarRelationFilter, Prisma.gestoresWhereInput> | null
+  gestores_cancelada_por?: Prisma.XOR<Prisma.GestoresNullableScalarRelationFilter, Prisma.gestoresWhereInput> | null
   zonas?: Prisma.XOR<Prisma.ZonasScalarRelationFilter, Prisma.zonasWhereInput>
 }
 
@@ -312,12 +358,19 @@ export type feriasOrderByWithRelationInput = {
   estado?: Prisma.SortOrder
   revisor_id?: Prisma.SortOrderInput | Prisma.SortOrder
   radicada_en?: Prisma.SortOrder
+  motivo_cancelacion?: Prisma.SortOrderInput | Prisma.SortOrder
+  aprobada_en?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelada_en?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelada_por?: Prisma.SortOrderInput | Prisma.SortOrder
+  actualizado_en?: Prisma.SortOrder
   feria_documentos?: Prisma.feria_documentosOrderByRelationAggregateInput
   feria_productos?: Prisma.feria_productosOrderByRelationAggregateInput
   feria_vendedores?: Prisma.feria_vendedoresOrderByRelationAggregateInput
   notificaciones?: Prisma.notificacionesOrderByRelationAggregateInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosOrderByRelationAggregateInput
   organizadores?: Prisma.organizadoresOrderByWithRelationInput
   gestores?: Prisma.gestoresOrderByWithRelationInput
+  gestores_cancelada_por?: Prisma.gestoresOrderByWithRelationInput
   zonas?: Prisma.zonasOrderByWithRelationInput
 }
 
@@ -337,12 +390,19 @@ export type feriasWhereUniqueInput = Prisma.AtLeast<{
   estado?: Prisma.Enumestado_feriaFilter<"ferias"> | $Enums.estado_feria
   revisor_id?: Prisma.BigIntNullableFilter<"ferias"> | bigint | number | null
   radicada_en?: Prisma.DateTimeFilter<"ferias"> | Date | string
+  motivo_cancelacion?: Prisma.StringNullableFilter<"ferias"> | string | null
+  aprobada_en?: Prisma.DateTimeNullableFilter<"ferias"> | Date | string | null
+  cancelada_en?: Prisma.DateTimeNullableFilter<"ferias"> | Date | string | null
+  cancelada_por?: Prisma.BigIntNullableFilter<"ferias"> | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFilter<"ferias"> | Date | string
   feria_documentos?: Prisma.Feria_documentosListRelationFilter
   feria_productos?: Prisma.Feria_productosListRelationFilter
   feria_vendedores?: Prisma.Feria_vendedoresListRelationFilter
   notificaciones?: Prisma.NotificacionesListRelationFilter
+  espacio_bloqueos?: Prisma.Espacio_bloqueosListRelationFilter
   organizadores?: Prisma.XOR<Prisma.OrganizadoresScalarRelationFilter, Prisma.organizadoresWhereInput>
   gestores?: Prisma.XOR<Prisma.GestoresNullableScalarRelationFilter, Prisma.gestoresWhereInput> | null
+  gestores_cancelada_por?: Prisma.XOR<Prisma.GestoresNullableScalarRelationFilter, Prisma.gestoresWhereInput> | null
   zonas?: Prisma.XOR<Prisma.ZonasScalarRelationFilter, Prisma.zonasWhereInput>
 }, "id" | "numero_radicado">
 
@@ -359,6 +419,11 @@ export type feriasOrderByWithAggregationInput = {
   estado?: Prisma.SortOrder
   revisor_id?: Prisma.SortOrderInput | Prisma.SortOrder
   radicada_en?: Prisma.SortOrder
+  motivo_cancelacion?: Prisma.SortOrderInput | Prisma.SortOrder
+  aprobada_en?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelada_en?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelada_por?: Prisma.SortOrderInput | Prisma.SortOrder
+  actualizado_en?: Prisma.SortOrder
   _count?: Prisma.feriasCountOrderByAggregateInput
   _avg?: Prisma.feriasAvgOrderByAggregateInput
   _max?: Prisma.feriasMaxOrderByAggregateInput
@@ -382,6 +447,11 @@ export type feriasScalarWhereWithAggregatesInput = {
   estado?: Prisma.Enumestado_feriaWithAggregatesFilter<"ferias"> | $Enums.estado_feria
   revisor_id?: Prisma.BigIntNullableWithAggregatesFilter<"ferias"> | bigint | number | null
   radicada_en?: Prisma.DateTimeWithAggregatesFilter<"ferias"> | Date | string
+  motivo_cancelacion?: Prisma.StringNullableWithAggregatesFilter<"ferias"> | string | null
+  aprobada_en?: Prisma.DateTimeNullableWithAggregatesFilter<"ferias"> | Date | string | null
+  cancelada_en?: Prisma.DateTimeNullableWithAggregatesFilter<"ferias"> | Date | string | null
+  cancelada_por?: Prisma.BigIntNullableWithAggregatesFilter<"ferias"> | bigint | number | null
+  actualizado_en?: Prisma.DateTimeWithAggregatesFilter<"ferias"> | Date | string
 }
 
 export type feriasCreateInput = {
@@ -394,12 +464,18 @@ export type feriasCreateInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosCreateNestedManyWithoutFeriasInput
   organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
+  gestores_cancelada_por?: Prisma.gestoresCreateNestedOneWithoutFerias_canceladasInput
   zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
 }
 
@@ -416,10 +492,16 @@ export type feriasUncheckedCreateInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  cancelada_por?: bigint | number | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasUpdateInput = {
@@ -432,12 +514,18 @@ export type feriasUpdateInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutFeriasNestedInput
   organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
+  gestores_cancelada_por?: Prisma.gestoresUpdateOneWithoutFerias_canceladasNestedInput
   zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
 }
 
@@ -454,10 +542,16 @@ export type feriasUncheckedUpdateInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasCreateManyInput = {
@@ -473,6 +567,11 @@ export type feriasCreateManyInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  cancelada_por?: bigint | number | null
+  actualizado_en?: Date | string
 }
 
 export type feriasUpdateManyMutationInput = {
@@ -485,6 +584,10 @@ export type feriasUpdateManyMutationInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type feriasUncheckedUpdateManyInput = {
@@ -500,6 +603,16 @@ export type feriasUncheckedUpdateManyInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type FeriasNullableScalarRelationFilter = {
+  is?: Prisma.feriasWhereInput | null
+  isNot?: Prisma.feriasWhereInput | null
 }
 
 export type FeriasScalarRelationFilter = {
@@ -520,6 +633,11 @@ export type feriasCountOrderByAggregateInput = {
   estado?: Prisma.SortOrder
   revisor_id?: Prisma.SortOrder
   radicada_en?: Prisma.SortOrder
+  motivo_cancelacion?: Prisma.SortOrder
+  aprobada_en?: Prisma.SortOrder
+  cancelada_en?: Prisma.SortOrder
+  cancelada_por?: Prisma.SortOrder
+  actualizado_en?: Prisma.SortOrder
 }
 
 export type feriasAvgOrderByAggregateInput = {
@@ -528,6 +646,7 @@ export type feriasAvgOrderByAggregateInput = {
   zona_id?: Prisma.SortOrder
   numero_puestos?: Prisma.SortOrder
   revisor_id?: Prisma.SortOrder
+  cancelada_por?: Prisma.SortOrder
 }
 
 export type feriasMaxOrderByAggregateInput = {
@@ -543,6 +662,11 @@ export type feriasMaxOrderByAggregateInput = {
   estado?: Prisma.SortOrder
   revisor_id?: Prisma.SortOrder
   radicada_en?: Prisma.SortOrder
+  motivo_cancelacion?: Prisma.SortOrder
+  aprobada_en?: Prisma.SortOrder
+  cancelada_en?: Prisma.SortOrder
+  cancelada_por?: Prisma.SortOrder
+  actualizado_en?: Prisma.SortOrder
 }
 
 export type feriasMinOrderByAggregateInput = {
@@ -558,6 +682,11 @@ export type feriasMinOrderByAggregateInput = {
   estado?: Prisma.SortOrder
   revisor_id?: Prisma.SortOrder
   radicada_en?: Prisma.SortOrder
+  motivo_cancelacion?: Prisma.SortOrder
+  aprobada_en?: Prisma.SortOrder
+  cancelada_en?: Prisma.SortOrder
+  cancelada_por?: Prisma.SortOrder
+  actualizado_en?: Prisma.SortOrder
 }
 
 export type feriasSumOrderByAggregateInput = {
@@ -566,6 +695,7 @@ export type feriasSumOrderByAggregateInput = {
   zona_id?: Prisma.SortOrder
   numero_puestos?: Prisma.SortOrder
   revisor_id?: Prisma.SortOrder
+  cancelada_por?: Prisma.SortOrder
 }
 
 export type FeriasListRelationFilter = {
@@ -578,9 +708,20 @@ export type feriasOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type FeriasNullableScalarRelationFilter = {
-  is?: Prisma.feriasWhereInput | null
-  isNot?: Prisma.feriasWhereInput | null
+export type feriasCreateNestedOneWithoutEspacio_bloqueosInput = {
+  create?: Prisma.XOR<Prisma.feriasCreateWithoutEspacio_bloqueosInput, Prisma.feriasUncheckedCreateWithoutEspacio_bloqueosInput>
+  connectOrCreate?: Prisma.feriasCreateOrConnectWithoutEspacio_bloqueosInput
+  connect?: Prisma.feriasWhereUniqueInput
+}
+
+export type feriasUpdateOneWithoutEspacio_bloqueosNestedInput = {
+  create?: Prisma.XOR<Prisma.feriasCreateWithoutEspacio_bloqueosInput, Prisma.feriasUncheckedCreateWithoutEspacio_bloqueosInput>
+  connectOrCreate?: Prisma.feriasCreateOrConnectWithoutEspacio_bloqueosInput
+  upsert?: Prisma.feriasUpsertWithoutEspacio_bloqueosInput
+  disconnect?: Prisma.feriasWhereInput | boolean
+  delete?: Prisma.feriasWhereInput | boolean
+  connect?: Prisma.feriasWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.feriasUpdateToOneWithWhereWithoutEspacio_bloqueosInput, Prisma.feriasUpdateWithoutEspacio_bloqueosInput>, Prisma.feriasUncheckedUpdateWithoutEspacio_bloqueosInput>
 }
 
 export type feriasCreateNestedOneWithoutFeria_productosInput = {
@@ -644,10 +785,24 @@ export type feriasCreateNestedManyWithoutGestoresInput = {
   connect?: Prisma.feriasWhereUniqueInput | Prisma.feriasWhereUniqueInput[]
 }
 
+export type feriasCreateNestedManyWithoutGestores_cancelada_porInput = {
+  create?: Prisma.XOR<Prisma.feriasCreateWithoutGestores_cancelada_porInput, Prisma.feriasUncheckedCreateWithoutGestores_cancelada_porInput> | Prisma.feriasCreateWithoutGestores_cancelada_porInput[] | Prisma.feriasUncheckedCreateWithoutGestores_cancelada_porInput[]
+  connectOrCreate?: Prisma.feriasCreateOrConnectWithoutGestores_cancelada_porInput | Prisma.feriasCreateOrConnectWithoutGestores_cancelada_porInput[]
+  createMany?: Prisma.feriasCreateManyGestores_cancelada_porInputEnvelope
+  connect?: Prisma.feriasWhereUniqueInput | Prisma.feriasWhereUniqueInput[]
+}
+
 export type feriasUncheckedCreateNestedManyWithoutGestoresInput = {
   create?: Prisma.XOR<Prisma.feriasCreateWithoutGestoresInput, Prisma.feriasUncheckedCreateWithoutGestoresInput> | Prisma.feriasCreateWithoutGestoresInput[] | Prisma.feriasUncheckedCreateWithoutGestoresInput[]
   connectOrCreate?: Prisma.feriasCreateOrConnectWithoutGestoresInput | Prisma.feriasCreateOrConnectWithoutGestoresInput[]
   createMany?: Prisma.feriasCreateManyGestoresInputEnvelope
+  connect?: Prisma.feriasWhereUniqueInput | Prisma.feriasWhereUniqueInput[]
+}
+
+export type feriasUncheckedCreateNestedManyWithoutGestores_cancelada_porInput = {
+  create?: Prisma.XOR<Prisma.feriasCreateWithoutGestores_cancelada_porInput, Prisma.feriasUncheckedCreateWithoutGestores_cancelada_porInput> | Prisma.feriasCreateWithoutGestores_cancelada_porInput[] | Prisma.feriasUncheckedCreateWithoutGestores_cancelada_porInput[]
+  connectOrCreate?: Prisma.feriasCreateOrConnectWithoutGestores_cancelada_porInput | Prisma.feriasCreateOrConnectWithoutGestores_cancelada_porInput[]
+  createMany?: Prisma.feriasCreateManyGestores_cancelada_porInputEnvelope
   connect?: Prisma.feriasWhereUniqueInput | Prisma.feriasWhereUniqueInput[]
 }
 
@@ -665,6 +820,20 @@ export type feriasUpdateManyWithoutGestoresNestedInput = {
   deleteMany?: Prisma.feriasScalarWhereInput | Prisma.feriasScalarWhereInput[]
 }
 
+export type feriasUpdateManyWithoutGestores_cancelada_porNestedInput = {
+  create?: Prisma.XOR<Prisma.feriasCreateWithoutGestores_cancelada_porInput, Prisma.feriasUncheckedCreateWithoutGestores_cancelada_porInput> | Prisma.feriasCreateWithoutGestores_cancelada_porInput[] | Prisma.feriasUncheckedCreateWithoutGestores_cancelada_porInput[]
+  connectOrCreate?: Prisma.feriasCreateOrConnectWithoutGestores_cancelada_porInput | Prisma.feriasCreateOrConnectWithoutGestores_cancelada_porInput[]
+  upsert?: Prisma.feriasUpsertWithWhereUniqueWithoutGestores_cancelada_porInput | Prisma.feriasUpsertWithWhereUniqueWithoutGestores_cancelada_porInput[]
+  createMany?: Prisma.feriasCreateManyGestores_cancelada_porInputEnvelope
+  set?: Prisma.feriasWhereUniqueInput | Prisma.feriasWhereUniqueInput[]
+  disconnect?: Prisma.feriasWhereUniqueInput | Prisma.feriasWhereUniqueInput[]
+  delete?: Prisma.feriasWhereUniqueInput | Prisma.feriasWhereUniqueInput[]
+  connect?: Prisma.feriasWhereUniqueInput | Prisma.feriasWhereUniqueInput[]
+  update?: Prisma.feriasUpdateWithWhereUniqueWithoutGestores_cancelada_porInput | Prisma.feriasUpdateWithWhereUniqueWithoutGestores_cancelada_porInput[]
+  updateMany?: Prisma.feriasUpdateManyWithWhereWithoutGestores_cancelada_porInput | Prisma.feriasUpdateManyWithWhereWithoutGestores_cancelada_porInput[]
+  deleteMany?: Prisma.feriasScalarWhereInput | Prisma.feriasScalarWhereInput[]
+}
+
 export type feriasUncheckedUpdateManyWithoutGestoresNestedInput = {
   create?: Prisma.XOR<Prisma.feriasCreateWithoutGestoresInput, Prisma.feriasUncheckedCreateWithoutGestoresInput> | Prisma.feriasCreateWithoutGestoresInput[] | Prisma.feriasUncheckedCreateWithoutGestoresInput[]
   connectOrCreate?: Prisma.feriasCreateOrConnectWithoutGestoresInput | Prisma.feriasCreateOrConnectWithoutGestoresInput[]
@@ -676,6 +845,20 @@ export type feriasUncheckedUpdateManyWithoutGestoresNestedInput = {
   connect?: Prisma.feriasWhereUniqueInput | Prisma.feriasWhereUniqueInput[]
   update?: Prisma.feriasUpdateWithWhereUniqueWithoutGestoresInput | Prisma.feriasUpdateWithWhereUniqueWithoutGestoresInput[]
   updateMany?: Prisma.feriasUpdateManyWithWhereWithoutGestoresInput | Prisma.feriasUpdateManyWithWhereWithoutGestoresInput[]
+  deleteMany?: Prisma.feriasScalarWhereInput | Prisma.feriasScalarWhereInput[]
+}
+
+export type feriasUncheckedUpdateManyWithoutGestores_cancelada_porNestedInput = {
+  create?: Prisma.XOR<Prisma.feriasCreateWithoutGestores_cancelada_porInput, Prisma.feriasUncheckedCreateWithoutGestores_cancelada_porInput> | Prisma.feriasCreateWithoutGestores_cancelada_porInput[] | Prisma.feriasUncheckedCreateWithoutGestores_cancelada_porInput[]
+  connectOrCreate?: Prisma.feriasCreateOrConnectWithoutGestores_cancelada_porInput | Prisma.feriasCreateOrConnectWithoutGestores_cancelada_porInput[]
+  upsert?: Prisma.feriasUpsertWithWhereUniqueWithoutGestores_cancelada_porInput | Prisma.feriasUpsertWithWhereUniqueWithoutGestores_cancelada_porInput[]
+  createMany?: Prisma.feriasCreateManyGestores_cancelada_porInputEnvelope
+  set?: Prisma.feriasWhereUniqueInput | Prisma.feriasWhereUniqueInput[]
+  disconnect?: Prisma.feriasWhereUniqueInput | Prisma.feriasWhereUniqueInput[]
+  delete?: Prisma.feriasWhereUniqueInput | Prisma.feriasWhereUniqueInput[]
+  connect?: Prisma.feriasWhereUniqueInput | Prisma.feriasWhereUniqueInput[]
+  update?: Prisma.feriasUpdateWithWhereUniqueWithoutGestores_cancelada_porInput | Prisma.feriasUpdateWithWhereUniqueWithoutGestores_cancelada_porInput[]
+  updateMany?: Prisma.feriasUpdateManyWithWhereWithoutGestores_cancelada_porInput | Prisma.feriasUpdateManyWithWhereWithoutGestores_cancelada_porInput[]
   deleteMany?: Prisma.feriasScalarWhereInput | Prisma.feriasScalarWhereInput[]
 }
 
@@ -765,6 +948,118 @@ export type feriasUncheckedUpdateManyWithoutZonasNestedInput = {
   deleteMany?: Prisma.feriasScalarWhereInput | Prisma.feriasScalarWhereInput[]
 }
 
+export type feriasCreateWithoutEspacio_bloqueosInput = {
+  id?: bigint | number
+  numero_radicado?: string
+  nombre: string
+  tipo_feria: string
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  numero_puestos: number
+  estado?: $Enums.estado_feria
+  radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  actualizado_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
+  feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
+  feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
+  organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
+  gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
+  gestores_cancelada_por?: Prisma.gestoresCreateNestedOneWithoutFerias_canceladasInput
+  zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
+}
+
+export type feriasUncheckedCreateWithoutEspacio_bloqueosInput = {
+  id?: bigint | number
+  numero_radicado?: string
+  organizador_id: bigint | number
+  nombre: string
+  tipo_feria: string
+  zona_id: bigint | number
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  numero_puestos: number
+  estado?: $Enums.estado_feria
+  revisor_id?: bigint | number | null
+  radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  cancelada_por?: bigint | number | null
+  actualizado_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
+  feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
+  feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
+}
+
+export type feriasCreateOrConnectWithoutEspacio_bloqueosInput = {
+  where: Prisma.feriasWhereUniqueInput
+  create: Prisma.XOR<Prisma.feriasCreateWithoutEspacio_bloqueosInput, Prisma.feriasUncheckedCreateWithoutEspacio_bloqueosInput>
+}
+
+export type feriasUpsertWithoutEspacio_bloqueosInput = {
+  update: Prisma.XOR<Prisma.feriasUpdateWithoutEspacio_bloqueosInput, Prisma.feriasUncheckedUpdateWithoutEspacio_bloqueosInput>
+  create: Prisma.XOR<Prisma.feriasCreateWithoutEspacio_bloqueosInput, Prisma.feriasUncheckedCreateWithoutEspacio_bloqueosInput>
+  where?: Prisma.feriasWhereInput
+}
+
+export type feriasUpdateToOneWithWhereWithoutEspacio_bloqueosInput = {
+  where?: Prisma.feriasWhereInput
+  data: Prisma.XOR<Prisma.feriasUpdateWithoutEspacio_bloqueosInput, Prisma.feriasUncheckedUpdateWithoutEspacio_bloqueosInput>
+}
+
+export type feriasUpdateWithoutEspacio_bloqueosInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  numero_radicado?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo_feria?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
+  estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
+  radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
+  feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
+  feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
+  organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
+  gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
+  gestores_cancelada_por?: Prisma.gestoresUpdateOneWithoutFerias_canceladasNestedInput
+  zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
+}
+
+export type feriasUncheckedUpdateWithoutEspacio_bloqueosInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  numero_radicado?: Prisma.StringFieldUpdateOperationsInput | string
+  organizador_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo_feria?: Prisma.StringFieldUpdateOperationsInput | string
+  zona_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
+  estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
+  revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
+  feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
+  feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
+}
+
 export type feriasCreateWithoutFeria_productosInput = {
   id?: bigint | number
   numero_radicado?: string
@@ -775,11 +1070,17 @@ export type feriasCreateWithoutFeria_productosInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosCreateNestedManyWithoutFeriasInput
   organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
+  gestores_cancelada_por?: Prisma.gestoresCreateNestedOneWithoutFerias_canceladasInput
   zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
 }
 
@@ -796,9 +1097,15 @@ export type feriasUncheckedCreateWithoutFeria_productosInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  cancelada_por?: bigint | number | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasCreateOrConnectWithoutFeria_productosInput = {
@@ -827,11 +1134,17 @@ export type feriasUpdateWithoutFeria_productosInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutFeriasNestedInput
   organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
+  gestores_cancelada_por?: Prisma.gestoresUpdateOneWithoutFerias_canceladasNestedInput
   zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
 }
 
@@ -848,9 +1161,15 @@ export type feriasUncheckedUpdateWithoutFeria_productosInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasCreateWithoutFeria_vendedoresInput = {
@@ -863,11 +1182,17 @@ export type feriasCreateWithoutFeria_vendedoresInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosCreateNestedManyWithoutFeriasInput
   organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
+  gestores_cancelada_por?: Prisma.gestoresCreateNestedOneWithoutFerias_canceladasInput
   zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
 }
 
@@ -884,9 +1209,15 @@ export type feriasUncheckedCreateWithoutFeria_vendedoresInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  cancelada_por?: bigint | number | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasCreateOrConnectWithoutFeria_vendedoresInput = {
@@ -915,11 +1246,17 @@ export type feriasUpdateWithoutFeria_vendedoresInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutFeriasNestedInput
   organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
+  gestores_cancelada_por?: Prisma.gestoresUpdateOneWithoutFerias_canceladasNestedInput
   zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
 }
 
@@ -936,9 +1273,15 @@ export type feriasUncheckedUpdateWithoutFeria_vendedoresInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasCreateWithoutFeria_documentosInput = {
@@ -951,11 +1294,17 @@ export type feriasCreateWithoutFeria_documentosInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  actualizado_en?: Date | string
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosCreateNestedManyWithoutFeriasInput
   organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
+  gestores_cancelada_por?: Prisma.gestoresCreateNestedOneWithoutFerias_canceladasInput
   zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
 }
 
@@ -972,9 +1321,15 @@ export type feriasUncheckedCreateWithoutFeria_documentosInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  cancelada_por?: bigint | number | null
+  actualizado_en?: Date | string
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasCreateOrConnectWithoutFeria_documentosInput = {
@@ -1003,11 +1358,17 @@ export type feriasUpdateWithoutFeria_documentosInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutFeriasNestedInput
   organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
+  gestores_cancelada_por?: Prisma.gestoresUpdateOneWithoutFerias_canceladasNestedInput
   zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
 }
 
@@ -1024,9 +1385,15 @@ export type feriasUncheckedUpdateWithoutFeria_documentosInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasCreateWithoutGestoresInput = {
@@ -1039,11 +1406,17 @@ export type feriasCreateWithoutGestoresInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosCreateNestedManyWithoutFeriasInput
   organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
+  gestores_cancelada_por?: Prisma.gestoresCreateNestedOneWithoutFerias_canceladasInput
   zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
 }
 
@@ -1059,10 +1432,16 @@ export type feriasUncheckedCreateWithoutGestoresInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  cancelada_por?: bigint | number | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasCreateOrConnectWithoutGestoresInput = {
@@ -1072,6 +1451,64 @@ export type feriasCreateOrConnectWithoutGestoresInput = {
 
 export type feriasCreateManyGestoresInputEnvelope = {
   data: Prisma.feriasCreateManyGestoresInput | Prisma.feriasCreateManyGestoresInput[]
+  skipDuplicates?: boolean
+}
+
+export type feriasCreateWithoutGestores_cancelada_porInput = {
+  id?: bigint | number
+  numero_radicado?: string
+  nombre: string
+  tipo_feria: string
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  numero_puestos: number
+  estado?: $Enums.estado_feria
+  radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  actualizado_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
+  feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
+  feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosCreateNestedManyWithoutFeriasInput
+  organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
+  gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
+  zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
+}
+
+export type feriasUncheckedCreateWithoutGestores_cancelada_porInput = {
+  id?: bigint | number
+  numero_radicado?: string
+  organizador_id: bigint | number
+  nombre: string
+  tipo_feria: string
+  zona_id: bigint | number
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  numero_puestos: number
+  estado?: $Enums.estado_feria
+  revisor_id?: bigint | number | null
+  radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  actualizado_en?: Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
+  feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
+  feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
+  notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedCreateNestedManyWithoutFeriasInput
+}
+
+export type feriasCreateOrConnectWithoutGestores_cancelada_porInput = {
+  where: Prisma.feriasWhereUniqueInput
+  create: Prisma.XOR<Prisma.feriasCreateWithoutGestores_cancelada_porInput, Prisma.feriasUncheckedCreateWithoutGestores_cancelada_porInput>
+}
+
+export type feriasCreateManyGestores_cancelada_porInputEnvelope = {
+  data: Prisma.feriasCreateManyGestores_cancelada_porInput | Prisma.feriasCreateManyGestores_cancelada_porInput[]
   skipDuplicates?: boolean
 }
 
@@ -1107,6 +1544,27 @@ export type feriasScalarWhereInput = {
   estado?: Prisma.Enumestado_feriaFilter<"ferias"> | $Enums.estado_feria
   revisor_id?: Prisma.BigIntNullableFilter<"ferias"> | bigint | number | null
   radicada_en?: Prisma.DateTimeFilter<"ferias"> | Date | string
+  motivo_cancelacion?: Prisma.StringNullableFilter<"ferias"> | string | null
+  aprobada_en?: Prisma.DateTimeNullableFilter<"ferias"> | Date | string | null
+  cancelada_en?: Prisma.DateTimeNullableFilter<"ferias"> | Date | string | null
+  cancelada_por?: Prisma.BigIntNullableFilter<"ferias"> | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFilter<"ferias"> | Date | string
+}
+
+export type feriasUpsertWithWhereUniqueWithoutGestores_cancelada_porInput = {
+  where: Prisma.feriasWhereUniqueInput
+  update: Prisma.XOR<Prisma.feriasUpdateWithoutGestores_cancelada_porInput, Prisma.feriasUncheckedUpdateWithoutGestores_cancelada_porInput>
+  create: Prisma.XOR<Prisma.feriasCreateWithoutGestores_cancelada_porInput, Prisma.feriasUncheckedCreateWithoutGestores_cancelada_porInput>
+}
+
+export type feriasUpdateWithWhereUniqueWithoutGestores_cancelada_porInput = {
+  where: Prisma.feriasWhereUniqueInput
+  data: Prisma.XOR<Prisma.feriasUpdateWithoutGestores_cancelada_porInput, Prisma.feriasUncheckedUpdateWithoutGestores_cancelada_porInput>
+}
+
+export type feriasUpdateManyWithWhereWithoutGestores_cancelada_porInput = {
+  where: Prisma.feriasScalarWhereInput
+  data: Prisma.XOR<Prisma.feriasUpdateManyMutationInput, Prisma.feriasUncheckedUpdateManyWithoutGestores_cancelada_porInput>
 }
 
 export type feriasCreateWithoutNotificacionesInput = {
@@ -1119,11 +1577,17 @@ export type feriasCreateWithoutNotificacionesInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosCreateNestedManyWithoutFeriasInput
   organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
+  gestores_cancelada_por?: Prisma.gestoresCreateNestedOneWithoutFerias_canceladasInput
   zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
 }
 
@@ -1140,9 +1604,15 @@ export type feriasUncheckedCreateWithoutNotificacionesInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  cancelada_por?: bigint | number | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasCreateOrConnectWithoutNotificacionesInput = {
@@ -1171,11 +1641,17 @@ export type feriasUpdateWithoutNotificacionesInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutFeriasNestedInput
   organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
+  gestores_cancelada_por?: Prisma.gestoresUpdateOneWithoutFerias_canceladasNestedInput
   zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
 }
 
@@ -1192,9 +1668,15 @@ export type feriasUncheckedUpdateWithoutNotificacionesInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasCreateWithoutOrganizadoresInput = {
@@ -1207,11 +1689,17 @@ export type feriasCreateWithoutOrganizadoresInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosCreateNestedManyWithoutFeriasInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
+  gestores_cancelada_por?: Prisma.gestoresCreateNestedOneWithoutFerias_canceladasInput
   zonas: Prisma.zonasCreateNestedOneWithoutFeriasInput
 }
 
@@ -1227,10 +1715,16 @@ export type feriasUncheckedCreateWithoutOrganizadoresInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  cancelada_por?: bigint | number | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasCreateOrConnectWithoutOrganizadoresInput = {
@@ -1269,12 +1763,18 @@ export type feriasCreateWithoutZonasInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosCreateNestedManyWithoutFeriasInput
   organizadores: Prisma.organizadoresCreateNestedOneWithoutFeriasInput
   gestores?: Prisma.gestoresCreateNestedOneWithoutFeriasInput
+  gestores_cancelada_por?: Prisma.gestoresCreateNestedOneWithoutFerias_canceladasInput
 }
 
 export type feriasUncheckedCreateWithoutZonasInput = {
@@ -1289,10 +1789,16 @@ export type feriasUncheckedCreateWithoutZonasInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  cancelada_por?: bigint | number | null
+  actualizado_en?: Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedCreateNestedManyWithoutFeriasInput
 }
 
 export type feriasCreateOrConnectWithoutZonasInput = {
@@ -1333,6 +1839,30 @@ export type feriasCreateManyGestoresInput = {
   numero_puestos: number
   estado?: $Enums.estado_feria
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  cancelada_por?: bigint | number | null
+  actualizado_en?: Date | string
+}
+
+export type feriasCreateManyGestores_cancelada_porInput = {
+  id?: bigint | number
+  numero_radicado?: string
+  organizador_id: bigint | number
+  nombre: string
+  tipo_feria: string
+  zona_id: bigint | number
+  fecha_inicio: Date | string
+  fecha_fin: Date | string
+  numero_puestos: number
+  estado?: $Enums.estado_feria
+  revisor_id?: bigint | number | null
+  radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  actualizado_en?: Date | string
 }
 
 export type feriasUpdateWithoutGestoresInput = {
@@ -1345,11 +1875,17 @@ export type feriasUpdateWithoutGestoresInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutFeriasNestedInput
   organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
+  gestores_cancelada_por?: Prisma.gestoresUpdateOneWithoutFerias_canceladasNestedInput
   zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
 }
 
@@ -1365,10 +1901,16 @@ export type feriasUncheckedUpdateWithoutGestoresInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasUncheckedUpdateManyWithoutGestoresInput = {
@@ -1383,6 +1925,78 @@ export type feriasUncheckedUpdateManyWithoutGestoresInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type feriasUpdateWithoutGestores_cancelada_porInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  numero_radicado?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo_feria?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
+  estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
+  radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
+  feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
+  feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutFeriasNestedInput
+  organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
+  gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
+  zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
+}
+
+export type feriasUncheckedUpdateWithoutGestores_cancelada_porInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  numero_radicado?: Prisma.StringFieldUpdateOperationsInput | string
+  organizador_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo_feria?: Prisma.StringFieldUpdateOperationsInput | string
+  zona_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
+  estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
+  revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
+  feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
+  feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
+  notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutFeriasNestedInput
+}
+
+export type feriasUncheckedUpdateManyWithoutGestores_cancelada_porInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  numero_radicado?: Prisma.StringFieldUpdateOperationsInput | string
+  organizador_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo_feria?: Prisma.StringFieldUpdateOperationsInput | string
+  zona_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  fecha_inicio?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fecha_fin?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
+  estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
+  revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type feriasCreateManyOrganizadoresInput = {
@@ -1397,6 +2011,11 @@ export type feriasCreateManyOrganizadoresInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  cancelada_por?: bigint | number | null
+  actualizado_en?: Date | string
 }
 
 export type feriasUpdateWithoutOrganizadoresInput = {
@@ -1409,11 +2028,17 @@ export type feriasUpdateWithoutOrganizadoresInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutFeriasNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
+  gestores_cancelada_por?: Prisma.gestoresUpdateOneWithoutFerias_canceladasNestedInput
   zonas?: Prisma.zonasUpdateOneRequiredWithoutFeriasNestedInput
 }
 
@@ -1429,10 +2054,16 @@ export type feriasUncheckedUpdateWithoutOrganizadoresInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasUncheckedUpdateManyWithoutOrganizadoresInput = {
@@ -1447,6 +2078,11 @@ export type feriasUncheckedUpdateManyWithoutOrganizadoresInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type feriasUpdateWithoutZonasInput = {
@@ -1459,12 +2095,18 @@ export type feriasUpdateWithoutZonasInput = {
   numero_puestos?: Prisma.IntFieldUpdateOperationsInput | number
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUpdateManyWithoutFeriasNestedInput
   organizadores?: Prisma.organizadoresUpdateOneRequiredWithoutFeriasNestedInput
   gestores?: Prisma.gestoresUpdateOneWithoutFeriasNestedInput
+  gestores_cancelada_por?: Prisma.gestoresUpdateOneWithoutFerias_canceladasNestedInput
 }
 
 export type feriasUncheckedUpdateWithoutZonasInput = {
@@ -1479,10 +2121,16 @@ export type feriasUncheckedUpdateWithoutZonasInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
+  espacio_bloqueos?: Prisma.espacio_bloqueosUncheckedUpdateManyWithoutFeriasNestedInput
 }
 
 export type feriasCreateManyZonasInput = {
@@ -1497,6 +2145,11 @@ export type feriasCreateManyZonasInput = {
   estado?: $Enums.estado_feria
   revisor_id?: bigint | number | null
   radicada_en?: Date | string
+  motivo_cancelacion?: string | null
+  aprobada_en?: Date | string | null
+  cancelada_en?: Date | string | null
+  cancelada_por?: bigint | number | null
+  actualizado_en?: Date | string
 }
 
 export type feriasUncheckedUpdateManyWithoutZonasInput = {
@@ -1511,6 +2164,11 @@ export type feriasUncheckedUpdateManyWithoutZonasInput = {
   estado?: Prisma.Enumestado_feriaFieldUpdateOperationsInput | $Enums.estado_feria
   revisor_id?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   radicada_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  motivo_cancelacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -1523,6 +2181,7 @@ export type FeriasCountOutputType = {
   feria_productos: number
   feria_vendedores: number
   notificaciones: number
+  espacio_bloqueos: number
 }
 
 export type FeriasCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1530,6 +2189,7 @@ export type FeriasCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   feria_productos?: boolean | FeriasCountOutputTypeCountFeria_productosArgs
   feria_vendedores?: boolean | FeriasCountOutputTypeCountFeria_vendedoresArgs
   notificaciones?: boolean | FeriasCountOutputTypeCountNotificacionesArgs
+  espacio_bloqueos?: boolean | FeriasCountOutputTypeCountEspacio_bloqueosArgs
 }
 
 /**
@@ -1570,6 +2230,13 @@ export type FeriasCountOutputTypeCountNotificacionesArgs<ExtArgs extends runtime
   where?: Prisma.notificacionesWhereInput
 }
 
+/**
+ * FeriasCountOutputType without action
+ */
+export type FeriasCountOutputTypeCountEspacio_bloqueosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.espacio_bloqueosWhereInput
+}
+
 
 export type feriasSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1584,12 +2251,19 @@ export type feriasSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   estado?: boolean
   revisor_id?: boolean
   radicada_en?: boolean
+  motivo_cancelacion?: boolean
+  aprobada_en?: boolean
+  cancelada_en?: boolean
+  cancelada_por?: boolean
+  actualizado_en?: boolean
   feria_documentos?: boolean | Prisma.ferias$feria_documentosArgs<ExtArgs>
   feria_productos?: boolean | Prisma.ferias$feria_productosArgs<ExtArgs>
   feria_vendedores?: boolean | Prisma.ferias$feria_vendedoresArgs<ExtArgs>
   notificaciones?: boolean | Prisma.ferias$notificacionesArgs<ExtArgs>
+  espacio_bloqueos?: boolean | Prisma.ferias$espacio_bloqueosArgs<ExtArgs>
   organizadores?: boolean | Prisma.organizadoresDefaultArgs<ExtArgs>
   gestores?: boolean | Prisma.ferias$gestoresArgs<ExtArgs>
+  gestores_cancelada_por?: boolean | Prisma.ferias$gestores_cancelada_porArgs<ExtArgs>
   zonas?: boolean | Prisma.zonasDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.FeriasCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["ferias"]>
@@ -1607,8 +2281,14 @@ export type feriasSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   estado?: boolean
   revisor_id?: boolean
   radicada_en?: boolean
+  motivo_cancelacion?: boolean
+  aprobada_en?: boolean
+  cancelada_en?: boolean
+  cancelada_por?: boolean
+  actualizado_en?: boolean
   organizadores?: boolean | Prisma.organizadoresDefaultArgs<ExtArgs>
   gestores?: boolean | Prisma.ferias$gestoresArgs<ExtArgs>
+  gestores_cancelada_por?: boolean | Prisma.ferias$gestores_cancelada_porArgs<ExtArgs>
   zonas?: boolean | Prisma.zonasDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["ferias"]>
 
@@ -1625,8 +2305,14 @@ export type feriasSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   estado?: boolean
   revisor_id?: boolean
   radicada_en?: boolean
+  motivo_cancelacion?: boolean
+  aprobada_en?: boolean
+  cancelada_en?: boolean
+  cancelada_por?: boolean
+  actualizado_en?: boolean
   organizadores?: boolean | Prisma.organizadoresDefaultArgs<ExtArgs>
   gestores?: boolean | Prisma.ferias$gestoresArgs<ExtArgs>
+  gestores_cancelada_por?: boolean | Prisma.ferias$gestores_cancelada_porArgs<ExtArgs>
   zonas?: boolean | Prisma.zonasDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["ferias"]>
 
@@ -1643,27 +2329,36 @@ export type feriasSelectScalar = {
   estado?: boolean
   revisor_id?: boolean
   radicada_en?: boolean
+  motivo_cancelacion?: boolean
+  aprobada_en?: boolean
+  cancelada_en?: boolean
+  cancelada_por?: boolean
+  actualizado_en?: boolean
 }
 
-export type feriasOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "numero_radicado" | "organizador_id" | "nombre" | "tipo_feria" | "zona_id" | "fecha_inicio" | "fecha_fin" | "numero_puestos" | "estado" | "revisor_id" | "radicada_en", ExtArgs["result"]["ferias"]>
+export type feriasOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "numero_radicado" | "organizador_id" | "nombre" | "tipo_feria" | "zona_id" | "fecha_inicio" | "fecha_fin" | "numero_puestos" | "estado" | "revisor_id" | "radicada_en" | "motivo_cancelacion" | "aprobada_en" | "cancelada_en" | "cancelada_por" | "actualizado_en", ExtArgs["result"]["ferias"]>
 export type feriasInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   feria_documentos?: boolean | Prisma.ferias$feria_documentosArgs<ExtArgs>
   feria_productos?: boolean | Prisma.ferias$feria_productosArgs<ExtArgs>
   feria_vendedores?: boolean | Prisma.ferias$feria_vendedoresArgs<ExtArgs>
   notificaciones?: boolean | Prisma.ferias$notificacionesArgs<ExtArgs>
+  espacio_bloqueos?: boolean | Prisma.ferias$espacio_bloqueosArgs<ExtArgs>
   organizadores?: boolean | Prisma.organizadoresDefaultArgs<ExtArgs>
   gestores?: boolean | Prisma.ferias$gestoresArgs<ExtArgs>
+  gestores_cancelada_por?: boolean | Prisma.ferias$gestores_cancelada_porArgs<ExtArgs>
   zonas?: boolean | Prisma.zonasDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.FeriasCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type feriasIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organizadores?: boolean | Prisma.organizadoresDefaultArgs<ExtArgs>
   gestores?: boolean | Prisma.ferias$gestoresArgs<ExtArgs>
+  gestores_cancelada_por?: boolean | Prisma.ferias$gestores_cancelada_porArgs<ExtArgs>
   zonas?: boolean | Prisma.zonasDefaultArgs<ExtArgs>
 }
 export type feriasIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organizadores?: boolean | Prisma.organizadoresDefaultArgs<ExtArgs>
   gestores?: boolean | Prisma.ferias$gestoresArgs<ExtArgs>
+  gestores_cancelada_por?: boolean | Prisma.ferias$gestores_cancelada_porArgs<ExtArgs>
   zonas?: boolean | Prisma.zonasDefaultArgs<ExtArgs>
 }
 
@@ -1674,8 +2369,10 @@ export type $feriasPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     feria_productos: Prisma.$feria_productosPayload<ExtArgs>[]
     feria_vendedores: Prisma.$feria_vendedoresPayload<ExtArgs>[]
     notificaciones: Prisma.$notificacionesPayload<ExtArgs>[]
+    espacio_bloqueos: Prisma.$espacio_bloqueosPayload<ExtArgs>[]
     organizadores: Prisma.$organizadoresPayload<ExtArgs>
     gestores: Prisma.$gestoresPayload<ExtArgs> | null
+    gestores_cancelada_por: Prisma.$gestoresPayload<ExtArgs> | null
     zonas: Prisma.$zonasPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1691,6 +2388,11 @@ export type $feriasPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     estado: $Enums.estado_feria
     revisor_id: bigint | null
     radicada_en: Date
+    motivo_cancelacion: string | null
+    aprobada_en: Date | null
+    cancelada_en: Date | null
+    cancelada_por: bigint | null
+    actualizado_en: Date
   }, ExtArgs["result"]["ferias"]>
   composites: {}
 }
@@ -2089,8 +2791,10 @@ export interface Prisma__feriasClient<T, Null = never, ExtArgs extends runtime.T
   feria_productos<T extends Prisma.ferias$feria_productosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ferias$feria_productosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$feria_productosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   feria_vendedores<T extends Prisma.ferias$feria_vendedoresArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ferias$feria_vendedoresArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$feria_vendedoresPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notificaciones<T extends Prisma.ferias$notificacionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ferias$notificacionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$notificacionesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  espacio_bloqueos<T extends Prisma.ferias$espacio_bloqueosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ferias$espacio_bloqueosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$espacio_bloqueosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   organizadores<T extends Prisma.organizadoresDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.organizadoresDefaultArgs<ExtArgs>>): Prisma.Prisma__organizadoresClient<runtime.Types.Result.GetResult<Prisma.$organizadoresPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   gestores<T extends Prisma.ferias$gestoresArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ferias$gestoresArgs<ExtArgs>>): Prisma.Prisma__gestoresClient<runtime.Types.Result.GetResult<Prisma.$gestoresPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  gestores_cancelada_por<T extends Prisma.ferias$gestores_cancelada_porArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ferias$gestores_cancelada_porArgs<ExtArgs>>): Prisma.Prisma__gestoresClient<runtime.Types.Result.GetResult<Prisma.$gestoresPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   zonas<T extends Prisma.zonasDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.zonasDefaultArgs<ExtArgs>>): Prisma.Prisma__zonasClient<runtime.Types.Result.GetResult<Prisma.$zonasPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2133,6 +2837,11 @@ export interface feriasFieldRefs {
   readonly estado: Prisma.FieldRef<"ferias", 'estado_feria'>
   readonly revisor_id: Prisma.FieldRef<"ferias", 'BigInt'>
   readonly radicada_en: Prisma.FieldRef<"ferias", 'DateTime'>
+  readonly motivo_cancelacion: Prisma.FieldRef<"ferias", 'String'>
+  readonly aprobada_en: Prisma.FieldRef<"ferias", 'DateTime'>
+  readonly cancelada_en: Prisma.FieldRef<"ferias", 'DateTime'>
+  readonly cancelada_por: Prisma.FieldRef<"ferias", 'BigInt'>
+  readonly actualizado_en: Prisma.FieldRef<"ferias", 'DateTime'>
 }
     
 
@@ -2630,9 +3339,52 @@ export type ferias$notificacionesArgs<ExtArgs extends runtime.Types.Extensions.I
 }
 
 /**
+ * ferias.espacio_bloqueos
+ */
+export type ferias$espacio_bloqueosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the espacio_bloqueos
+   */
+  select?: Prisma.espacio_bloqueosSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the espacio_bloqueos
+   */
+  omit?: Prisma.espacio_bloqueosOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.espacio_bloqueosInclude<ExtArgs> | null
+  where?: Prisma.espacio_bloqueosWhereInput
+  orderBy?: Prisma.espacio_bloqueosOrderByWithRelationInput | Prisma.espacio_bloqueosOrderByWithRelationInput[]
+  cursor?: Prisma.espacio_bloqueosWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.Espacio_bloqueosScalarFieldEnum | Prisma.Espacio_bloqueosScalarFieldEnum[]
+}
+
+/**
  * ferias.gestores
  */
 export type ferias$gestoresArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the gestores
+   */
+  select?: Prisma.gestoresSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the gestores
+   */
+  omit?: Prisma.gestoresOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.gestoresInclude<ExtArgs> | null
+  where?: Prisma.gestoresWhereInput
+}
+
+/**
+ * ferias.gestores_cancelada_por
+ */
+export type ferias$gestores_cancelada_porArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the gestores
    */

@@ -97,6 +97,9 @@ interface FilaFeriaListado {
   numero_puestos: number;
   estado: estado_feria;
   radicada_en: Date;
+  motivo_cancelacion: string | null;
+  aprobada_en: Date | null;
+  cancelada_en: Date | null;
   zonas: {
     id: bigint;
     nombre: string;
@@ -130,6 +133,9 @@ const SELECT_FERIA_LISTADO = {
   numero_puestos: true,
   estado: true,
   radicada_en: true,
+  motivo_cancelacion: true,
+  aprobada_en: true,
+  cancelada_en: true,
   zonas: {
     select: {
       id: true,
@@ -925,6 +931,9 @@ export class FeriasService {
       fechaFin: this.aFechaISO(fila.fecha_fin),
       numeroPuestos: fila.numero_puestos,
       radicadaEn: fila.radicada_en,
+      motivoCancelacion: fila.motivo_cancelacion,
+      aprobadaEn: fila.aprobada_en,
+      canceladaEn: fila.cancelada_en,
       zona: {
         id: fila.zonas.id.toString(),
         nombre: fila.zonas.nombre,
@@ -971,6 +980,9 @@ export class FeriasService {
       fechaFin: base.fechaFin,
       numeroPuestos: base.numeroPuestos,
       radicadaEn: base.radicadaEn,
+      motivoCancelacion: base.motivoCancelacion,
+      aprobadaEn: base.aprobadaEn,
+      canceladaEn: base.canceladaEn,
       zona: base.zona,
       productos,
       documentos,

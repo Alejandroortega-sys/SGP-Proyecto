@@ -796,9 +796,13 @@ export class GestorEspaciosService {
       }
 
       const actuales = await tx.$queryRaw<
-        Array<{ fecha_inicio: string | Date; fecha_fin: string | Date }>
+        Array<{
+          fecha_inicio: string | Date;
+          fecha_fin: string | Date;
+          feria_id: bigint | string | null;
+        }>
       >`
-        SELECT fecha_inicio, fecha_fin
+        SELECT fecha_inicio, fecha_fin, feria_id
           FROM espacio_bloqueos
          WHERE id = ${bloqueo}
            AND espacio_id = ${espacioId}
@@ -807,6 +811,11 @@ export class GestorEspaciosService {
       const actual = actuales[0];
       if (!actual) {
         throw new NotFoundException('El bloqueo solicitado no existe');
+      }
+      if (actual.feria_id !== null && actual.feria_id !== undefined) {
+        throw new ConflictException(
+          'El bloqueo pertenece a una feria aprobada. Administra sus fechas desde el calendario de ferias.',
+        );
       }
 
       const inicio = dto.fechaInicio ?? this.aFechaISO(actual.fecha_inicio);
@@ -840,14 +849,33 @@ export class GestorEspaciosService {
     await this.prisma.$transaction(async (tx) => {
       await fijarActorAuditoria(tx, actorId);
       await this.bloquearEspacio(tx, espacioId);
-      const eliminados = await tx.$executeRaw`
+      const actuales = await tx.$queryRaw<
+        Array<{
+          fecha_inicio: string | Date;
+          fecha_fin: string | Date;
+          feria_id: bigint | string | null;
+        }>
+      >`
+        SELECT fecha_inicio, fecha_fin, feria_id
+          FROM espacio_bloqueos
+         WHERE id = ${bloqueo}
+           AND espacio_id = ${espacioId}
+         FOR UPDATE
+      `;
+      const actual = actuales[0];
+      if (!actual) {
+        throw new NotFoundException('El bloqueo solicitado no existe');
+      }
+      if (actual.feria_id !== null && actual.feria_id !== undefined) {
+        throw new ConflictException(
+          'El bloqueo pertenece a una feria aprobada. Cancela o mueve la feria desde su calendario.',
+        );
+      }
+      await tx.$executeRaw`
         DELETE FROM espacio_bloqueos
          WHERE id = ${bloqueo}
            AND espacio_id = ${espacioId}
       `;
-      if (eliminados === 0) {
-        throw new NotFoundException('El bloqueo solicitado no existe');
-      }
     });
   }
 

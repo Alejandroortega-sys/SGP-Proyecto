@@ -2,7 +2,7 @@
 
 **Proyecto:** Plataforma Web de Gestión del Espacio Público, Ferias Agroecológicas y Comercio Formal/Informal de Tuluá (Equipo 6)
 **Motor:** PostgreSQL 18 + PostGIS 3.6 · **Codificación:** UTF8 · **Convención:** `snake_case`, español
-**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba) · `03_sesiones.sql` (tabla de sesiones) · `04_espacios_hu09.sql` (ficha de espacios) · `05_filtros_hu10.sql` (índices de filtros y disponibilidad) · `06_zonas_hu12.sql` (historial versionado de zonas) · `07_modulos_hu13.sql` (auditoría y códigos de módulos) · `08_espacios_hu15.sql` (asignación manual, recálculo de estado y auditoría de espacios/bloqueos) · `09_solicitudes_hu16.sql` a `12_revision_hu19.sql` (trámites) · `13_ferias_hu21.sql` (adjuntos y agenda de ferias)
+**Scripts:** `01_creacion_bd.sql` (estructura) · `02_seed_datos_prueba.sql` (datos de prueba) · `03_sesiones.sql` (tabla de sesiones) · `04_espacios_hu09.sql` (ficha de espacios) · `05_filtros_hu10.sql` (índices de filtros y disponibilidad) · `06_zonas_hu12.sql` (historial versionado de zonas) · `07_modulos_hu13.sql` (auditoría y códigos de módulos) · `08_espacios_hu15.sql` (asignación manual, recálculo de estado y auditoría de espacios/bloqueos) · `09_solicitudes_hu16.sql` a `12_revision_hu19.sql` (trámites) · `13_ferias_hu21.sql` (adjuntos y agenda de ferias) · `14_notificaciones_feria_hu21.sql` (avisos de feria) · `15_ferias_hu22.sql` (calendario, decisión y bloqueo de espacios)
 **Base de desarrollo verificada:** `sgp_tulua`
 
 ---
@@ -14,9 +14,10 @@
 psql -U postgres -d postgres -c 'CREATE DATABASE "sgp_tulua";'
 
 # 2) Crear la estructura base (30 tablas, 17 ENUM, 3 secuencias, índices,
-#    6 funciones, 10 triggers y 4 vistas materializadas). Las migraciones 03–13
+#    6 funciones, 10 triggers y 4 vistas materializadas). Las migraciones 03-15
 #    agregan sesiones, columnas de espacios, historial de zonas, auditoría,
-#    trámites, notificaciones enlazadas, adjuntos de ferias y avisos de feria (31 tablas).
+#    trámites, notificaciones enlazadas, adjuntos de ferias, avisos de feria
+#    y la administración del calendario HU-22.
 psql -U postgres -d "sgp_tulua" -f 01_creacion_bd.sql
 
 # 3) Cargar datos de prueba (incluye 4 pruebas automáticas de reglas de negocio)
@@ -55,6 +56,9 @@ psql -U postgres -d "sgp_tulua" -f 13_ferias_hu21.sql
 
 # 14) HU-21: enlace de notificaciones con ferias:
 psql -U postgres -d "sgp_tulua" -f 14_notificaciones_feria_hu21.sql
+
+# 15) HU-22: calendario, decisión y bloqueo de espacios de ferias:
+psql -U postgres -d "sgp_tulua" -f 15_ferias_hu22.sql
 
 # Para repetir desde cero:
 psql -U postgres -d postgres -c 'DROP DATABASE "sgp_tulua" WITH (FORCE);'
@@ -334,6 +338,7 @@ También crea los triggers de auditoría de `espacios_temporales` y
 | motivo | VARCHAR(300) | |
 | creado_por | BIGINT | NOT NULL, FK→usuarios(id) |
 | creado_en | TIMESTAMPTZ | DEFAULT now() |
+| feria_id | BIGINT | FK→ferias(id) ON DELETE CASCADE; NULL si es un bloqueo manual |
 
 **EXCLUDE** (`gist`): el mismo espacio no puede tener bloqueos con fechas solapadas.
 
@@ -417,10 +422,16 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 | fecha_inicio / fecha_fin | DATE | NOT NULL, CHECK fin ≥ inicio |
 | numero_puestos | INT | NOT NULL, CHECK > 0 (se valida contra aforo, HU-21) |
 | estado | estado_feria | DEFAULT radicada |
-| revisor_id | BIGINT | FK→gestores(usuario_id) |
+| revisor_id | BIGINT | FK→gestores(usuario_id); gestor que aprobó |
 | radicada_en | TIMESTAMPTZ | DEFAULT now() |
+| motivo_cancelacion | TEXT | Motivo obligatorio de cancelación |
+| aprobada_en / cancelada_en | TIMESTAMPTZ | Fechas de decisión |
+| cancelada_por | BIGINT | FK→gestores(usuario_id) |
+| actualizado_en | TIMESTAMPTZ | Actualización automática por trigger |
 
 **EXCLUDE** (`gist` + `WHERE estado IN ('radicada','aprobada')`): evita cruces de fecha y zona en el calendario (HU-22).
+
+`espacio_bloqueos.feria_id` (migración 15) vincula un bloqueo de espacio con la feria aprobada que lo creó. La FK usa `ON DELETE CASCADE`. Las ferias aprobadas antes de la migración reciben bloqueos retroactivos cuando sus espacios están libres.
 
 ### `feria_productos` — Productos participantes
 | Campo | Tipo | Restricciones |
@@ -566,7 +577,7 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 | usuario_id | BIGINT | NOT NULL, FK ON DELETE CASCADE |
 | solicitud_id | BIGINT | FK→solicitudes(id), nullable; enlaza el aviso con el trámite |
 | feria_id | BIGINT | FK→ferias(id), nullable; enlaza el aviso con la feria (HU-21) |
-| tipo | VARCHAR(60) | NOT NULL — activacion · cambio_solicitud · feria_radicada · permiso_emitido · aviso_vencimiento |
+| tipo | VARCHAR(60) | NOT NULL — activacion · cambio_solicitud · feria_radicada · feria_aprobada · feria_movida · feria_cancelada · permiso_emitido · aviso_vencimiento |
 | asunto | VARCHAR(200) | NOT NULL |
 | cuerpo | TEXT | |
 | canal | VARCHAR(10) | DEFAULT correo (correo / app) |
@@ -628,6 +639,8 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 | trg_bloqueos_estado | espacio_bloqueos | fn_estado_por_bloqueo (AFTER INSERT/UPDATE/DELETE, HU-15) |
 | trg_permisos_estado | permisos | fn_estado_por_permiso (AFTER INSERT/UPDATE, HU-15) |
 | trg_solicitudes_estado | solicitudes | fn_estado_por_solicitud (AFTER INSERT/UPDATE, HU-15) |
+| trg_ferias_marca | ferias | fn_marca_actualizacion (BEFORE UPDATE, HU-22) |
+| trg_ferias_auditoria | ferias | fn_auditoria (AFTER INSERT/UPDATE/DELETE, HU-22) |
 
 ---
 

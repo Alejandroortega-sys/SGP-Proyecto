@@ -460,3 +460,15 @@ jest.config.ts                                            (excluye frontend de J
 - **Navegación:** enlace **Solicitudes** en el menú del gestor y acceso rápido **Revisar solicitudes** en el panel.
 - **Pruebas:** Vitest de validaciones y textos; Playwright de bandeja, filtros, móvil, visor, verificación, devolución, concurrencia y expiración.
 - Detalle: [`docs/Uso_solicitudes.md`](Uso_solicitudes.md) §9.
+
+## 14. Calendario de ferias del gestor (HU-22)
+
+- **Ruta:** `/gestor/ferias`, con enlace **Ferias** en el menú del gestor y acceso rápido desde el panel.
+- **Vistas:** calendario mensual de 42 días y semanal con una fila por zona; en móvil la semana se convierte en una lista vertical.
+- **Filtros:** zona, estados (`radicada` y `aprobada` por defecto; opción para ver todos) y navegación anterior/siguiente/Hoy.
+- **Detalle:** panel con organizador, zona, fechas, puestos, productos, documentos, espacios bloqueados, fechas de decisión y motivo de cancelación.
+- **Acciones:** aprobar, mover y cancelar desde el calendario. Mover consulta cruces y sugerencias antes de guardar; cancelar exige motivo.
+- **Bloqueos:** aprobar crea bloqueos de todos los espacios de la zona; cancelar o mover los libera o reubica.
+- **Notificaciones:** el organizador recibe avisos en plataforma y correo por aprobación, movimiento y cancelación.
+- **Pruebas:** Vitest de utilidades del calendario; Playwright de aprobación, bloqueo de espacios, cruce al mover, movimiento, cancelación, liberación, notificación y vista a 360 px.
+- Detalle: [`docs/Uso_ferias.md`](Uso_ferias.md) §10.

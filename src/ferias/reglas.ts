@@ -24,6 +24,33 @@ export const ETIQUETAS_ESTADO_FERIA: Record<estado_feria, string> = {
   realizada: 'Realizada',
 };
 
+/** Estados que el gestor puede aprobar. */
+export function puedeAprobarFeria(estado: estado_feria): boolean {
+  return estado === 'radicada';
+}
+
+/** Estados que el gestor puede mover en el calendario. */
+export function puedeMoverFeria(estado: estado_feria): boolean {
+  return estado === 'radicada' || estado === 'aprobada';
+}
+
+/** Estados que el gestor puede cancelar. */
+export function puedeCancelarFeria(estado: estado_feria): boolean {
+  return estado === 'radicada' || estado === 'aprobada';
+}
+
+/** Valida el motivo obligatorio de cancelación. */
+export function validarMotivoCancelacion(motivo: string): string | null {
+  const limpio = motivo.trim();
+  if (limpio.length === 0) {
+    return 'Debes escribir el motivo de la cancelación.';
+  }
+  if (limpio.length > 2000) {
+    return 'El motivo de la cancelación no puede superar 2000 caracteres.';
+  }
+  return null;
+}
+
 /** Devuelve la etiqueta en español de un estado de feria. */
 export function etiquetaEstadoFeria(estado: estado_feria): string {
   return ETIQUETAS_ESTADO_FERIA[estado] ?? estado;
