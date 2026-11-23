@@ -65,9 +65,11 @@ import type {
   RespuestaRegistroComerciante,
   RespuestaRegistroOrganizador,
   RespuestaRenovarRevision,
+  RespuestaResolucionSolicitud,
   RespuestaTomarRevision,
   RespuestaVerificarRequisito,
   RespuestaZonaContenedora,
+  DatosResolucionSolicitud,
   SolicitudActivacion,
   SolicitudActualizarPerfil,
   SolicitudTemporalDetalle,
@@ -1430,5 +1432,16 @@ export function devolverSolicitudRevision(
         observacion,
       } satisfies SolicitudDevolucionRevision,
     },
+  );
+}
+
+/** Aprueba o rechaza una solicitud revisada y asigna el espacio (HU-20). */
+export function resolverSolicitudRevision(
+  solicitudId: string,
+  datos: DatosResolucionSolicitud,
+): Promise<RespuestaResolucionSolicitud> {
+  return peticion<RespuestaResolucionSolicitud>(
+    `/gestor/solicitudes/${solicitudId}/resolucion`,
+    { method: "PATCH", cuerpo: datos },
   );
 }

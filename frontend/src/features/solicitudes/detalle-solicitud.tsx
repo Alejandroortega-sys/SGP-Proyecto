@@ -67,10 +67,60 @@ export function DetalleSolicitud({ id }: DetalleSolicitudProps) {
         </Alerta>
       </header>
 
-      {solicitud.estado === 'rechazada' && solicitud.motivoRechazo ? (
+      {solicitud.estado === "aprobada" ? (
+        <section className="flex flex-col gap-3">
+          <Alerta tono="exito">
+            <p className="font-semibold">Solicitud aprobada</p>
+            {solicitud.asignacion ? (
+              <p className="mt-1">
+                El espacio {solicitud.asignacion.espacioNombre ?? ""} quedó
+                asignado{" "}
+                {formatearRangoFechas(
+                  solicitud.asignacion.fechaInicio,
+                  solicitud.asignacion.fechaFin,
+                )}{" "}
+                en el horario {solicitud.asignacion.horaInicio} a{" "}
+                {solicitud.asignacion.horaFin}.
+              </p>
+            ) : null}
+            {solicitud.dictamen ? (
+              <p className="mt-2">
+                <span className="font-semibold">Dictamen del gestor: </span>
+                {solicitud.dictamen}
+              </p>
+            ) : null}
+            {solicitud.decididaEn ? (
+              <p className="mt-2 text-sm">
+                Decidida el {formatearFechaHora(solicitud.decididaEn)}
+                {solicitud.resueltaPor
+                  ? ` por ${nombreCompleto(
+                      solicitud.resueltaPor.nombre,
+                      solicitud.resueltaPor.apellido,
+                    )}`
+                  : ""}
+                .
+              </p>
+            ) : null}
+          </Alerta>
+        </section>
+      ) : null}
+
+      {solicitud.estado === "rechazada" && solicitud.motivoRechazo ? (
         <Alerta tono="error">
           <p className="font-semibold">Motivo del rechazo</p>
           <p className="mt-1">{solicitud.motivoRechazo}</p>
+          {solicitud.decididaEn ? (
+            <p className="mt-2 text-sm">
+              Decidida el {formatearFechaHora(solicitud.decididaEn)}
+              {solicitud.resueltaPor
+                ? ` por ${nombreCompleto(
+                    solicitud.resueltaPor.nombre,
+                    solicitud.resueltaPor.apellido,
+                  )}`
+                : ""}
+              .
+            </p>
+          ) : null}
         </Alerta>
       ) : null}
 

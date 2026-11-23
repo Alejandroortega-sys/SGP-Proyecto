@@ -508,12 +508,54 @@ export class SolicitudListadoDto {
   documentos!: DocumentoSolicitudDto[];
 }
 
+export class AsignacionSolicitudDto {
+  @ApiProperty({ example: '4' })
+  espacioId!: string;
+
+  @ApiProperty({ example: 'Kiosco Parque La Guadua', nullable: true })
+  espacioNombre!: string | null;
+
+  @ApiProperty({ example: '2026-12-01' })
+  fechaInicio!: string;
+
+  @ApiProperty({ example: '2026-12-03' })
+  fechaFin!: string;
+
+  @ApiProperty({ example: '09:00' })
+  horaInicio!: string;
+
+  @ApiProperty({ example: '12:00' })
+  horaFin!: string;
+}
+
 export class SolicitudTemporalDetalleDto extends SolicitudListadoDto {
   @ApiProperty({ example: '2026-11-21T09:30:00.000Z', nullable: true })
   decididaEn!: Date | null;
 
   @ApiProperty({ example: null, nullable: true })
   motivoRechazo!: string | null;
+
+  @ApiProperty({
+    example: 'Cumple con los requisitos documentales.',
+    nullable: true,
+    description: 'Dictamen del gestor al aprobar la solicitud (HU-20).',
+  })
+  dictamen!: string | null;
+
+  @ApiProperty({
+    type: ActorSolicitudDto,
+    nullable: true,
+    description: 'Gestor que resolvió la solicitud.',
+  })
+  resueltaPor!: ActorSolicitudDto | null;
+
+  @ApiProperty({
+    type: AsignacionSolicitudDto,
+    nullable: true,
+    description:
+      'Espacio y rango asignados. Solo existe cuando la solicitud está aprobada.',
+  })
+  asignacion!: AsignacionSolicitudDto | null;
 
   @ApiProperty({ example: '2026-11-20T10:00:00.000Z' })
   actualizadoEn!: Date;

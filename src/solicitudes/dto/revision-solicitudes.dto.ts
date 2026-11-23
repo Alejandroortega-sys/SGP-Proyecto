@@ -23,6 +23,7 @@ import {
 } from '../revision';
 import {
   ActorSolicitudDto,
+  AsignacionSolicitudDto,
   ESTADOS_SOLICITUD,
   HistorialSolicitudDto,
   ProductoSolicitudDto,
@@ -381,6 +382,33 @@ export class SolicitudRevisionDetalleDto extends SolicitudRevisionListadoDto {
 
   @ApiProperty({ example: true })
   puedeVerificar!: boolean;
+
+  @ApiProperty({
+    example: true,
+    description:
+      'Indica si el gestor autenticado puede aprobar o rechazar la solicitud.',
+  })
+  puedeResolver!: boolean;
+
+  @ApiProperty({
+    example: null,
+    nullable: true,
+    description:
+      'Motivo por el que la solicitud no admite resolución en este momento.',
+  })
+  motivoNoResolucion!: string | null;
+
+  @ApiProperty({
+    example: 'Cumple con los requisitos documentales.',
+    nullable: true,
+  })
+  dictamen!: string | null;
+
+  @ApiProperty({ type: ActorSolicitudDto, nullable: true })
+  resueltaPor!: ActorSolicitudDto | null;
+
+  @ApiProperty({ type: AsignacionSolicitudDto, nullable: true })
+  asignacion!: AsignacionSolicitudDto | null;
 
   @ApiProperty({ example: null, nullable: true })
   motivoBloqueo!: string | null;

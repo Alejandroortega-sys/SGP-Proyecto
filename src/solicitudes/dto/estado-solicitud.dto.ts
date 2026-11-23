@@ -8,16 +8,21 @@ function recortar(valor: unknown): unknown {
   return typeof valor === 'string' ? valor.trim() : valor;
 }
 
-/** Cuerpo de `PATCH /gestor/solicitudes/:id/estado` (HU-18). */
+/**
+ * Cuerpo de `PATCH /gestor/solicitudes/:id/estado` (HU-18).
+ *
+ * La aprobación y el rechazo se realizan con `PATCH .../resolucion` porque
+ * asignan el espacio en la misma transacción (HU-20).
+ */
 export class CambiarEstadoSolicitudDto {
   @ApiProperty({
     enum: [...ESTADOS_CAMBIO_GESTOR],
     example: 'en_revision',
     description:
-      'Estado nuevo del trámite. Solo se permiten las transiciones de la máquina de estados.',
+      'Estado nuevo del trámite. Solo se permiten las transiciones de la máquina de estados que no resuelven la solicitud.',
   })
   @IsIn([...ESTADOS_CAMBIO_GESTOR], {
-    message: 'El estado debe ser en_revision, devuelta, aprobada o rechazada',
+    message: 'El estado debe ser en_revision o devuelta',
   })
   estado!: estado_solicitud;
 
@@ -33,19 +38,6 @@ export class CambiarEstadoSolicitudDto {
     message: 'La observación debe tener entre 1 y 2000 caracteres',
   })
   observacion?: string;
-
-  @ApiPropertyOptional({
-    example: 'La documentación no permite verificar la actividad solicitada.',
-    description:
-      'Motivo visible para el solicitante. Obligatorio cuando el estado es «rechazada».',
-  })
-  @IsOptional()
-  @Transform(({ value }) => recortar(value))
-  @IsString({ message: 'El motivo de rechazo debe ser texto' })
-  @Length(1, 2_000, {
-    message: 'El motivo de rechazo debe tener entre 1 y 2000 caracteres',
-  })
-  motivoRechazo?: string;
 }
 
 /** Respuesta de un cambio de estado de solicitud. */

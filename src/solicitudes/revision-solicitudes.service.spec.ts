@@ -47,9 +47,7 @@ const FILA_SOLICITUD = {
     tipo: 'kiosco',
     actividad_permitida: 'Artesanías',
   },
-  solicitud_productos: [
-    { productos: { id: 1n, nombre: 'Artesanías' } },
-  ],
+  solicitud_productos: [{ productos: { id: 1n, nombre: 'Artesanías' } }],
   solicitud_documentos: [
     {
       id: 8n,
@@ -89,6 +87,30 @@ const CATALOGO = [
     orden: 10,
   },
 ];
+
+const FILA_RESOLUCION = {
+  id: 12n,
+  numero_radicado: 'SOL-2026-00012',
+  estado: 'en_revision' as const,
+  comerciante_id: 3n,
+  espacio_id: 4n,
+  fecha_inicio: '2026-12-01',
+  fecha_fin: '2026-12-03',
+  hora_inicio: '09:00',
+  hora_fin: '12:00',
+  correo: 'maria.gomez@gmail.com',
+  nombre: 'María',
+  espacio_nombre: 'Kiosco Parque La Guadalupe',
+};
+
+const ACTUALIZADA_APROBADA = {
+  id: 12n,
+  numero_radicado: 'SOL-2026-00012',
+  estado: 'aprobada' as const,
+  motivo_rechazo: null,
+  decidida_en: new Date('2026-11-22T10:00:00.000Z'),
+  actualizado_en: new Date('2026-11-22T10:00:00.000Z'),
+};
 
 const BLOQUEO_PROPIO = {
   solicitud_id: '12',
@@ -292,9 +314,9 @@ describe('RevisionSolicitudesService', () => {
 
   it('rechaza renovar si el bloqueo expiró', async () => {
     prisma.$queryRaw.mockResolvedValue([]);
-    await expect(
-      servicio.renovarRevision(GESTOR, '12'),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(servicio.renovarRevision(GESTOR, '12')).rejects.toBeInstanceOf(
+      ConflictException,
+    );
   });
 
   it('libera solo el bloqueo propio', async () => {
@@ -303,9 +325,9 @@ describe('RevisionSolicitudesService', () => {
       token: BLOQUEO_PROPIO.token,
       expira_en: new Date('2099-01-01T00:00:00.000Z'),
     });
-    await expect(
-      servicio.liberarRevision(GESTOR, '12'),
-    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(servicio.liberarRevision(GESTOR, '12')).rejects.toBeInstanceOf(
+      ConflictException,
+    );
   });
 
   it('no libera el bloqueo si el token de la pantalla ya no coincide', async () => {
@@ -315,7 +337,11 @@ describe('RevisionSolicitudesService', () => {
       expira_en: new Date('2099-01-01T00:00:00.000Z'),
     });
 
-    const respuesta = await servicio.liberarRevision(GESTOR, '12', 'token-viejo');
+    const respuesta = await servicio.liberarRevision(
+      GESTOR,
+      '12',
+      'token-viejo',
+    );
 
     expect(respuesta.liberado).toBe(false);
     expect(prisma.solicitud_revisiones.delete).not.toHaveBeenCalled();
@@ -331,7 +357,9 @@ describe('RevisionSolicitudesService', () => {
 
   it('rechaza verificar sin bloqueo propio', async () => {
     prisma.$queryRaw
-      .mockResolvedValueOnce([{ estado: 'en_revision', actividad: 'Artesanías' }])
+      .mockResolvedValueOnce([
+        { estado: 'en_revision', actividad: 'Artesanías' },
+      ])
       .mockResolvedValueOnce([{ gestor_id: 2n, vigente: true }]);
 
     await expect(
@@ -343,7 +371,9 @@ describe('RevisionSolicitudesService', () => {
 
   it('rechaza verificar si el requisito no tiene documento vigente', async () => {
     prisma.$queryRaw
-      .mockResolvedValueOnce([{ estado: 'en_revision', actividad: 'Artesanías' }])
+      .mockResolvedValueOnce([
+        { estado: 'en_revision', actividad: 'Artesanías' },
+      ])
       .mockResolvedValueOnce([{ gestor_id: 1n, vigente: true }]);
     prisma.requisitos_documentales.findFirst.mockResolvedValue(CATALOGO[0]);
     prisma.solicitud_documentos.findMany.mockResolvedValue([]);
@@ -357,7 +387,9 @@ describe('RevisionSolicitudesService', () => {
 
   it('guarda la verificación y el progreso', async () => {
     prisma.$queryRaw
-      .mockResolvedValueOnce([{ estado: 'en_revision', actividad: 'Artesanías' }])
+      .mockResolvedValueOnce([
+        { estado: 'en_revision', actividad: 'Artesanías' },
+      ])
       .mockResolvedValueOnce([{ gestor_id: 1n, vigente: true }])
       .mockResolvedValueOnce([BLOQUEO_PROPIO]);
     prisma.requisitos_documentales.findFirst.mockResolvedValue(CATALOGO[0]);
@@ -391,5 +423,149 @@ describe('RevisionSolicitudesService', () => {
     });
     expect(respuesta.requisito.estado).toBe('cumple');
     expect(respuesta.progreso.cumple).toBe(1);
+  });
+
+  it('aprueba, asigna el espacio y notifica al comerciante', async () => {
+    prisma.$queryRaw
+      .mockResolvedValueOnce([FILA_RESOLUCION])
+      .mockResolvedValueOnce([{ gestor_id: 1n, vigente: true }])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        { id: 4n, nombre: 'Kiosco Parque La Guadalupe', estado: 'disponible' },
+      ])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([]);
+    prisma.solicitudes.update.mockResolvedValue(ACTUALIZADA_APROBADA);
+
+    const respuesta = await servicio.resolver(GESTOR, '12', {
+      decision: 'aprobar',
+      dictamen: 'Cumple con los requisitos documentales.',
+    });
+
+    expect(respuesta).toMatchObject({
+      estado: 'aprobada',
+      dictamen: 'Cumple con los requisitos documentales.',
+      asignacion: {
+        espacioId: '4',
+        fechaInicio: '2026-12-01',
+        fechaFin: '2026-12-03',
+        horaInicio: '09:00',
+        horaFin: '12:00',
+      },
+    });
+    expect(prisma.solicitudes.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 12n },
+        data: expect.objectContaining({
+          estado: 'aprobada',
+          revisor_id: 1n,
+          motivo_rechazo: null,
+        }),
+      }),
+    );
+    expect(prisma.solicitud_historial.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          estado_nuevo: 'aprobada',
+          observacion: 'Cumple con los requisitos documentales.',
+        }),
+      }),
+    );
+    expect(notificaciones.crearCambioEstadoSolicitud).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        estadoNuevo: 'aprobada',
+        observacion: 'Cumple con los requisitos documentales.',
+      }),
+    );
+    expect(prisma.$executeRaw).toHaveBeenCalled();
+    expect(notificaciones.enviarCorreoCambioEstadoSolicitud).toHaveBeenCalled();
+  });
+
+  it('rechaza con motivo obligatorio y lo guarda en la solicitud', async () => {
+    prisma.$queryRaw
+      .mockResolvedValueOnce([FILA_RESOLUCION])
+      .mockResolvedValueOnce([{ gestor_id: 1n, vigente: true }]);
+    prisma.solicitudes.update.mockResolvedValue({
+      ...ACTUALIZADA_APROBADA,
+      estado: 'rechazada',
+      motivo_rechazo: 'Documentación incompleta.',
+    });
+
+    const respuesta = await servicio.resolver(GESTOR, '12', {
+      decision: 'rechazar',
+      motivoRechazo: 'Documentación incompleta.',
+    });
+
+    expect(respuesta.estado).toBe('rechazada');
+    expect(respuesta.motivoRechazo).toBe('Documentación incompleta.');
+    expect(respuesta.asignacion).toBeNull();
+    expect(prisma.solicitudes.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          estado: 'rechazada',
+          motivo_rechazo: 'Documentación incompleta.',
+        }),
+      }),
+    );
+  });
+
+  it('no abre transacción al rechazar sin motivo', async () => {
+    await expect(
+      servicio.resolver(GESTOR, '12', { decision: 'rechazar' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('impide aprobar con un requisito vigente No cumple', async () => {
+    prisma.$queryRaw
+      .mockResolvedValueOnce([FILA_RESOLUCION])
+      .mockResolvedValueOnce([{ gestor_id: 1n, vigente: true }])
+      .mockResolvedValueOnce([
+        { tipo_documento: 'RUT', observacion: 'RUT vencido' },
+      ]);
+
+    await expect(
+      servicio.resolver(GESTOR, '12', { decision: 'aprobar' }),
+    ).rejects.toBeInstanceOf(ConflictException);
+
+    expect(prisma.solicitudes.update).not.toHaveBeenCalled();
+  });
+
+  it('impide aprobar si el espacio ya tiene una solicitud aprobada', async () => {
+    prisma.$queryRaw
+      .mockResolvedValueOnce([FILA_RESOLUCION])
+      .mockResolvedValueOnce([{ gestor_id: 1n, vigente: true }])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        { id: 4n, nombre: 'Kiosco Parque La Guadalupe', estado: 'disponible' },
+      ])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          referencia: 'SOL-2026-00010',
+          fecha_inicio: '2026-12-01',
+          fecha_fin: '2026-12-02',
+        },
+      ]);
+
+    await expect(
+      servicio.resolver(GESTOR, '12', { decision: 'aprobar' }),
+    ).rejects.toBeInstanceOf(ConflictException);
+
+    expect(prisma.solicitudes.update).not.toHaveBeenCalled();
+  });
+
+  it('impide resolver una solicitud que ya no está en revisión', async () => {
+    prisma.$queryRaw.mockResolvedValueOnce([
+      { ...FILA_RESOLUCION, estado: 'aprobada' },
+    ]);
+
+    await expect(
+      servicio.resolver(GESTOR, '12', { decision: 'aprobar' }),
+    ).rejects.toBeInstanceOf(ConflictException);
   });
 });

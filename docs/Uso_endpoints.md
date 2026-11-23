@@ -307,7 +307,7 @@ por IP** (ver `docs/Uso_zonas.md`).
 | 34 | `PATCH` | `/notificaciones/leer-todas` | Autenticado | Marcar todas como leídas |
 | 35 | `GET` | `/gestor/auditoria` | Gestor administrador | Consultar la auditoría sin datos sensibles |
 | 36 | `POST` | `/auth/refresh` | Público | Renovar la sesión con refresh token |
-| 37 | `PATCH` | `/gestor/solicitudes/:id/estado` | Gestor | Cambiar estado y notificar al comerciante (HU-18) |
+| 37 | `PATCH` | `/gestor/solicitudes/:id/estado` | Gestor | Iniciar revisión o devolver para corrección (HU-18) |
 | 38 | `GET` | `/gestor/solicitudes` | Gestor | Bandeja de revisión con filtros y orden (HU-19) |
 | 39 | `GET` | `/gestor/solicitudes/opciones` | Gestor | Sectores y actividades para los filtros (HU-19) |
 | 40 | `GET` | `/gestor/solicitudes/:id` | Gestor | Detalle con checklist y bloqueo de revisión (HU-19) |
@@ -315,6 +315,7 @@ por IP** (ver `docs/Uso_zonas.md`).
 | 42 | `PATCH` | `/gestor/solicitudes/:id/revision` | Gestor | Renovar el bloqueo de revisión (HU-19) |
 | 43 | `DELETE` | `/gestor/solicitudes/:id/revision` | Gestor | Liberar el bloqueo de revisión (HU-19) |
 | 44 | `PATCH` | `/gestor/solicitudes/:id/requisitos/:requisitoId/verificacion` | Gestor | Marcar un requisito como Cumple o No cumple (HU-19) |
+| 45 | `PATCH` | `/gestor/solicitudes/:id/resolucion` | Gestor | Aprobar o rechazar y asignar el espacio (HU-20) |
 
 ---
 
@@ -1663,24 +1664,22 @@ Marca todas las no leídas del usuario y devuelve `{ "actualizadas": 2, "mensaje
 
 **Acceso:** solo gestor (revisor o administrador).
 
-Cuerpo:
+Cuerpos admitidos:
 
 ```json
 { "estado": "en_revision" }
 { "estado": "devuelta", "observacion": "Falta el RUT actualizado." }
-{ "estado": "aprobada", "observacion": "Cumple con los requisitos." }
-{ "estado": "rechazada", "motivoRechazo": "La documentación no permite verificar la actividad." }
 ```
 
-Transiciones permitidas:
+Transiciones permitidas por este endpoint:
 
 ```text
 radicada → en_revision
-en_revision → devuelta | aprobada | rechazada
+en_revision → devuelta
 devuelta → en_revision
 ```
 
-Una solicitud `aprobada`, `rechazada` o `cancelada` no cambia. El endpoint actualiza `estado`, `revisor_id`, `decidida_en` y `motivo_rechazo` cuando corresponde, escribe `solicitud_historial` y crea la notificación del comerciante en la misma transacción. Después del commit envía el correo; si falla, la respuesta trae `correoEnviado: false` sin revertir el trámite.
+La aprobación y el rechazo se hacen con `/resolucion` (ver 5.16.1). Una solicitud `aprobada`, `rechazada` o `cancelada` no cambia. El endpoint actualiza `estado` y `revisor_id`, escribe `solicitud_historial` y crea la notificación del comerciante en la misma transacción. Después del commit envía el correo; si falla, la respuesta trae `correoEnviado: false` sin revertir el trámite.
 
 Respuesta `200`:
 
@@ -1688,24 +1687,24 @@ Respuesta `200`:
 {
   "id": "12",
   "numeroRadicado": "SOL-2026-00012",
-  "estadoAnterior": "en_revision",
-  "estado": "aprobada",
-  "observacion": "Cumple con los requisitos.",
+  "estadoAnterior": "radicada",
+  "estado": "en_revision",
+  "observacion": "El gestor inició la revisión de la solicitud.",
   "motivoRechazo": null,
-  "decididaEn": "2026-11-21T10:00:00.000Z",
+  "decididaEn": null,
   "actualizadoEn": "2026-11-21T10:00:00.000Z",
   "correoEnviado": true,
   "mensajeCorreo": null,
-  "mensaje": "Solicitud actualizada a «Aprobada»."
+  "mensaje": "Solicitud actualizada a «En revisión»."
 }
 ```
 
 | HTTP | Causa |
 |---|---|
-| `400` | Estado inválido o falta observación/motivo |
+| `400` | Estado inválido, falta observación o se intenta aprobar/rechazar por este endpoint |
 | `403` | Rol distinto de gestor |
 | `404` | La solicitud no existe |
-| `409` | Transición no permitida o estado final |
+| `409` | Transición no permitida, estado final o bloqueo de otro gestor |
 
 ---
 
@@ -1787,6 +1786,32 @@ Libera el bloqueo propio. Es idempotente. Si el token ya no coincide, responde `
 #### Devolución
 
 La devolución sigue usando `PATCH /gestor/solicitudes/:id/estado` con `estado: "devuelta"` y `observacion`. Si existe un bloqueo activo de otro gestor, responde `409`; si el bloqueo es del mismo gestor, se libera al cambiar de estado. Los requisitos `No cumple` conservan su observación para que el comerciante los corrija.
+
+#### 5.16.1 Resolución y asignación — `PATCH /gestor/solicitudes/:id/resolucion` (HU-20)
+
+**Acceso:** solo gestor (revisor o administrador), con la solicitud `en_revision` y el bloqueo propio vigente.
+
+```json
+{ "decision": "aprobar", "dictamen": "Cumple con los requisitos documentales." }
+{ "decision": "rechazar", "motivoRechazo": "La documentación no permite verificar la actividad." }
+```
+
+- `dictamen` es opcional (1–2000) y queda en el historial.
+- `motivoRechazo` es obligatorio al rechazar (1–2000) y es visible para el solicitante.
+- Aprobar asigna el espacio en las fechas y horas de la solicitud.
+- No se aprueba si hay un requisito vigente `No cumple`.
+- No se aprueba si el espacio está en mantenimiento, bloqueado o asignado globalmente.
+- No se aprueba si hay un bloqueo, un permiso `vigente` u otra solicitud `aprobada` que se solape en fechas y horas.
+- La solicitud, la asignación, el historial y la notificación se guardan en una sola transacción.
+- El lock del espacio (`FOR UPDATE`) serializa las aprobaciones concurrentes y evita la doble asignación.
+- Respuesta `200` con `asignacion: { espacioId, espacioNombre, fechaInicio, fechaFin, horaInicio, horaFin }` al aprobar; `null` al rechazar.
+
+| HTTP | Causa |
+|---|---|
+| `400` | Decisión inválida, motivo faltante o texto mayor a 2000 |
+| `403` | Rol distinto de gestor |
+| `404` | La solicitud no existe |
+| `409` | Estado distinto de `en_revision`, bloqueo ausente/ajeno, `No cumple` o espacio ocupado |
 
 ---
 

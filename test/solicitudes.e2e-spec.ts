@@ -701,11 +701,14 @@ describe('Solicitudes (e2e)', () => {
     expect(correo.enviarCambioEstadoSolicitud).toHaveBeenCalled();
   });
 
-  it('exige motivo al rechazar y no ejecuta la transacción', async () => {
+  it('deriva la aprobación y el rechazo al endpoint de resolución', async () => {
     await request(app.getHttpServer())
       .patch('/gestor/solicitudes/12/estado')
       .set('Authorization', `Bearer ${tokenGestor}`)
-      .send({ estado: 'rechazada' })
+      .send({
+        estado: 'rechazada',
+        motivoRechazo: 'Documento inválido',
+      })
       .expect(400);
 
     expect(tx.solicitudes.update).not.toHaveBeenCalled();
@@ -727,7 +730,7 @@ describe('Solicitudes (e2e)', () => {
     await request(app.getHttpServer())
       .patch('/gestor/solicitudes/12/estado')
       .set('Authorization', `Bearer ${tokenGestor}`)
-      .send({ estado: 'aprobada' })
+      .send({ estado: 'devuelta', observacion: 'Falta el RUT' })
       .expect(409);
   });
 });

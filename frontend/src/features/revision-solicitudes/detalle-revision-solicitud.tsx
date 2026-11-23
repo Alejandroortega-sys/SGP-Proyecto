@@ -13,6 +13,7 @@ import {
   comoApiError,
   devolverSolicitudRevision,
   obtenerSolicitudRevision,
+  resolverSolicitudRevision,
   verificarRequisitoSolicitud,
 } from "@/lib/api-client";
 import {
@@ -29,9 +30,12 @@ import type {
 } from "@/types/api";
 import { formatearRangoFechas } from "@/features/espacios/estilos-espacio";
 import { EtiquetaEstadoSolicitud } from "@/features/solicitudes/etiqueta-estado-solicitud";
+import { AprobarSolicitudModal } from "./aprobar-solicitud";
 import { AvisoBloqueoRevision } from "./bloqueo-revision";
 import { ChecklistRequisitos } from "./checklist-requisitos";
 import { DevolverSolicitudModal } from "./devolver-solicitud";
+import { RechazarSolicitudModal } from "./rechazar-solicitud";
+import { ResolucionSolicitud } from "./resolucion-solicitud";
 import { useBloqueoRevision } from "./use-bloqueo-revision";
 import { VisorDocumentosRevision } from "./visor-documentos-revision";
 import {
@@ -79,6 +83,9 @@ function RevisionCargada({
   const [errorAccion, setErrorAccion] = useState<string | null>(null);
   const [modalDevolver, setModalDevolver] = useState(false);
   const [devolviendo, setDevolviendo] = useState(false);
+  const [modalAprobar, setModalAprobar] = useState(false);
+  const [modalRechazar, setModalRechazar] = useState(false);
+  const [resolviendo, setResolviendo] = useState(false);
 
   useEffect(() => {
     setSolicitud(inicial);
@@ -180,8 +187,11 @@ function RevisionCargada({
         actualizadoEn: respuesta.actualizadoEn,
         bloqueo: null,
         puedeVerificar: false,
+        puedeResolver: false,
         motivoBloqueo:
           "La solicitud fue devuelta para corrección y no admite verificación.",
+        motivoNoResolucion:
+          "La solicitud fue devuelta para corrección y no admite resolución.",
       }));
       setModalDevolver(false);
       setMensaje(
@@ -194,6 +204,82 @@ function RevisionCargada({
       throw new Error(comoApiError(capturado).mensaje);
     } finally {
       setDevolviendo(false);
+    }
+  }
+
+  async function aprobar(dictamen: string | undefined): Promise<void> {
+    setResolviendo(true);
+    setErrorAccion(null);
+    try {
+      const respuesta = await resolverSolicitudRevision(solicitud.id, {
+        decision: "aprobar",
+        dictamen,
+      });
+      liberar();
+      setSolicitud((actual) => ({
+        ...actual,
+        estado: respuesta.estado,
+        decididaEn: respuesta.decididaEn,
+        motivoRechazo: respuesta.motivoRechazo,
+        dictamen: respuesta.dictamen,
+        asignacion: respuesta.asignacion,
+        actualizadoEn: respuesta.actualizadoEn,
+        bloqueo: null,
+        puedeVerificar: false,
+        puedeResolver: false,
+        motivoBloqueo:
+          "La solicitud fue aprobada y no admite más verificaciones.",
+        motivoNoResolucion: "La solicitud ya fue aprobada.",
+      }));
+      setModalAprobar(false);
+      setMensaje(
+        respuesta.correoEnviado
+          ? `${respuesta.mensaje} El comerciante recibió la notificación y el correo.`
+          : `${respuesta.mensaje} ${respuesta.mensajeCorreo ?? "No se pudo enviar el correo, pero la aprobación quedó guardada."}`,
+      );
+      onRecargar();
+    } catch (capturado) {
+      throw new Error(comoApiError(capturado).mensaje);
+    } finally {
+      setResolviendo(false);
+    }
+  }
+
+  async function rechazar(motivo: string): Promise<void> {
+    setResolviendo(true);
+    setErrorAccion(null);
+    try {
+      const respuesta = await resolverSolicitudRevision(solicitud.id, {
+        decision: "rechazar",
+        motivoRechazo: motivo,
+      });
+      liberar();
+      setSolicitud((actual) => ({
+        ...actual,
+        estado: respuesta.estado,
+        decididaEn: respuesta.decididaEn,
+        motivoRechazo: respuesta.motivoRechazo,
+        dictamen: respuesta.dictamen,
+        asignacion: null,
+        actualizadoEn: respuesta.actualizadoEn,
+        bloqueo: null,
+        puedeVerificar: false,
+        puedeResolver: false,
+        motivoBloqueo:
+          "La solicitud fue rechazada y no admite más verificaciones.",
+        motivoNoResolucion: "La solicitud ya fue rechazada.",
+      }));
+      setModalRechazar(false);
+      setMensaje(
+        respuesta.correoEnviado
+          ? `${respuesta.mensaje} El comerciante recibió la notificación y el correo.`
+          : `${respuesta.mensaje} ${respuesta.mensajeCorreo ?? "No se pudo enviar el correo, pero el rechazo quedó guardado."}`,
+      );
+      onRecargar();
+    } catch (capturado) {
+      throw new Error(comoApiError(capturado).mensaje);
+    } finally {
+      setResolviendo(false);
     }
   }
 
@@ -357,6 +443,12 @@ function RevisionCargada({
             onVerificar={verificar}
           />
 
+          <ResolucionSolicitud
+            solicitud={solicitud}
+            onAprobar={() => setModalAprobar(true)}
+            onRechazar={() => setModalRechazar(true)}
+          />
+
           <div className="flex flex-col gap-2 sm:flex-row">
             <Boton
               variante="peligro"
@@ -445,6 +537,22 @@ function RevisionCargada({
         onCerrar={() => setModalDevolver(false)}
         onConfirmar={devolver}
         cargando={devolviendo}
+      />
+
+      <AprobarSolicitudModal
+        abierto={modalAprobar}
+        solicitud={solicitud}
+        onCerrar={() => setModalAprobar(false)}
+        onConfirmar={aprobar}
+        cargando={resolviendo}
+      />
+
+      <RechazarSolicitudModal
+        abierto={modalRechazar}
+        solicitud={solicitud}
+        onCerrar={() => setModalRechazar(false)}
+        onConfirmar={rechazar}
+        cargando={resolviendo}
       />
     </div>
   );

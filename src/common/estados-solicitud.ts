@@ -46,10 +46,18 @@ export const TRANSICIONES_ESTADO_SOLICITUD: Record<
   cancelada: [],
 };
 
-/** Estados que el gestor puede solicitar mediante el endpoint de HU-18. */
+/**
+ * Estados que el gestor puede solicitar mediante el endpoint de seguimiento
+ * (HU-18). La aprobación y el rechazo tienen su propio endpoint de resolución
+ * (HU-20) porque además asignan el espacio en una transacción.
+ */
 export const ESTADOS_CAMBIO_GESTOR: readonly estado_solicitud[] = [
   'en_revision',
   'devuelta',
+];
+
+/** Decisiones finales del trámite (HU-20). */
+export const ESTADOS_RESOLUCION: readonly estado_solicitud[] = [
   'aprobada',
   'rechazada',
 ];
@@ -70,6 +78,11 @@ export function puedeCambiarEstadoSolicitud(
   estadoNuevo: estado_solicitud,
 ): boolean {
   return TRANSICIONES_ESTADO_SOLICITUD[estadoActual].includes(estadoNuevo);
+}
+
+/** Indica si la solicitud admite una resolución final (HU-20). */
+export function puedeResolverSolicitud(estado: estado_solicitud): boolean {
+  return estado === 'en_revision';
 }
 
 /** Tipo de notificación asociado a un estado de la solicitud. */

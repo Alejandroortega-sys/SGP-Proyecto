@@ -5,12 +5,13 @@ import {
   API_URL,
   CREDENCIALES,
   cabecerasApi,
-  cambiarEstadoSolicitudApi,
   campo,
   iniciarSesion,
   iniciarSesionApi,
   obtenerNotificaciones,
   radicarSolicitudApi,
+  resolverSolicitudApi,
+  tomarRevisionApi,
 } from './helpers';
 import { eliminarSolicitudesPrueba } from './limpieza-solicitudes';
 
@@ -119,19 +120,19 @@ test.describe('Seguimiento de solicitudes y notificaciones (HU-18)', () => {
     page,
     request,
   }) => {
-    await cambiarEstadoSolicitudApi(
+    const toma = await tomarRevisionApi(
       request,
       tokenGestor,
       solicitudId,
-      'en_revision',
     );
-    await cambiarEstadoSolicitudApi(
+    expect(toma.ok()).toBeTruthy();
+    const resolucion = await resolverSolicitudApi(
       request,
       tokenGestor,
       solicitudId,
-      'aprobada',
-      { observacion: 'Cumple con los requisitos.' },
+      { decision: 'aprobar', dictamen: 'Cumple con los requisitos.' },
     );
+    expect(resolucion.ok()).toBeTruthy();
 
     await iniciarSesion(
       page,
@@ -150,7 +151,10 @@ test.describe('Seguimiento de solicitudes y notificaciones (HU-18)', () => {
     await expect(
       page.getByText('Aprobada', { exact: true }).first(),
     ).toBeVisible();
-    await expect(page.getByText('Cumple con los requisitos.')).toBeVisible();
+    await expect(page.getByText('Dictamen del gestor').first()).toBeVisible();
+    await expect(
+      page.getByText('Cumple con los requisitos.').first(),
+    ).toBeVisible();
   });
 
   test('el centro de notificaciones enlaza la solicitud y actualiza el indicador', async ({

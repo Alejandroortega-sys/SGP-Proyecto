@@ -867,7 +867,7 @@ describe('SolicitudesService', () => {
 
     await expect(
       servicio.cambiarEstado(GESTOR, '12', { estado: 'aprobada' }),
-    ).rejects.toBeInstanceOf(ConflictException);
+    ).rejects.toBeInstanceOf(BadRequestException);
 
     tx.$queryRaw.mockResolvedValue([
       {
@@ -885,7 +885,7 @@ describe('SolicitudesService', () => {
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
-  it('exige observación al devolver y motivo al rechazar', async () => {
+  it('exige observación al devolver y deriva la resolución al endpoint de HU-20', async () => {
     const { prisma, correo } = crearMocks();
     const servicio = crearServicio(prisma, correo);
 
@@ -894,6 +894,9 @@ describe('SolicitudesService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
     await expect(
       servicio.cambiarEstado(GESTOR, '12', { estado: 'rechazada' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      servicio.cambiarEstado(GESTOR, '12', { estado: 'aprobada' }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
@@ -913,9 +916,9 @@ describe('SolicitudesService', () => {
     tx.solicitudes.update.mockResolvedValue({
       id: 12n,
       numero_radicado: 'SOL-2026-00012',
-      estado: 'rechazada',
-      motivo_rechazo: 'Documento inválido',
-      decidida_en: new Date('2026-11-21T10:00:00.000Z'),
+      estado: 'devuelta',
+      motivo_rechazo: null,
+      decidida_en: null,
       actualizado_en: new Date('2026-11-21T10:00:00.000Z'),
     });
     notificaciones.enviarCorreoCambioEstadoSolicitud.mockResolvedValue({
@@ -925,11 +928,11 @@ describe('SolicitudesService', () => {
     const servicio = crearServicio(prisma, correo, notificaciones);
 
     const respuesta = await servicio.cambiarEstado(GESTOR, '12', {
-      estado: 'rechazada',
-      motivoRechazo: 'Documento inválido',
+      estado: 'devuelta',
+      observacion: 'Documento inválido',
     });
 
-    expect(respuesta.estado).toBe('rechazada');
+    expect(respuesta.estado).toBe('devuelta');
     expect(respuesta.correoEnviado).toBe(false);
     expect(respuesta.mensajeCorreo).toBe('SMTP no disponible');
   });

@@ -40,6 +40,10 @@ import {
   TomarRevisionResponseDto,
   VerificarRequisitoRevisionDto,
 } from './dto/revision-solicitudes.dto';
+import {
+  ResolverSolicitudDto,
+  ResolverSolicitudResponseDto,
+} from './dto/resolucion-solicitudes.dto';
 import { RevisionSolicitudesService } from './revision-solicitudes.service';
 import { SolicitudesService } from './solicitudes.service';
 
@@ -119,7 +123,8 @@ export class GestorSolicitudesController {
   @ApiOkResponse({ type: TomarRevisionResponseDto })
   @ApiBadRequestResponse({ description: 'Identificador inválido' })
   @ApiConflictResponse({
-    description: 'La solicitud no admite revisión o está bloqueada por otro gestor',
+    description:
+      'La solicitud no admite revisión o está bloqueada por otro gestor',
   })
   @ApiNotFoundResponse({ description: 'La solicitud no existe' })
   @ApiUnauthorizedResponse({ description: 'Token ausente o inválido' })
@@ -199,18 +204,40 @@ export class GestorSolicitudesController {
     @Param('requisitoId') requisitoId: string,
     @Body() dto: VerificarRequisitoRevisionDto,
   ): Promise<RespuestaVerificarRequisitoDto> {
-    return this.revision.verificarRequisito(
-      usuario,
-      id,
-      requisitoId,
-      dto,
-    );
+    return this.revision.verificarRequisito(usuario, id, requisitoId, dto);
+  }
+
+  @ApiOperation({
+    summary: 'Aprobar o rechazar una solicitud y asignar el espacio',
+    description:
+      'Resuelve una solicitud en revisión. Aprobar cambia el estado a «Aprobada» y asigna el espacio en el rango de fechas y horas, validando bloqueos, permisos vigentes y otras solicitudes aprobadas dentro de una transacción. Rechazar exige un motivo visible para el solicitante. Ambas acciones requieren el bloqueo de revisión propio.',
+  })
+  @ApiParam({ name: 'id', example: '12' })
+  @ApiOkResponse({ type: ResolverSolicitudResponseDto })
+  @ApiBadRequestResponse({
+    description: 'Decisión inválida, motivo faltante o texto demasiado largo',
+  })
+  @ApiConflictResponse({
+    description:
+      'La solicitud no está en revisión, el bloqueo no es propio, hay requisitos No cumple o el espacio ya está ocupado',
+  })
+  @ApiNotFoundResponse({ description: 'La solicitud no existe' })
+  @ApiUnauthorizedResponse({ description: 'Token ausente o inválido' })
+  @ApiForbiddenResponse({ description: 'El rol no es gestor' })
+  @Patch(':id/resolucion')
+  @HttpCode(HttpStatus.OK)
+  resolver(
+    @UsuarioActual() usuario: UsuarioAutenticado,
+    @Param('id') id: string,
+    @Body() dto: ResolverSolicitudDto,
+  ): Promise<ResolverSolicitudResponseDto> {
+    return this.revision.resolver(usuario, id, dto);
   }
 
   @ApiOperation({
     summary: 'Cambiar el estado de una solicitud',
     description:
-      'Aplica una transición válida de la máquina de estados, registra el historial, crea la notificación del comerciante y envía el correo de aviso. Si otro gestor tiene un bloqueo de revisión vigente, la operación se rechaza. Devuelve 400 si falta la observación de devolución o el motivo de rechazo.',
+      'Aplica una transición no final de la máquina de estados (en revisión o devolución), registra el historial, crea la notificación del comerciante y envía el correo de aviso. La aprobación y el rechazo se hacen con /resolucion.',
   })
   @ApiParam({ name: 'id', example: '12' })
   @ApiOkResponse({ type: CambiarEstadoSolicitudResponseDto })

@@ -21,7 +21,8 @@ Este módulo permite al **comerciante autenticado** radicar una solicitud de uso
 | `GET` | `/solicitudes/:id/requisitos` | Comerciante dueño | Requisitos, estado, versión vigente e historial de versiones |
 | `POST` | `/solicitudes/:id/documentos` | Comerciante dueño | Carga o reemplaza un documento de un requisito |
 | `GET` | `/solicitudes/:id/documentos/:documentoId/archivo` | Comerciante dueño / Gestor | Descarga autenticada de un documento |
-| `PATCH` | `/gestor/solicitudes/:id/estado` | Gestor | Cambia el estado, registra historial y notifica al comerciante |
+| `PATCH` | `/gestor/solicitudes/:id/estado` | Gestor | Inicia revisión o devuelve para corrección |
+| `PATCH` | `/gestor/solicitudes/:id/resolucion` | Gestor | Aprueba o rechaza y asigna el espacio (HU-20) |
 
 ---
 
@@ -255,23 +256,22 @@ La descarga y la vista previa usan el endpoint autenticado existente. El archivo
 
 **`PATCH /gestor/solicitudes/:id/estado`**
 
-Acceso: `gestor` (revisor o administrador). Aplica una transición de la máquina de estados.
+Acceso: `gestor` (revisor o administrador). Aplica una transición no final de la máquina de estados.
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
-| `estado` | texto | Sí | `en_revision`, `devuelta`, `aprobada` o `rechazada` |
+| `estado` | texto | Sí | `en_revision` o `devuelta` |
 | `observacion` | texto | Si `estado = devuelta` | Observación visible en la línea de tiempo |
-| `motivoRechazo` | texto | Si `estado = rechazada` | Motivo visible para el solicitante |
 
-Transiciones permitidas:
+Transiciones permitidas por este endpoint:
 
 ```text
 radicada → en_revision
-en_revision → devuelta | aprobada | rechazada
+en_revision → devuelta
 devuelta → en_revision  (corrección documental del comerciante)
 ```
 
-Una solicitud `aprobada`, `rechazada` o `cancelada` no admite más cambios.
+La aprobación y el rechazo **no** se hacen por este endpoint: tienen un contrato propio en `/resolucion` porque asignan el espacio en una transacción (HU-20).
 
 Respuesta `200`:
 
@@ -279,15 +279,15 @@ Respuesta `200`:
 {
   "id": "12",
   "numeroRadicado": "SOL-2026-00012",
-  "estadoAnterior": "en_revision",
-  "estado": "aprobada",
-  "observacion": "Cumple con los requisitos.",
+  "estadoAnterior": "radicada",
+  "estado": "en_revision",
+  "observacion": "El gestor inició la revisión de la solicitud.",
   "motivoRechazo": null,
-  "decididaEn": "2026-11-21T10:00:00.000Z",
+  "decididaEn": null,
   "actualizadoEn": "2026-11-21T10:00:00.000Z",
   "correoEnviado": true,
   "mensajeCorreo": null,
-  "mensaje": "Solicitud actualizada a «Aprobada»."
+  "mensaje": "Solicitud actualizada a «En revisión»."
 }
 ```
 
@@ -295,11 +295,11 @@ Errores:
 
 | HTTP | Causa |
 |---|---|
-| `400` | Estado inválido, falta observación de devolución o motivo de rechazo |
+| `400` | Estado inválido, falta observación de devolución o se intenta aprobar/rechazar por este endpoint |
 | `401` | Sin token o sesión revocada |
 | `403` | Rol distinto de gestor |
 | `404` | La solicitud no existe |
-| `409` | Transición no permitida o solicitud en estado final |
+| `409` | Transición no permitida, solicitud en estado final o bloqueo de otro gestor |
 
 El cambio de estado, el historial y la notificación en plataforma se guardan en una sola transacción. El correo se envía después del commit y su fallo no revierte el trámite.
 
@@ -503,3 +503,119 @@ pnpm exec prisma generate
 ```
 
 La migración agrega `solicitud_revisiones`, el token de bloqueo y las columnas `verificado_por` y `verificado_en`.
+
+---
+
+## 10. Resolución y asignación del espacio (HU-20)
+
+### 10.1 Endpoint
+
+**`PATCH /gestor/solicitudes/:id/resolucion`**
+
+Acceso: `gestor` (revisor y administrador). Exige que la solicitud esté en `en_revision` y que el gestor autenticado tenga el bloqueo de revisión vigente.
+
+| Campo | Tipo | Obligatorio | Descripción |
+|---|---|---|---|
+| `decision` | texto | Sí | `aprobar` o `rechazar` |
+| `dictamen` | texto | No | Dictamen de la aprobación, 1–2000 caracteres. Se guarda en el historial y es visible para el solicitante |
+| `motivoRechazo` | texto | Si `decision = rechazar` | Motivo visible para el solicitante, 1–2000 caracteres |
+
+Ejemplo de aprobación:
+
+```json
+{
+  "decision": "aprobar",
+  "dictamen": "Cumple con los requisitos documentales."
+}
+```
+
+Ejemplo de rechazo:
+
+```json
+{
+  "decision": "rechazar",
+  "motivoRechazo": "La documentación no permite verificar la actividad solicitada."
+}
+```
+
+Respuesta `200`:
+
+```json
+{
+  "id": "12",
+  "numeroRadicado": "SOL-2026-00012",
+  "decision": "aprobar",
+  "estadoAnterior": "en_revision",
+  "estado": "aprobada",
+  "dictamen": "Cumple con los requisitos documentales.",
+  "motivoRechazo": null,
+  "decididaEn": "2026-11-22T10:00:00.000Z",
+  "actualizadoEn": "2026-11-22T10:00:00.000Z",
+  "asignacion": {
+    "espacioId": "2",
+    "espacioNombre": "Espacio móvil Calle 30 - B",
+    "fechaInicio": "2027-01-05",
+    "fechaFin": "2027-01-07",
+    "horaInicio": "09:00",
+    "horaFin": "12:00"
+  },
+  "correoEnviado": true,
+  "mensajeCorreo": null,
+  "mensaje": "Solicitud aprobada y espacio asignado."
+}
+```
+
+En un rechazo, `asignacion` es `null` y `motivoRechazo` contiene el texto enviado.
+
+### 10.2 Reglas de aprobación
+
+- La solicitud debe estar en `en_revision` y el bloqueo debe pertenecer al gestor.
+- No se puede aprobar si existe un requisito vigente marcado como `No cumple`.
+- El espacio debe existir y estar en estado `disponible`.
+- No debe haber un bloqueo activo, un permiso `vigente` ni otra solicitud `aprobada` que se solape en fechas **y** horas.
+- La aprobación cambia el estado a `aprobada`, asigna el espacio al rango solicitado, registra `decidida_en`, escribe el historial y crea la notificación.
+- El espacio no cambia su estado global: la ocupación se calcula por rango de fechas, como ya hacían HU-09, HU-10 y HU-16.
+
+### 10.3 Control de doble asignación
+
+No se creó una tabla de asignaciones ni se modificó el esquema. La asignación es la propia solicitud `aprobada` con su espacio y rango.
+
+La transacción:
+
+1. Bloquea la fila de la solicitud con `FOR UPDATE`.
+2. Exige el bloqueo de revisión propio.
+3. Bloquea la fila del espacio con `FOR UPDATE`.
+4. Con el lock del espacio en mano, consulta solapes contra bloqueos, permisos y solicitudes aprobadas.
+5. Actualiza la solicitud, el historial y la notificación, y libera el bloqueo de revisión.
+
+Dos aprobaciones concurrentes del mismo espacio se serializan en el lock del espacio: la segunda vuelve a consultar y recibe `409`. Dos resoluciones concurrentes de la misma solicitud se serializan en el lock de la solicitud: solo una cambia el estado.
+
+Los permisos `vigente` conservan además su restricción `EXCLUDE` en la base de datos.
+
+### 10.4 Interfaz
+
+- La sección **Resolución** vive en `/gestor/solicitudes/[id]`.
+- **Aprobar y asignar espacio** abre un diálogo con el resumen y un dictamen opcional.
+- **Rechazar solicitud** abre un diálogo con motivo obligatorio.
+- Si hay requisitos `No cumple`, Aprobar queda deshabilitado y se listan los requisitos.
+- Si el bloqueo no es propio o la solicitud ya fue resuelta, las acciones se deshabilitan y se explica el motivo.
+- El detalle del comerciante muestra el dictamen de aprobación o el motivo de rechazo, la fecha y el gestor.
+
+### 10.5 Pruebas
+
+```powershell
+# Backend
+pnpm test -- --runInBand src/solicitudes src/common/estados-solicitud.spec.ts
+pnpm test:e2e -- --runInBand test/resolucion-solicitudes.e2e-spec.ts
+
+# Frontend
+cd frontend
+pnpm test
+pnpm test:e2e e2e/resolucion-solicitudes.spec.ts
+```
+
+Los e2e de Playwright cubren aprobación, rechazo, bloqueo por `No cumple`, doble asignación concurrente, resolución concurrente de la misma solicitud y vista móvil.
+
+### 10.6 Migración
+
+No requiere migración: usa las tablas y columnas existentes (`solicitudes`, `solicitud_historial`, `solicitud_revisiones`, `espacio_bloqueos`, `permisos`).

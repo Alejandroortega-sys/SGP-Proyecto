@@ -10,17 +10,13 @@ import { fijarActorAuditoria } from '../common/auditoria';
 import {
   etiquetaEstadoSolicitud,
   puedeCambiarEstadoSolicitud,
+  puedeResolverSolicitud,
 } from '../common/estados-solicitud';
 import { parseIdBigint } from '../common/parse-id';
-import {
-  Prisma,
-  type estado_solicitud,
-} from '../generated/prisma/client';
+import { Prisma, type estado_solicitud } from '../generated/prisma/client';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  agruparVersionesDocumento,
-} from './documentos';
+import { agruparVersionesDocumento } from './documentos';
 import {
   calcularProgresoRevision,
   documentosVigentesRevision,
@@ -49,7 +45,15 @@ import {
   TomarRevisionResponseDto,
   VerificarRequisitoRevisionDto,
 } from './dto/revision-solicitudes.dto';
-import { HistorialSolicitudDto } from './dto/solicitudes.dto';
+import {
+  ResolverSolicitudDto,
+  ResolverSolicitudResponseDto,
+  type DecisionResolucion,
+} from './dto/resolucion-solicitudes.dto';
+import {
+  AsignacionSolicitudDto,
+  HistorialSolicitudDto,
+} from './dto/solicitudes.dto';
 
 const SELECT_COMERCIANTE_REVISION = {
   id: true,
@@ -160,6 +164,39 @@ interface FilaBloqueoRaw {
   perfil: 'revisor' | 'administrador';
 }
 
+/** Solicitud bloqueada para resolverla (HU-20). */
+interface FilaSolicitudResolucion {
+  id: bigint | string;
+  numero_radicado: string;
+  estado: estado_solicitud;
+  comerciante_id: bigint | string;
+  espacio_id: bigint | string | null;
+  fecha_inicio: string | Date;
+  fecha_fin: string | Date;
+  hora_inicio: string | Date;
+  hora_fin: string | Date;
+  correo: string;
+  nombre: string;
+  espacio_nombre: string | null;
+}
+
+interface FilaEspacioResolucion {
+  id: bigint | string;
+  nombre: string;
+  estado: string;
+}
+
+interface FilaConflictoAsignacion {
+  referencia: string;
+  fecha_inicio: string | Date;
+  fecha_fin: string | Date;
+}
+
+interface FilaDocumentoNoCumple {
+  tipo_documento: string;
+  observacion: string | null;
+}
+
 /** Bloqueo leído con fechas ya convertidas a UTC por PostgreSQL. */
 interface FilaBloqueoConsulta {
   solicitud_id: bigint | string;
@@ -219,12 +256,8 @@ export class RevisionSolicitudesService {
     const orden = dto.orden ?? 'antiguedad';
 
     const where: Prisma.solicitudesWhereInput = {
-      estado: dto.estado
-        ? dto.estado
-        : { in: ['radicada', 'en_revision'] },
-      ...(dto.sector
-        ? { espacios_temporales: { sector: dto.sector } }
-        : {}),
+      estado: dto.estado ? dto.estado : { in: ['radicada', 'en_revision'] },
+      ...(dto.sector ? { espacios_temporales: { sector: dto.sector } } : {}),
       ...(dto.actividad
         ? { espacios_temporales: { actividad_permitida: dto.actividad } }
         : {}),
@@ -237,14 +270,8 @@ export class RevisionSolicitudesService {
         take: limite,
         orderBy:
           orden === 'reciente'
-            ? [
-                { radicada_en: { sort: 'desc', nulls: 'last' } },
-                { id: 'desc' },
-              ]
-            : [
-                { radicada_en: { sort: 'asc', nulls: 'last' } },
-                { id: 'asc' },
-              ],
+            ? [{ radicada_en: { sort: 'desc', nulls: 'last' } }, { id: 'desc' }]
+            : [{ radicada_en: { sort: 'asc', nulls: 'last' } }, { id: 'asc' }],
         select: SELECT_SOLICITUD_REVISION,
       }),
       this.prisma.solicitudes.count({ where }),
@@ -257,11 +284,7 @@ export class RevisionSolicitudesService {
 
     return {
       datos: filas.map((fila) =>
-        this.aListado(
-          fila,
-          gestorId,
-          bloqueos.get(fila.id.toString()) ?? null,
-        ),
+        this.aListado(fila, gestorId, bloqueos.get(fila.id.toString()) ?? null),
       ),
       paginacion: {
         pagina,
@@ -610,9 +633,7 @@ export class RevisionSolicitudesService {
           activo: true,
           OR: [
             { tipo_actividad: null },
-            ...(actual.actividad
-              ? [{ tipo_actividad: actual.actividad }]
-              : []),
+            ...(actual.actividad ? [{ tipo_actividad: actual.actividad }] : []),
           ],
         },
         select: {
@@ -638,8 +659,7 @@ export class RevisionSolicitudesService {
         orderBy: { cargado_en: 'asc' },
         select: SELECT_DOCUMENTO_REVISION,
       });
-      const { actual: documentoActual } =
-        agruparVersionesDocumento(documentos);
+      const { actual: documentoActual } = agruparVersionesDocumento(documentos);
       if (!documentoActual) {
         throw new ConflictException(
           'El requisito no tiene un documento vigente para verificar.',
@@ -677,6 +697,339 @@ export class RevisionSolicitudesService {
       progreso: detalle.progreso,
       expiraEn: detalle.bloqueo?.expiraEn ?? new Date(),
     };
+  }
+
+  /**
+   * Aprueba o rechaza una solicitud revisada (HU-20).
+   *
+   * La aprobación y la asignación del espacio ocurren en la misma transacción.
+   * Para evitar dobles asignaciones se bloquea la fila del espacio y, con el
+   * bloqueo en mano, se consultan los solapes contra bloqueos, permisos
+   * vigentes y otras solicitudes aprobadas. La solicitud y el bloqueo de
+   * revisión se bloquean antes para que dos gestores no resuelvan a la vez.
+   */
+  async resolver(
+    usuario: UsuarioAutenticado,
+    idSolicitud: string,
+    dto: ResolverSolicitudDto,
+  ): Promise<ResolverSolicitudResponseDto> {
+    const gestorId = parseIdBigint(usuario.id);
+    const solicitudId = parseIdBigint(idSolicitud);
+    const decision: DecisionResolucion = dto.decision;
+    const dictamen = dto.dictamen?.trim() || null;
+    const motivoRechazo = dto.motivoRechazo?.trim() || null;
+
+    if (decision === 'rechazar' && !motivoRechazo) {
+      throw new BadRequestException(
+        'Para rechazar la solicitud debes escribir el motivo del rechazo.',
+      );
+    }
+
+    const resultado = await this.prisma.$transaction(async (tx) => {
+      await fijarActorAuditoria(tx, gestorId);
+
+      const filas = await tx.$queryRaw<FilaSolicitudResolucion[]>`
+        SELECT
+          s.id,
+          s.numero_radicado,
+          s.estado,
+          s.comerciante_id,
+          s.espacio_id,
+          s.fecha_inicio,
+          s.fecha_fin,
+          s.hora_inicio,
+          s.hora_fin,
+          u.correo,
+          u.nombre,
+          e.nombre AS espacio_nombre
+        FROM solicitudes s
+        JOIN usuarios u ON u.id = s.comerciante_id
+        LEFT JOIN espacios_temporales e ON e.id = s.espacio_id
+        WHERE s.id = ${solicitudId}
+        FOR UPDATE OF s
+      `;
+      const actual = filas[0];
+      if (!actual) {
+        throw new NotFoundException('La solicitud no existe');
+      }
+
+      if (!puedeResolverSolicitud(actual.estado)) {
+        throw new ConflictException(
+          `La solicitud está en estado «${etiquetaEstadoSolicitud(
+            actual.estado,
+          )}» y no admite resolución.`,
+        );
+      }
+
+      await this.exigirBloqueoPropio(tx, solicitudId, gestorId);
+
+      const asignacion =
+        decision === 'aprobar'
+          ? await this.validarAprobacionYAsignacion(tx, actual)
+          : null;
+
+      const estadoNuevo: estado_solicitud =
+        decision === 'aprobar' ? 'aprobada' : 'rechazada';
+      const observacionHistorial =
+        decision === 'aprobar'
+          ? (dictamen ?? 'El gestor aprobó la solicitud y asignó el espacio.')
+          : (motivoRechazo ?? 'El gestor rechazó la solicitud.');
+
+      const actualizada = await tx.solicitudes.update({
+        where: { id: solicitudId },
+        data: {
+          estado: estadoNuevo,
+          revisor_id: gestorId,
+          decidida_en: new Date(),
+          motivo_rechazo: decision === 'rechazar' ? motivoRechazo : null,
+        },
+        select: {
+          id: true,
+          numero_radicado: true,
+          estado: true,
+          motivo_rechazo: true,
+          decidida_en: true,
+          actualizado_en: true,
+        },
+      });
+
+      await tx.solicitud_historial.create({
+        data: {
+          solicitud_id: solicitudId,
+          estado_anterior: actual.estado,
+          estado_nuevo: estadoNuevo,
+          actor_id: gestorId,
+          observacion: observacionHistorial,
+        },
+      });
+
+      await tx.$executeRaw`
+        DELETE FROM solicitud_revisiones WHERE solicitud_id = ${solicitudId}
+      `;
+
+      const comercianteId = aBigInt(actual.comerciante_id);
+      const observacionNotificacion = decision === 'aprobar' ? dictamen : null;
+      const motivoNotificacion = decision === 'rechazar' ? motivoRechazo : null;
+
+      await this.notificaciones.crearCambioEstadoSolicitud(tx, {
+        solicitudId,
+        numeroRadicado: actual.numero_radicado,
+        usuarioId: comercianteId,
+        estadoAnterior: actual.estado,
+        estadoNuevo,
+        espacio: actual.espacio_nombre,
+        observacion: observacionNotificacion,
+        motivoRechazo: motivoNotificacion,
+      });
+
+      return {
+        actual,
+        actualizada,
+        estadoAnterior: actual.estado,
+        estadoNuevo,
+        asignacion,
+        comercianteId,
+        observacionNotificacion,
+        motivoNotificacion,
+      };
+    });
+
+    const correo = await this.notificaciones.enviarCorreoCambioEstadoSolicitud(
+      {
+        correo: resultado.actual.correo,
+        nombre: resultado.actual.nombre,
+      },
+      {
+        solicitudId,
+        numeroRadicado: resultado.actual.numero_radicado,
+        usuarioId: resultado.comercianteId,
+        estadoAnterior: resultado.estadoAnterior,
+        estadoNuevo: resultado.estadoNuevo,
+        espacio: resultado.actual.espacio_nombre,
+        observacion: resultado.observacionNotificacion,
+        motivoRechazo: resultado.motivoNotificacion,
+      },
+    );
+
+    return {
+      id: resultado.actualizada.id.toString(),
+      numeroRadicado: resultado.actualizada.numero_radicado,
+      decision,
+      estadoAnterior: resultado.estadoAnterior,
+      estado: resultado.actualizada.estado,
+      dictamen: decision === 'aprobar' ? dictamen : null,
+      motivoRechazo:
+        decision === 'rechazar' ? resultado.actualizada.motivo_rechazo : null,
+      decididaEn: resultado.actualizada.decidida_en,
+      actualizadoEn: resultado.actualizada.actualizado_en,
+      asignacion: resultado.asignacion,
+      correoEnviado: correo.correoEnviado,
+      mensajeCorreo: correo.mensajeCorreo,
+      mensaje:
+        decision === 'aprobar'
+          ? 'Solicitud aprobada y espacio asignado.'
+          : 'Solicitud rechazada. El motivo quedó registrado.',
+    };
+  }
+
+  /**
+   * Valida que la solicitud se pueda aprobar y devuelve la asignación.
+   *
+   * El `FOR UPDATE` sobre el espacio serializa las aprobaciones concurrentes
+   * del mismo espacio. Después de obtenerlo se vuelven a consultar los
+   * solapes, de modo que la segunda transacción ve la primera ya confirmada.
+   */
+  private async validarAprobacionYAsignacion(
+    tx: Prisma.TransactionClient,
+    actual: FilaSolicitudResolucion,
+  ): Promise<AsignacionSolicitudDto> {
+    if (actual.espacio_id === null) {
+      throw new ConflictException(
+        'La solicitud no tiene un espacio asignable. No se puede aprobar.',
+      );
+    }
+
+    const noCumplen = await tx.$queryRaw<FilaDocumentoNoCumple[]>`
+      SELECT d.tipo_documento, d.observacion
+        FROM solicitud_documentos d
+       WHERE d.solicitud_id = ${actual.id}
+         AND d.estado = 'observado'
+         AND NOT EXISTS (
+           SELECT 1
+             FROM solicitud_documentos r
+            WHERE r.reemplaza_a = d.id
+         )
+       ORDER BY d.cargado_en ASC
+    `;
+    if (noCumplen.length > 0) {
+      const nombres = noCumplen
+        .slice(0, 3)
+        .map((documento) => `«${documento.tipo_documento}»`)
+        .join(', ');
+      const restantes =
+        noCumplen.length > 3
+          ? ` y ${noCumplen.length - 3} requisito(s) más`
+          : '';
+      throw new ConflictException(
+        `No puedes aprobar la solicitud: ${nombres}${restantes} están marcados como «No cumple».`,
+      );
+    }
+
+    const espacioId = aBigInt(actual.espacio_id);
+    const espacios = await tx.$queryRaw<FilaEspacioResolucion[]>`
+      SELECT id, nombre, estado
+        FROM espacios_temporales
+       WHERE id = ${espacioId}
+       FOR UPDATE
+    `;
+    const espacio = espacios[0];
+    if (!espacio) {
+      throw new ConflictException(
+        'El espacio de la solicitud ya no existe. No se puede asignar.',
+      );
+    }
+    if (espacio.estado === 'mantenimiento') {
+      throw new ConflictException(
+        `El espacio «${espacio.nombre}» está en mantenimiento y no se puede asignar.`,
+      );
+    }
+    if (espacio.estado !== 'disponible') {
+      throw new ConflictException(
+        `El espacio «${espacio.nombre}» no está disponible (estado ${espacio.estado}).`,
+      );
+    }
+
+    const fechaInicio = this.aFechaISO(actual.fecha_inicio);
+    const fechaFin = this.aFechaISO(actual.fecha_fin);
+    const horaInicio = this.aHoraISO(actual.hora_inicio);
+    const horaFin = this.aHoraISO(actual.hora_fin);
+
+    const bloqueos = await tx.$queryRaw<
+      {
+        motivo: string | null;
+        fecha_inicio: string | Date;
+        fecha_fin: string | Date;
+      }[]
+    >`
+      SELECT motivo, fecha_inicio, fecha_fin
+        FROM espacio_bloqueos
+       WHERE espacio_id = ${espacioId}
+         AND daterange(fecha_inicio, fecha_fin, '[]')
+             && daterange(${fechaInicio}::date, ${fechaFin}::date, '[]')
+       ORDER BY fecha_inicio ASC
+       LIMIT 1
+    `;
+    if (bloqueos[0]) {
+      const bloqueo = bloqueos[0];
+      throw new ConflictException(
+        `El espacio tiene un bloqueo ${this.rangoAsignacion(
+          bloqueo.fecha_inicio,
+          bloqueo.fecha_fin,
+        )}${bloqueo.motivo ? `: ${bloqueo.motivo}` : '.'}`,
+      );
+    }
+
+    const permisos = await tx.$queryRaw<FilaConflictoAsignacion[]>`
+      SELECT p.numero AS referencia, p.fecha_inicio, p.fecha_fin
+        FROM permisos p
+        JOIN solicitudes s ON s.id = p.solicitud_id
+       WHERE p.espacio_id = ${espacioId}
+         AND p.estado = 'vigente'
+         AND p.solicitud_id <> ${actual.id}
+         AND daterange(p.fecha_inicio, p.fecha_fin, '[]')
+             && daterange(${fechaInicio}::date, ${fechaFin}::date, '[]')
+         AND ${horaInicio}::time < s.hora_fin
+         AND ${horaFin}::time > s.hora_inicio
+       LIMIT 1
+    `;
+    if (permisos[0]) {
+      const permiso = permisos[0];
+      throw new ConflictException(
+        `El espacio ya está asignado al permiso ${permiso.referencia} ${this.rangoAsignacion(
+          permiso.fecha_inicio,
+          permiso.fecha_fin,
+        )}.`,
+      );
+    }
+
+    const aprobadas = await tx.$queryRaw<FilaConflictoAsignacion[]>`
+      SELECT s.numero_radicado AS referencia, s.fecha_inicio, s.fecha_fin
+        FROM solicitudes s
+       WHERE s.espacio_id = ${espacioId}
+         AND s.id <> ${actual.id}
+         AND s.estado = 'aprobada'
+         AND daterange(s.fecha_inicio, s.fecha_fin, '[]')
+             && daterange(${fechaInicio}::date, ${fechaFin}::date, '[]')
+         AND ${horaInicio}::time < s.hora_fin
+         AND ${horaFin}::time > s.hora_inicio
+       LIMIT 1
+    `;
+    if (aprobadas[0]) {
+      const solicitud = aprobadas[0];
+      throw new ConflictException(
+        `El espacio ya está asignado a la solicitud aprobada ${solicitud.referencia} ${this.rangoAsignacion(
+          solicitud.fecha_inicio,
+          solicitud.fecha_fin,
+        )}.`,
+      );
+    }
+
+    return {
+      espacioId: espacio.id.toString(),
+      espacioNombre: espacio.nombre,
+      fechaInicio,
+      fechaFin,
+      horaInicio,
+      horaFin,
+    };
+  }
+
+  /** Texto legible para los mensajes de conflicto de asignación. */
+  private rangoAsignacion(
+    fechaInicio: string | Date,
+    fechaFin: string | Date,
+  ): string {
+    return `del ${this.aFechaISO(fechaInicio)} al ${this.aFechaISO(fechaFin)}`;
   }
 
   /** Obtiene una solicitud completa o lanza 404. */
@@ -791,9 +1144,7 @@ export class RevisionSolicitudesService {
       );
     }
     if (aBigInt(bloqueo.gestor_id) !== gestorId) {
-      throw new ConflictException(
-        'Otro gestor está revisando esta solicitud.',
-      );
+      throw new ConflictException('Otro gestor está revisando esta solicitud.');
     }
   }
 
@@ -821,8 +1172,9 @@ export class RevisionSolicitudesService {
   }
 
   private ordenarOpciones(valores: (string | null | undefined)[]): string[] {
-    return [...new Set(valores.filter((valor): valor is string => Boolean(valor)))]
-      .sort((a, b) => a.localeCompare(b, 'es'));
+    return [
+      ...new Set(valores.filter((valor): valor is string => Boolean(valor))),
+    ].sort((a, b) => a.localeCompare(b, 'es'));
   }
 
   /** Convierte el resultado crudo del bloqueo al DTO. */
@@ -876,8 +1228,7 @@ export class RevisionSolicitudesService {
             nombre: fila.espacios_temporales.nombre,
             sector: fila.espacios_temporales.sector,
             tipo: fila.espacios_temporales.tipo,
-            actividadPermitida:
-              fila.espacios_temporales.actividad_permitida,
+            actividadPermitida: fila.espacios_temporales.actividad_permitida,
           }
         : null,
       documentosCargados: documentos.length,
@@ -896,10 +1247,43 @@ export class RevisionSolicitudesService {
     const catalogo = await this.obtenerCatalogo(actividad);
     const requisitos = this.construirRequisitos(fila, catalogo);
     const progreso = calcularProgresoRevision(requisitos);
+    const historial = fila.solicitud_historial.map((registro) =>
+      this.aHistorial(registro),
+    );
+    const resolucion = [...fila.solicitud_historial]
+      .reverse()
+      .find(
+        (registro) =>
+          registro.estado_nuevo === 'aprobada' ||
+          registro.estado_nuevo === 'rechazada',
+      );
+    const dictamen =
+      resolucion?.estado_nuevo === 'aprobada' ? resolucion.observacion : null;
+    const resueltaPor = resolucion?.usuarios
+      ? {
+          id: resolucion.usuarios.id.toString(),
+          nombre: resolucion.usuarios.nombre,
+          apellido: resolucion.usuarios.apellido,
+        }
+      : null;
+    const asignacion =
+      fila.estado === 'aprobada' && fila.espacios_temporales
+        ? {
+            espacioId: fila.espacios_temporales.id.toString(),
+            espacioNombre: fila.espacios_temporales.nombre,
+            fechaInicio: this.aFechaISO(fila.fecha_inicio),
+            fechaFin: this.aFechaISO(fila.fecha_fin),
+            horaInicio: this.aHoraISO(fila.hora_inicio),
+            horaFin: this.aHoraISO(fila.hora_fin),
+          }
+        : null;
     const puedeVerificar =
+      fila.estado === 'en_revision' && bloqueo !== null && bloqueo.esPropio;
+    const puedeResolver =
       fila.estado === 'en_revision' &&
       bloqueo !== null &&
-      bloqueo.esPropio;
+      bloqueo.esPropio &&
+      progreso.noCumple === 0;
 
     return {
       // eslint-disable-next-line typescript/no-misused-spread -- el listado es un objeto plano de datos
@@ -913,13 +1297,47 @@ export class RevisionSolicitudesService {
       })),
       requisitos,
       otrosDocumentos: this.construirOtrosDocumentos(fila, catalogo),
-      historial: fila.solicitud_historial.map((registro) =>
-        this.aHistorial(registro),
-      ),
+      historial,
       progreso,
       puedeVerificar,
+      puedeResolver,
+      motivoNoResolucion: this.motivoNoResolucion(
+        fila.estado,
+        bloqueo,
+        progreso.noCumple,
+      ),
+      dictamen,
+      resueltaPor,
+      asignacion,
       motivoBloqueo: this.motivoBloqueo(fila.estado, bloqueo),
     };
+  }
+
+  /** Explica por qué la solicitud no se puede aprobar o rechazar. */
+  private motivoNoResolucion(
+    estado: estado_solicitud,
+    bloqueo: BloqueoRevisionDto | null,
+    noCumplen: number,
+  ): string | null {
+    if (estado !== 'en_revision') {
+      return `La solicitud está en estado «${etiquetaEstadoSolicitud(
+        estado,
+      )}» y no admite resolución.`;
+    }
+    if (!bloqueo) {
+      return 'Toma la revisión para aprobar o rechazar la solicitud.';
+    }
+    if (!bloqueo.esPropio) {
+      return `${bloqueo.gestor.nombre}${
+        bloqueo.gestor.apellido ? ` ${bloqueo.gestor.apellido}` : ''
+      } está revisando esta solicitud. Puedes consultarla en solo lectura.`;
+    }
+    if (noCumplen > 0) {
+      return `Hay ${noCumplen} requisito${noCumplen === 1 ? '' : 's'} marcado${
+        noCumplen === 1 ? '' : 's'
+      } como «No cumple». Corrígelo o rechaza la solicitud.`;
+    }
+    return null;
   }
 
   /** Catálogo activo de requisitos aplicable a la actividad del espacio. */
@@ -1017,9 +1435,7 @@ export class RevisionSolicitudesService {
     );
   }
 
-  private aComerciante(
-    fila: FilaSolicitudRevision,
-  ): ComercianteRevisionDto {
+  private aComerciante(fila: FilaSolicitudRevision): ComercianteRevisionDto {
     const usuario = fila.comerciantes.usuarios;
     return {
       id: usuario.id.toString(),

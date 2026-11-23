@@ -4,8 +4,11 @@ import {
   describirBloqueo,
   parametrosRevision,
   puedeEditarRevision,
+  puedeResolverRevision,
   requisitosNoCumple,
   textoAntiguedad,
+  validarDictamenAprobacion,
+  validarMotivoRechazo,
   validarObservacionDevolucion,
   validarObservacionNoCumple,
 } from "./validaciones-revision";
@@ -85,6 +88,11 @@ function solicitud(
       noCumple: 1,
     },
     puedeVerificar: true,
+    puedeResolver: true,
+    motivoNoResolucion: null,
+    dictamen: null,
+    resueltaPor: null,
+    asignacion: null,
     motivoBloqueo: null,
     ...cambios,
   };
@@ -97,6 +105,28 @@ describe("validaciones de revisión", () => {
       false,
     );
     expect(puedeEditarRevision(solicitud({ estado: "devuelta" }))).toBe(false);
+  });
+
+  it("solo permite resolver con la solicitud en revisión y bloqueo propio", () => {
+    expect(puedeResolverRevision(solicitud())).toBe(true);
+    expect(puedeResolverRevision(solicitud({ puedeResolver: false }))).toBe(
+      false,
+    );
+    expect(puedeResolverRevision(solicitud({ estado: "aprobada" }))).toBe(
+      false,
+    );
+  });
+
+  it("valida el dictamen opcional de aprobación", () => {
+    expect(validarDictamenAprobacion("")).toBeNull();
+    expect(validarDictamenAprobacion("Cumple los requisitos.")).toBeNull();
+    expect(validarDictamenAprobacion("x".repeat(2_001))).toContain("2000");
+  });
+
+  it("exige el motivo del rechazo y limita su longitud", () => {
+    expect(validarMotivoRechazo("   ")).toContain("motivo");
+    expect(validarMotivoRechazo("Documentación incompleta.")).toBeNull();
+    expect(validarMotivoRechazo("x".repeat(2_001))).toContain("2000");
   });
 
   it("exige observación en la devolución", () => {

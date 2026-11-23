@@ -1326,9 +1326,21 @@ export interface SolicitudTemporalListado {
   documentos: DocumentoSolicitud[];
 }
 
+export interface AsignacionSolicitud {
+  espacioId: string;
+  espacioNombre: string | null;
+  fechaInicio: string;
+  fechaFin: string;
+  horaInicio: string;
+  horaFin: string;
+}
+
 export interface SolicitudTemporalDetalle extends SolicitudTemporalListado {
   decididaEn: string | null;
   motivoRechazo: string | null;
+  dictamen: string | null;
+  resueltaPor: ActorSolicitud | null;
+  asignacion: AsignacionSolicitud | null;
   actualizadoEn: string;
   historial: HistorialSolicitud[];
 }
@@ -1482,6 +1494,11 @@ export interface SolicitudRevisionDetalle extends SolicitudRevisionListado {
   historial: HistorialSolicitud[];
   progreso: ProgresoRevision;
   puedeVerificar: boolean;
+  puedeResolver: boolean;
+  motivoNoResolucion: string | null;
+  dictamen: string | null;
+  resueltaPor: ActorSolicitud | null;
+  asignacion: AsignacionSolicitud | null;
   motivoBloqueo: string | null;
 }
 
@@ -1536,6 +1553,34 @@ export interface RespuestaCambioEstadoRevision {
   motivoRechazo: string | null;
   decididaEn: string | null;
   actualizadoEn: string;
+  correoEnviado: boolean;
+  mensajeCorreo: string | null;
+  mensaje: string;
+}
+
+/* ------------------------------------------------------------------ */
+/* Resolución de la solicitud (HU-20)                                 */
+/* ------------------------------------------------------------------ */
+
+export type DecisionSolicitud = 'aprobar' | 'rechazar';
+
+export interface DatosResolucionSolicitud {
+  decision: DecisionSolicitud;
+  dictamen?: string;
+  motivoRechazo?: string;
+}
+
+export interface RespuestaResolucionSolicitud {
+  id: string;
+  numeroRadicado: string;
+  decision: DecisionSolicitud;
+  estadoAnterior: EstadoSolicitud;
+  estado: EstadoSolicitud;
+  dictamen: string | null;
+  motivoRechazo: string | null;
+  decididaEn: string | null;
+  actualizadoEn: string;
+  asignacion: AsignacionSolicitud | null;
   correoEnviado: boolean;
   mensajeCorreo: string | null;
   mensaje: string;

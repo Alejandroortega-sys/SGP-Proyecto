@@ -11,6 +11,7 @@ import { access } from 'node:fs/promises';
 import type { UsuarioAutenticado } from '../auth/interfaces/usuario-autenticado.interface';
 import { fijarActorAuditoria } from '../common/auditoria';
 import {
+  ESTADOS_CAMBIO_GESTOR,
   esEstadoFinalSolicitud,
   etiquetaEstadoSolicitud,
   puedeCambiarEstadoSolicitud,
@@ -320,9 +321,9 @@ export class SolicitudesService {
   /**
    * Cambia el estado de una solicitud desde el panel del gestor (HU-18).
    *
-   * Implementa únicamente las transiciones que disparan las notificaciones de
-   * seguimiento. La revisión documental de HU-19 y la asignación de espacio de
-   * HU-20 se construirán sobre este mismo flujo.
+   * Solo cubre el inicio de la revisión y la devolución para corrección. La
+   * aprobación y el rechazo se resuelven en `ResolucionSolicitudesService`
+   * porque asignan el espacio en la misma transacción (HU-20).
    */
   async cambiarEstado(
     usuario: UsuarioAutenticado,
@@ -332,16 +333,16 @@ export class SolicitudesService {
     const solicitudId = parseIdBigint(idSolicitud);
     const gestorId = parseIdBigint(usuario.id);
     const observacion = dto.observacion?.trim() || null;
-    const motivoRechazo = dto.motivoRechazo?.trim() || null;
+
+    if (!ESTADOS_CAMBIO_GESTOR.includes(dto.estado)) {
+      throw new BadRequestException(
+        'La aprobación y el rechazo se realizan con el endpoint de resolución.',
+      );
+    }
 
     if (dto.estado === 'devuelta' && !observacion) {
       throw new BadRequestException(
         'Para devolver la solicitud debes escribir una observación.',
-      );
-    }
-    if (dto.estado === 'rechazada' && !motivoRechazo) {
-      throw new BadRequestException(
-        'Para rechazar la solicitud debes escribir el motivo del rechazo.',
       );
     }
 
@@ -391,22 +392,14 @@ export class SolicitudesService {
         throw new ConflictException(motivo);
       }
 
-      const esDecision =
-        dto.estado === 'aprobada' || dto.estado === 'rechazada';
       const observacionHistorial =
-        observacion ??
-        motivoRechazo ??
-        this.observacionPorDefectoEstado(dto.estado);
+        observacion ?? this.observacionPorDefectoEstado(dto.estado);
 
       const actualizada = await tx.solicitudes.update({
         where: { id: solicitudId },
         data: {
           estado: dto.estado,
           revisor_id: gestorId,
-          ...(esDecision ? { decidida_en: new Date() } : {}),
-          ...(dto.estado === 'rechazada'
-            ? { motivo_rechazo: motivoRechazo }
-            : {}),
         },
         select: {
           id: true,
@@ -428,9 +421,9 @@ export class SolicitudesService {
         },
       });
 
-      // Al salir de la revisión (devolución, aprobación, rechazo) el bloqueo
-      // del gestor deja de tener sentido. Si la transición es a en_revision se
-      // conserva, porque puede venir de un gestor que ya tomó la revisión.
+      // Al devolver la solicitud el bloqueo del gestor deja de tener sentido.
+      // Si la transición es a en_revision se conserva, porque puede venir de un
+      // gestor que ya tomó la revisión.
       if (dto.estado !== 'en_revision') {
         await tx.$executeRaw`
           DELETE FROM solicitud_revisiones WHERE solicitud_id = ${solicitudId}
@@ -447,7 +440,6 @@ export class SolicitudesService {
         estadoNuevo: dto.estado,
         espacio: actual.espacio_nombre,
         observacion,
-        motivoRechazo,
       });
 
       return {
@@ -471,7 +463,6 @@ export class SolicitudesService {
         estadoNuevo: dto.estado,
         espacio: resultado.actual.espacio_nombre,
         observacion,
-        motivoRechazo,
       },
     );
 
@@ -1710,11 +1701,42 @@ export class SolicitudesService {
 
   /** Convierte una fila de Prisma al DTO de detalle. */
   private aDetalle(fila: FilaSolicitud): SolicitudTemporalDetalleDto {
+    const resolucion = [...fila.solicitud_historial]
+      .reverse()
+      .find(
+        (registro) =>
+          registro.estado_nuevo === 'aprobada' ||
+          registro.estado_nuevo === 'rechazada',
+      );
+    const dictamen =
+      resolucion?.estado_nuevo === 'aprobada' ? resolucion.observacion : null;
+    const resueltaPor = resolucion?.usuarios
+      ? {
+          id: resolucion.usuarios.id.toString(),
+          nombre: resolucion.usuarios.nombre,
+          apellido: resolucion.usuarios.apellido,
+        }
+      : null;
+    const asignacion =
+      fila.estado === 'aprobada' && fila.espacios_temporales
+        ? {
+            espacioId: fila.espacios_temporales.id.toString(),
+            espacioNombre: fila.espacios_temporales.nombre,
+            fechaInicio: this.aFechaISO(fila.fecha_inicio),
+            fechaFin: this.aFechaISO(fila.fecha_fin),
+            horaInicio: this.aHoraISO(fila.hora_inicio),
+            horaFin: this.aHoraISO(fila.hora_fin),
+          }
+        : null;
+
     return {
       // eslint-disable-next-line typescript/no-misused-spread -- el DTO de listado es un objeto plano de datos
       ...this.aListado(fila),
       decididaEn: fila.decidida_en,
       motivoRechazo: fila.motivo_rechazo,
+      dictamen,
+      resueltaPor,
+      asignacion,
       actualizadoEn: fila.actualizado_en,
       historial: fila.solicitud_historial.map((registro) => ({
         id: registro.id.toString(),

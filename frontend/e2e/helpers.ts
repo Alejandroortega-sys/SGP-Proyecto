@@ -68,13 +68,13 @@ export async function iniciarSesionApi(
   return cuerpo.accessToken;
 }
 
-/** Cambia el estado de una solicitud como gestor. */
+/** Cambia el estado no final de una solicitud como gestor. */
 export async function cambiarEstadoSolicitudApi(
   request: APIRequestContext,
   token: string,
   solicitudId: string,
-  estado: 'en_revision' | 'devuelta' | 'aprobada' | 'rechazada',
-  extra: { observacion?: string; motivoRechazo?: string } = {},
+  estado: 'en_revision' | 'devuelta',
+  extra: { observacion?: string } = {},
 ): Promise<void> {
   const respuesta = await request.patch(
     `${API_URL}/gestor/solicitudes/${solicitudId}/estado`,
@@ -84,6 +84,59 @@ export async function cambiarEstadoSolicitudApi(
     },
   );
   expect(respuesta.ok()).toBeTruthy();
+}
+
+/** Aprueba o rechaza una solicitud revisada (HU-20). */
+export function resolverSolicitudApi(
+  request: APIRequestContext,
+  token: string,
+  solicitudId: string,
+  datos: {
+    decision: 'aprobar' | 'rechazar';
+    dictamen?: string;
+    motivoRechazo?: string;
+  },
+) {
+  return request.patch(
+    `${API_URL}/gestor/solicitudes/${solicitudId}/resolucion`,
+    {
+      ...cabecerasApi(token),
+      data: datos,
+    },
+  );
+}
+
+/** Toma el bloqueo de revisión de una solicitud. */
+export function tomarRevisionApi(
+  request: APIRequestContext,
+  token: string,
+  solicitudId: string,
+) {
+  return request.post(
+    `${API_URL}/gestor/solicitudes/${solicitudId}/revision`,
+    cabecerasApi(token),
+  );
+}
+
+/** Obtiene el detalle de una solicitud como gestor. */
+export function obtenerSolicitudRevisionApi(
+  request: APIRequestContext,
+  token: string,
+  solicitudId: string,
+) {
+  return request.get(
+    `${API_URL}/gestor/solicitudes/${solicitudId}`,
+    cabecerasApi(token),
+  );
+}
+
+/** Obtiene el detalle de una solicitud como comerciante dueño. */
+export function obtenerMiSolicitudApi(
+  request: APIRequestContext,
+  token: string,
+  solicitudId: string,
+) {
+  return request.get(`${API_URL}/solicitudes/${solicitudId}`, cabecerasApi(token));
 }
 
 /** Radica una solicitud con documentos por la API, sin recorrer el formulario. */

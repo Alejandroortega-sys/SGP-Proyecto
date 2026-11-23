@@ -34,6 +34,33 @@ export function puedeEditarRevision(
   return solicitud.estado === "en_revision" && solicitud.puedeVerificar;
 }
 
+/** Indica si el gestor puede aprobar o rechazar la solicitud. */
+export function puedeResolverRevision(
+  solicitud: Pick<SolicitudRevisionDetalle, "estado" | "puedeResolver">,
+): boolean {
+  return solicitud.estado === "en_revision" && solicitud.puedeResolver;
+}
+
+/** Valida el dictamen opcional de una aprobación. */
+export function validarDictamenAprobacion(valor: string): string | null {
+  if (valor.trim().length > 2_000) {
+    return "El dictamen no puede superar 2000 caracteres.";
+  }
+  return null;
+}
+
+/** Valida el motivo obligatorio de un rechazo. */
+export function validarMotivoRechazo(valor: string): string | null {
+  const texto = valor.trim();
+  if (texto.length === 0) {
+    return "Escribe el motivo del rechazo. Será visible para el solicitante.";
+  }
+  if (texto.length > 2_000) {
+    return "El motivo del rechazo no puede superar 2000 caracteres.";
+  }
+  return null;
+}
+
 /** Valida la observación general de una devolución. */
 export function validarObservacionDevolucion(valor: string): string | null {
   const texto = valor.trim();

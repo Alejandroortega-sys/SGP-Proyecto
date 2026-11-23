@@ -1,9 +1,11 @@
 import {
   ESTADOS_CAMBIO_GESTOR,
   ESTADOS_FINALES_SOLICITUD,
+  ESTADOS_RESOLUCION,
   etiquetaEstadoSolicitud,
   esEstadoFinalSolicitud,
   puedeCambiarEstadoSolicitud,
+  puedeResolverSolicitud,
   tipoNotificacionSolicitud,
 } from './estados-solicitud';
 
@@ -41,11 +43,15 @@ describe('máquina de estados de solicitud', () => {
     expect(etiquetaEstadoSolicitud('devuelta')).toBe('Requiere corrección');
     expect(etiquetaEstadoSolicitud('en_revision')).toBe('En revisión');
     expect(tipoNotificacionSolicitud('aprobada')).toBe('solicitud_aprobada');
-    expect(ESTADOS_CAMBIO_GESTOR).toEqual([
-      'en_revision',
-      'devuelta',
-      'aprobada',
-      'rechazada',
-    ]);
+    expect(ESTADOS_CAMBIO_GESTOR).toEqual(['en_revision', 'devuelta']);
+    expect(ESTADOS_RESOLUCION).toEqual(['aprobada', 'rechazada']);
+  });
+
+  it('solo permite resolver solicitudes en revisión', () => {
+    expect(puedeResolverSolicitud('en_revision')).toBe(true);
+    expect(puedeResolverSolicitud('radicada')).toBe(false);
+    expect(puedeResolverSolicitud('devuelta')).toBe(false);
+    expect(puedeResolverSolicitud('aprobada')).toBe(false);
+    expect(puedeResolverSolicitud('rechazada')).toBe(false);
   });
 });
