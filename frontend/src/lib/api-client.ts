@@ -45,6 +45,8 @@ import type {
   ListarFeriasResponse,
   ListarModulosResponse,
   ListarNotificacionesResponse,
+  ListadoParticipantesFeria,
+  ListadoParticipantesGestor,
   ListarProductosResponse,
   ListarSolicitudesRevisionResponse,
   ListarSolicitudesResponse,
@@ -63,6 +65,7 @@ import type {
   Panel,
   Perfil,
   PerfilGestorCompleto,
+  ParticipanteFeria,
   PrevisualizacionImportacion,
   RespuestaActivacion,
   RespuestaCambioEstadoOrganizacion,
@@ -70,6 +73,7 @@ import type {
   RespuestaCambioEstadoRevision,
   RespuestaEstadoEspacio,
   RespuestaEstadoModulo,
+  RespuestaEnvioParticipantes,
   RespuestaEstadoZona,
   RespuestaLogin,
   ProgresoSubida,
@@ -102,6 +106,7 @@ import type {
   SolicitudLogin,
   SolicitudModulo,
   SolicitudOrganizacion,
+  SolicitudParticipante,
   SolicitudPrimerAcceso,
   SolicitudRecuperacion,
   SolicitudRegistroComerciante,
@@ -1698,4 +1703,70 @@ export function cancelarFeriaGestor(
     method: "POST",
     cuerpo: { motivo },
   });
+}
+
+/* ------------------------------------------------------------------ */
+/* Participantes de feria (HU-23)                                      */
+/* ------------------------------------------------------------------ */
+
+/** Lista los participantes de una feria propia con cupo y estado de envío. */
+export function listarParticipantesFeria(
+  feriaId: string,
+): Promise<ListadoParticipantesFeria> {
+  return peticion<ListadoParticipantesFeria>(
+    `/ferias/${feriaId}/participantes`,
+  );
+}
+
+/** Registra un participante en una feria aprobada. */
+export function crearParticipanteFeria(
+  feriaId: string,
+  datos: SolicitudParticipante,
+): Promise<ParticipanteFeria> {
+  return peticion<ParticipanteFeria>(`/ferias/${feriaId}/participantes`, {
+    method: "POST",
+    cuerpo: datos,
+  });
+}
+
+/** Edita un participante mientras el listado final siga en borrador. */
+export function actualizarParticipanteFeria(
+  feriaId: string,
+  participanteId: string,
+  datos: Partial<SolicitudParticipante>,
+): Promise<ParticipanteFeria> {
+  return peticion<ParticipanteFeria>(
+    `/ferias/${feriaId}/participantes/${participanteId}`,
+    { method: "PATCH", cuerpo: datos },
+  );
+}
+
+/** Aplica una baja lógica a un participante. */
+export function eliminarParticipanteFeria(
+  feriaId: string,
+  participanteId: string,
+): Promise<void> {
+  return peticion<void>(
+    `/ferias/${feriaId}/participantes/${participanteId}`,
+    { method: "DELETE" },
+  );
+}
+
+/** Envía el listado final y bloquea nuevas modificaciones. */
+export function enviarListadoParticipantes(
+  feriaId: string,
+): Promise<RespuestaEnvioParticipantes> {
+  return peticion<RespuestaEnvioParticipantes>(
+    `/ferias/${feriaId}/participantes/enviar`,
+    { method: "POST" },
+  );
+}
+
+/** Consulta el listado final como gestor. */
+export function obtenerParticipantesFeriaGestor(
+  feriaId: string,
+): Promise<ListadoParticipantesGestor> {
+  return peticion<ListadoParticipantesGestor>(
+    `/gestor/ferias/${feriaId}/participantes`,
+  );
 }

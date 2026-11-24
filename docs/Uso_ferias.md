@@ -415,21 +415,26 @@ Prueba manual:
 | `dataBase/13_ferias_hu21.sql` | `feria_documentos`, índice de agenda, sincronización del consecutivo y verificación de la restricción EXCLUDE |
 | `dataBase/14_notificaciones_feria_hu21.sql` | `notificaciones.feria_id`, FK e índice |
 | `dataBase/15_ferias_hu22.sql` | Campos de decisión, `espacio_bloqueos.feria_id`, triggers y bloqueos retroactivos |
-| `prisma/schema.prisma` | Modelos `feria_documentos`, `espacio_bloqueos` y relación con `ferias` |
-| `src/ferias/ferias.module.ts` | Módulo Nest con los controladores del organizador y del gestor |
+| `dataBase/16_participantes_hu23.sql` | Baja lógica, productos por participante, envío del listado y trigger de cupo |
+| `prisma/schema.prisma` | Modelos `feria_documentos`, `feria_vendedor_productos`, `espacio_bloqueos` y relación con `ferias` |
+| `src/ferias/ferias.module.ts` | Módulo Nest con los controladores del organizador, los participantes y el gestor |
 | `src/ferias/ferias.controller.ts` | Endpoints del organizador, roles, Multer y Swagger |
 | `src/ferias/gestor-ferias.controller.ts` | Agenda, aprobación, movimiento y cancelación |
 | `src/ferias/gestor-ferias.service.ts` | Transacciones, cruces, bloqueo y liberación de espacios |
 | `src/ferias/ferias.service.ts` | Reglas, transacción, agenda, adjuntos y notificaciones |
+| `src/ferias/participantes.controller.ts` | CRUD y envío del listado de participantes |
+| `src/ferias/gestor-participantes.controller.ts` | Consulta del listado final por el gestor |
+| `src/ferias/participantes.service.ts` | Cupo, productos, baja lógica y bloqueo tras el envío |
 | `src/ferias/agenda.ts` | Solapes, conflictos, unión de rangos y sugerencias puras |
 | `src/ferias/reglas.ts` | Fechas, aforo, estados, transiciones y motivo de cancelación |
 | `src/ferias/dto/ferias.dto.ts` | DTOs del organizador |
 | `src/ferias/dto/gestor-ferias.dto.ts` | DTOs del calendario y las acciones del gestor |
+| `src/ferias/dto/participantes.dto.ts` | DTOs de participantes |
 | `src/common/almacenamiento-archivos.ts` | Almacenamiento privado compartido |
 | `src/correo/correo.service.ts` | `enviarConfirmacionFeria` y `enviarCambioEstadoFeria` |
 | `src/notificaciones/notificaciones.service.ts` | `crearAvisoFeria` y `enviarCorreoFeria` |
 | `src/ferias/*.spec.ts` | Pruebas unitarias |
-| `test/ferias.e2e-spec.ts` · `test/gestor-ferias.e2e-spec.ts` | Pruebas e2e del backend |
+| `test/ferias.e2e-spec.ts` · `test/gestor-ferias.e2e-spec.ts` · `test/participantes-ferias.e2e-spec.ts` | Pruebas e2e del backend |
 
 ### Frontend
 
@@ -444,7 +449,14 @@ Prueba manual:
 | `frontend/src/features/ferias/lista-ferias.tsx` | Listado |
 | `frontend/src/features/ferias/detalle-feria.tsx` | Detalle y descarga |
 | `frontend/src/features/ferias/validaciones-feria.ts` | Validaciones y etiquetas |
+| `frontend/src/app/(organizador)/organizador/ferias/[id]/participantes/page.tsx` | Gestión de participantes del organizador |
+| `frontend/src/features/ferias/participantes/gestion-participantes.tsx` | Cupo, alta, edición, retiro y envío final |
+| `frontend/src/features/ferias/participantes/formulario-participante.tsx` | Formulario de vendedor y productos |
+| `frontend/src/features/ferias/participantes/lista-participantes.tsx` | Lista de vendedores activos |
+| `frontend/src/features/ferias/participantes/validaciones-participantes.ts` | Validaciones y cálculo de cupo |
 | `frontend/src/app/(gestor)/gestor/ferias/page.tsx` | Ruta del calendario del gestor |
+| `frontend/src/app/(gestor)/gestor/ferias/[id]/participantes/page.tsx` | Listado final para el gestor |
+| `frontend/src/features/ferias-gestor/listado-participantes.tsx` | Consulta del listado final |
 | `frontend/src/features/ferias-gestor/calendario-ferias.tsx` | Contenedor, filtros, resumen y acciones |
 | `frontend/src/features/ferias-gestor/calendario-mensual-ferias.tsx` | Vista mensual |
 | `frontend/src/features/ferias-gestor/calendario-semanal-ferias.tsx` | Vista semanal por zona |
@@ -452,7 +464,7 @@ Prueba manual:
 | `frontend/src/features/ferias-gestor/acciones-feria.tsx` | Modales de aprobar, mover y cancelar |
 | `frontend/src/features/ferias-gestor/calendario-ferias-utilidades.ts` | Utilidades puras del calendario |
 | `frontend/src/features/ferias-gestor/estilos-estado-feria.ts` | Colores, símbolos y etiquetas |
-| `frontend/e2e/ferias.spec.ts` · `frontend/e2e/gestor-calendario-ferias.spec.ts` | Playwright |
+| `frontend/e2e/ferias.spec.ts` · `frontend/e2e/gestor-calendario-ferias.spec.ts` · `frontend/e2e/participantes-ferias.spec.ts` | Playwright |
 | `frontend/e2e/limpieza-ferias.ts` | Limpieza de datos de prueba |
 
 ---
@@ -596,3 +608,125 @@ Prueba manual:
 6. Muévela a una fecha libre y comprueba las nuevas fechas.
 7. Cancélala con un motivo y verifica que los espacios vuelven a estar disponibles.
 8. Revisa la bandeja del organizador: debe tener los avisos de aprobación, movimiento y cancelación.
+
+---
+
+## 11. Participantes de la feria (HU-23)
+
+### 11.1 Alcance
+
+El organizador dueño registra los vendedores y productos de una **feria aprobada**. La lista respeta el cupo aprobado (`ferias.numero_puestos`) y el catálogo de productos permitidos por la zona (`zona_productos`).
+
+Solo se puede gestionar mientras la feria está `aprobada` y el listado final no se ha enviado. Después del envío, la lista queda bloqueada y el gestor puede consultarla.
+
+### 11.2 Modelo de datos
+
+La migración `dataBase/16_participantes_hu23.sql` agrega:
+
+| Elemento | Descripción |
+|---|---|
+| `ferias.participantes_enviados_en` | Fecha de envío del listado final. `NULL` = borrador. |
+| `feria_vendedores.activo` | Baja lógica del participante. |
+| `feria_vendedores.creado_en` / `actualizado_en` / `eliminado_en` | Marcas de tiempo. |
+| `feria_vendedor_productos` | Relación N:M entre participante y productos. |
+
+Los vendedores existentes se rellenan desde `producto_principal` cuando el nombre coincide con el catálogo. Si no coincide, quedan sin producto hasta que el organizador los edite.
+
+### 11.3 Endpoints
+
+| Método | Ruta | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | `/ferias/:id/participantes` | Organizador dueño | Lista, cupo, catálogo y estado de envío |
+| `POST` | `/ferias/:id/participantes` | Organizador dueño | Alta con nombre, documento opcional y productos |
+| `PATCH` | `/ferias/:id/participantes/:participanteId` | Organizador dueño | Edición de datos y productos |
+| `DELETE` | `/ferias/:id/participantes/:participanteId` | Organizador dueño | Baja lógica |
+| `POST` | `/ferias/:id/participantes/enviar` | Organizador dueño | Envía y bloquea el listado final |
+| `GET` | `/gestor/ferias/:id/participantes` | Gestor | Listado final; `409` si no se ha enviado |
+
+Respuesta del listado:
+
+```json
+{
+  "feria": {
+    "id": "1",
+    "numeroRadicado": "FER-2026-00001",
+    "nombre": "Feria Agroecológica de Diciembre",
+    "estado": "aprobada",
+    "fechaInicio": "2026-12-10",
+    "fechaFin": "2026-12-12",
+    "numeroPuestos": 20,
+    "zona": { "id": "4", "nombre": "Parque La Guadua" }
+  },
+  "cupo": {
+    "aprobado": 20,
+    "ocupados": 3,
+    "disponibles": 17,
+    "completo": false
+  },
+  "productosPermitidos": [{ "id": "1", "nombre": "Frutas frescas" }],
+  "productosCatalogo": [
+    { "id": "1", "nombre": "Frutas frescas" },
+    { "id": "2", "nombre": "Verduras" }
+  ],
+  "participantes": [
+    {
+      "id": "1",
+      "nombre": "Doralice Lozano",
+      "documento": "CC 43789123",
+      "productos": [{ "id": "1", "nombre": "Frutas frescas" }],
+      "creadoEn": "2026-11-23T10:00:00.000Z",
+      "actualizadoEn": "2026-11-23T10:00:00.000Z"
+    }
+  ],
+  "listadoFinal": { "enviado": false, "enviadoEn": null }
+}
+```
+
+### 11.4 Reglas
+
+- Solo el organizador dueño de la feria puede consultar y modificar la lista.
+- La feria debe estar `aprobada` para crear, editar, retirar o enviar.
+- El cupo se calcula con participantes `activo = true` y no puede superar `numero_puestos`.
+- El alta y la reactivación se serializan con `SELECT ... FOR UPDATE` sobre la feria; la BD tiene un trigger de cupo como última barrera.
+- Productos: al menos uno, sin duplicados, existentes y activos. Si la zona tiene catálogo, todos deben pertenecer a `zona_productos`.
+- Documento opcional, único por feria entre participantes activos. Si se vuelve a usar el documento de un participante retirado, se reactiva.
+- Enviar exige al menos un participante activo.
+- La baja es lógica: la fila se conserva y deja de ocupar cupo.
+- El gestor solo ve el listado cuando `participantes_enviados_en` tiene valor.
+
+### 11.5 Interfaz
+
+| Ruta | Rol | Función |
+|---|---|---|
+| `/organizador/ferias/[id]/participantes` | Organizador | Alta, edición, retiro, cupo y envío final |
+| `/gestor/ferias/[id]/participantes` | Gestor | Consulta del listado final y sus productos |
+
+La interfaz muestra:
+
+- cupo aprobado, ocupados y disponibles con barra de progreso;
+- advertencia cuando el cupo está lleno;
+- productos no permitidos deshabilitados con explicación;
+- errores por campo y mensajes de la API;
+- confirmación antes de retirar y antes de enviar;
+- estado de solo lectura después del envío;
+- responsive a 360 px y estados de carga, error y vacío.
+
+### 11.6 Pruebas
+
+```powershell
+pnpm test -- --runInBand src/ferias/participantes.service.spec.ts
+pnpm test:e2e -- --runInBand test/participantes-ferias.e2e-spec.ts
+
+cd frontend
+pnpm test
+pnpm test:e2e e2e/participantes-ferias.spec.ts
+```
+
+Cubren alta, edición, baja lógica, reactivación por documento, cupo, productos no permitidos, bloqueo tras el envío, visibilidad del gestor, roles y vista a 360 px.
+
+### 11.7 Migración
+
+```powershell
+psql -U postgres -d "sgp_tulua" -f dataBase/16_participantes_hu23.sql
+pnpm exec prisma generate
+```

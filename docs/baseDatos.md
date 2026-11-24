@@ -428,6 +428,7 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 | aprobada_en / cancelada_en | TIMESTAMPTZ | Fechas de decisión |
 | cancelada_por | BIGINT | FK→gestores(usuario_id) |
 | actualizado_en | TIMESTAMPTZ | Actualización automática por trigger |
+| participantes_enviados_en | TIMESTAMPTZ | HU-23: fecha de envío del listado final; NULL = borrador |
 
 **EXCLUDE** (`gist` + `WHERE estado IN ('radicada','aprobada')`): evita cruces de fecha y zona en el calendario (HU-22).
 
@@ -446,7 +447,21 @@ Cada cambio es una **fila nueva**: el historial queda completo (valor anterior, 
 | feria_id | BIGINT | NOT NULL, FK ON DELETE CASCADE |
 | nombre_vendedor | VARCHAR(150) | NOT NULL |
 | documento | VARCHAR(30) | UNIQUE por feria (nullable) |
-| producto_principal | VARCHAR(150) | |
+| producto_principal | VARCHAR(150) | Campo legado; se sincroniza con el primer producto |
+| activo | BOOLEAN | NOT NULL, DEFAULT TRUE; FALSE = baja lógica |
+| creado_en | TIMESTAMPTZ | DEFAULT now() |
+| actualizado_en | TIMESTAMPTZ | Actualización automática por trigger |
+| eliminado_en | TIMESTAMPTZ | Fecha de baja lógica; coherente con `activo` |
+
+**Reglas (migración 16):** solo se insertan o reactivan participantes de ferias `aprobada`; el trigger `fn_validar_cupo_vendedor` bloquea la feria y rechaza superar `ferias.numero_puestos`. La baja lógica no ocupa cupo.
+
+### `feria_vendedor_productos` — Productos por vendedor (HU-23)
+| Campo | Tipo | Restricciones |
+|---|---|---|
+| vendedor_id | BIGINT | PK compuesta, FK→feria_vendedores(id) ON DELETE CASCADE |
+| producto_id | BIGINT | PK compuesta, FK→productos(id) |
+
+Los productos deben existir, estar activos y, si la zona tiene `zona_productos`, pertenecer a ese catálogo. La validación de negocio se hace en el servicio con respuesta `400`; la BD conserva las claves foráneas.
 
 ### `feria_documentos` — Documentación del evento (HU-21)
 | Campo | Tipo | Restricciones |

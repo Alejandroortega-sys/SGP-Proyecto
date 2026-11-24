@@ -99,12 +99,20 @@ export function DetalleFeria({ id }: { id: string }) {
             {datos.numeroRadicado}
           </p>
         </div>
-        <Link
-          href="/organizador/ferias/nueva"
-          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
-        >
-          Nueva feria
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href={`/organizador/ferias/${datos.id}/participantes`}
+            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-primario bg-white px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+          >
+            Gestionar participantes
+          </Link>
+          <Link
+            href="/organizador/ferias/nueva"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
+          >
+            Nueva feria
+          </Link>
+        </div>
       </header>
 
       <Tarjeta>

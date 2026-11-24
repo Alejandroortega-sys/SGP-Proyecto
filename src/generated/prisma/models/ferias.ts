@@ -64,6 +64,7 @@ export type FeriasMinAggregateOutputType = {
   cancelada_en: Date | null
   cancelada_por: bigint | null
   actualizado_en: Date | null
+  participantes_enviados_en: Date | null
 }
 
 export type FeriasMaxAggregateOutputType = {
@@ -84,6 +85,7 @@ export type FeriasMaxAggregateOutputType = {
   cancelada_en: Date | null
   cancelada_por: bigint | null
   actualizado_en: Date | null
+  participantes_enviados_en: Date | null
 }
 
 export type FeriasCountAggregateOutputType = {
@@ -104,6 +106,7 @@ export type FeriasCountAggregateOutputType = {
   cancelada_en: number
   cancelada_por: number
   actualizado_en: number
+  participantes_enviados_en: number
   _all: number
 }
 
@@ -144,6 +147,7 @@ export type FeriasMinAggregateInputType = {
   cancelada_en?: true
   cancelada_por?: true
   actualizado_en?: true
+  participantes_enviados_en?: true
 }
 
 export type FeriasMaxAggregateInputType = {
@@ -164,6 +168,7 @@ export type FeriasMaxAggregateInputType = {
   cancelada_en?: true
   cancelada_por?: true
   actualizado_en?: true
+  participantes_enviados_en?: true
 }
 
 export type FeriasCountAggregateInputType = {
@@ -184,6 +189,7 @@ export type FeriasCountAggregateInputType = {
   cancelada_en?: true
   cancelada_por?: true
   actualizado_en?: true
+  participantes_enviados_en?: true
   _all?: true
 }
 
@@ -291,6 +297,7 @@ export type FeriasGroupByOutputType = {
   cancelada_en: Date | null
   cancelada_por: bigint | null
   actualizado_en: Date
+  participantes_enviados_en: Date | null
   _count: FeriasCountAggregateOutputType | null
   _avg: FeriasAvgAggregateOutputType | null
   _sum: FeriasSumAggregateOutputType | null
@@ -334,6 +341,7 @@ export type feriasWhereInput = {
   cancelada_en?: Prisma.DateTimeNullableFilter<"ferias"> | Date | string | null
   cancelada_por?: Prisma.BigIntNullableFilter<"ferias"> | bigint | number | null
   actualizado_en?: Prisma.DateTimeFilter<"ferias"> | Date | string
+  participantes_enviados_en?: Prisma.DateTimeNullableFilter<"ferias"> | Date | string | null
   feria_documentos?: Prisma.Feria_documentosListRelationFilter
   feria_productos?: Prisma.Feria_productosListRelationFilter
   feria_vendedores?: Prisma.Feria_vendedoresListRelationFilter
@@ -363,6 +371,7 @@ export type feriasOrderByWithRelationInput = {
   cancelada_en?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelada_por?: Prisma.SortOrderInput | Prisma.SortOrder
   actualizado_en?: Prisma.SortOrder
+  participantes_enviados_en?: Prisma.SortOrderInput | Prisma.SortOrder
   feria_documentos?: Prisma.feria_documentosOrderByRelationAggregateInput
   feria_productos?: Prisma.feria_productosOrderByRelationAggregateInput
   feria_vendedores?: Prisma.feria_vendedoresOrderByRelationAggregateInput
@@ -395,6 +404,7 @@ export type feriasWhereUniqueInput = Prisma.AtLeast<{
   cancelada_en?: Prisma.DateTimeNullableFilter<"ferias"> | Date | string | null
   cancelada_por?: Prisma.BigIntNullableFilter<"ferias"> | bigint | number | null
   actualizado_en?: Prisma.DateTimeFilter<"ferias"> | Date | string
+  participantes_enviados_en?: Prisma.DateTimeNullableFilter<"ferias"> | Date | string | null
   feria_documentos?: Prisma.Feria_documentosListRelationFilter
   feria_productos?: Prisma.Feria_productosListRelationFilter
   feria_vendedores?: Prisma.Feria_vendedoresListRelationFilter
@@ -424,6 +434,7 @@ export type feriasOrderByWithAggregationInput = {
   cancelada_en?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelada_por?: Prisma.SortOrderInput | Prisma.SortOrder
   actualizado_en?: Prisma.SortOrder
+  participantes_enviados_en?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.feriasCountOrderByAggregateInput
   _avg?: Prisma.feriasAvgOrderByAggregateInput
   _max?: Prisma.feriasMaxOrderByAggregateInput
@@ -452,6 +463,7 @@ export type feriasScalarWhereWithAggregatesInput = {
   cancelada_en?: Prisma.DateTimeNullableWithAggregatesFilter<"ferias"> | Date | string | null
   cancelada_por?: Prisma.BigIntNullableWithAggregatesFilter<"ferias"> | bigint | number | null
   actualizado_en?: Prisma.DateTimeWithAggregatesFilter<"ferias"> | Date | string
+  participantes_enviados_en?: Prisma.DateTimeNullableWithAggregatesFilter<"ferias"> | Date | string | null
 }
 
 export type feriasCreateInput = {
@@ -468,6 +480,7 @@ export type feriasCreateInput = {
   aprobada_en?: Date | string | null
   cancelada_en?: Date | string | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
@@ -497,6 +510,7 @@ export type feriasUncheckedCreateInput = {
   cancelada_en?: Date | string | null
   cancelada_por?: bigint | number | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
@@ -518,6 +532,7 @@ export type feriasUpdateInput = {
   aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
@@ -547,6 +562,7 @@ export type feriasUncheckedUpdateInput = {
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
@@ -572,6 +588,7 @@ export type feriasCreateManyInput = {
   cancelada_en?: Date | string | null
   cancelada_por?: bigint | number | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
 }
 
 export type feriasUpdateManyMutationInput = {
@@ -588,6 +605,7 @@ export type feriasUpdateManyMutationInput = {
   aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type feriasUncheckedUpdateManyInput = {
@@ -608,6 +626,7 @@ export type feriasUncheckedUpdateManyInput = {
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type FeriasNullableScalarRelationFilter = {
@@ -638,6 +657,7 @@ export type feriasCountOrderByAggregateInput = {
   cancelada_en?: Prisma.SortOrder
   cancelada_por?: Prisma.SortOrder
   actualizado_en?: Prisma.SortOrder
+  participantes_enviados_en?: Prisma.SortOrder
 }
 
 export type feriasAvgOrderByAggregateInput = {
@@ -667,6 +687,7 @@ export type feriasMaxOrderByAggregateInput = {
   cancelada_en?: Prisma.SortOrder
   cancelada_por?: Prisma.SortOrder
   actualizado_en?: Prisma.SortOrder
+  participantes_enviados_en?: Prisma.SortOrder
 }
 
 export type feriasMinOrderByAggregateInput = {
@@ -687,6 +708,7 @@ export type feriasMinOrderByAggregateInput = {
   cancelada_en?: Prisma.SortOrder
   cancelada_por?: Prisma.SortOrder
   actualizado_en?: Prisma.SortOrder
+  participantes_enviados_en?: Prisma.SortOrder
 }
 
 export type feriasSumOrderByAggregateInput = {
@@ -962,6 +984,7 @@ export type feriasCreateWithoutEspacio_bloqueosInput = {
   aprobada_en?: Date | string | null
   cancelada_en?: Date | string | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
@@ -990,6 +1013,7 @@ export type feriasUncheckedCreateWithoutEspacio_bloqueosInput = {
   cancelada_en?: Date | string | null
   cancelada_por?: bigint | number | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
@@ -1026,6 +1050,7 @@ export type feriasUpdateWithoutEspacio_bloqueosInput = {
   aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
@@ -1054,6 +1079,7 @@ export type feriasUncheckedUpdateWithoutEspacio_bloqueosInput = {
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
@@ -1074,6 +1100,7 @@ export type feriasCreateWithoutFeria_productosInput = {
   aprobada_en?: Date | string | null
   cancelada_en?: Date | string | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
@@ -1102,6 +1129,7 @@ export type feriasUncheckedCreateWithoutFeria_productosInput = {
   cancelada_en?: Date | string | null
   cancelada_por?: bigint | number | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
@@ -1138,6 +1166,7 @@ export type feriasUpdateWithoutFeria_productosInput = {
   aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
@@ -1166,6 +1195,7 @@ export type feriasUncheckedUpdateWithoutFeria_productosInput = {
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
@@ -1186,6 +1216,7 @@ export type feriasCreateWithoutFeria_vendedoresInput = {
   aprobada_en?: Date | string | null
   cancelada_en?: Date | string | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
@@ -1214,6 +1245,7 @@ export type feriasUncheckedCreateWithoutFeria_vendedoresInput = {
   cancelada_en?: Date | string | null
   cancelada_por?: bigint | number | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
@@ -1250,6 +1282,7 @@ export type feriasUpdateWithoutFeria_vendedoresInput = {
   aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
@@ -1278,6 +1311,7 @@ export type feriasUncheckedUpdateWithoutFeria_vendedoresInput = {
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
@@ -1298,6 +1332,7 @@ export type feriasCreateWithoutFeria_documentosInput = {
   aprobada_en?: Date | string | null
   cancelada_en?: Date | string | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesCreateNestedManyWithoutFeriasInput
@@ -1326,6 +1361,7 @@ export type feriasUncheckedCreateWithoutFeria_documentosInput = {
   cancelada_en?: Date | string | null
   cancelada_por?: bigint | number | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
   notificaciones?: Prisma.notificacionesUncheckedCreateNestedManyWithoutFeriasInput
@@ -1362,6 +1398,7 @@ export type feriasUpdateWithoutFeria_documentosInput = {
   aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUpdateManyWithoutFeriasNestedInput
@@ -1390,6 +1427,7 @@ export type feriasUncheckedUpdateWithoutFeria_documentosInput = {
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
   notificaciones?: Prisma.notificacionesUncheckedUpdateManyWithoutFeriasNestedInput
@@ -1410,6 +1448,7 @@ export type feriasCreateWithoutGestoresInput = {
   aprobada_en?: Date | string | null
   cancelada_en?: Date | string | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
@@ -1437,6 +1476,7 @@ export type feriasUncheckedCreateWithoutGestoresInput = {
   cancelada_en?: Date | string | null
   cancelada_por?: bigint | number | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
@@ -1468,6 +1508,7 @@ export type feriasCreateWithoutGestores_cancelada_porInput = {
   aprobada_en?: Date | string | null
   cancelada_en?: Date | string | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
@@ -1495,6 +1536,7 @@ export type feriasUncheckedCreateWithoutGestores_cancelada_porInput = {
   aprobada_en?: Date | string | null
   cancelada_en?: Date | string | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
@@ -1549,6 +1591,7 @@ export type feriasScalarWhereInput = {
   cancelada_en?: Prisma.DateTimeNullableFilter<"ferias"> | Date | string | null
   cancelada_por?: Prisma.BigIntNullableFilter<"ferias"> | bigint | number | null
   actualizado_en?: Prisma.DateTimeFilter<"ferias"> | Date | string
+  participantes_enviados_en?: Prisma.DateTimeNullableFilter<"ferias"> | Date | string | null
 }
 
 export type feriasUpsertWithWhereUniqueWithoutGestores_cancelada_porInput = {
@@ -1581,6 +1624,7 @@ export type feriasCreateWithoutNotificacionesInput = {
   aprobada_en?: Date | string | null
   cancelada_en?: Date | string | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
@@ -1609,6 +1653,7 @@ export type feriasUncheckedCreateWithoutNotificacionesInput = {
   cancelada_en?: Date | string | null
   cancelada_por?: bigint | number | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
@@ -1645,6 +1690,7 @@ export type feriasUpdateWithoutNotificacionesInput = {
   aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
@@ -1673,6 +1719,7 @@ export type feriasUncheckedUpdateWithoutNotificacionesInput = {
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
@@ -1693,6 +1740,7 @@ export type feriasCreateWithoutOrganizadoresInput = {
   aprobada_en?: Date | string | null
   cancelada_en?: Date | string | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
@@ -1720,6 +1768,7 @@ export type feriasUncheckedCreateWithoutOrganizadoresInput = {
   cancelada_en?: Date | string | null
   cancelada_por?: bigint | number | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
@@ -1767,6 +1816,7 @@ export type feriasCreateWithoutZonasInput = {
   aprobada_en?: Date | string | null
   cancelada_en?: Date | string | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresCreateNestedManyWithoutFeriasInput
@@ -1794,6 +1844,7 @@ export type feriasUncheckedCreateWithoutZonasInput = {
   cancelada_en?: Date | string | null
   cancelada_por?: bigint | number | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedCreateNestedManyWithoutFeriasInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutFeriasInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedCreateNestedManyWithoutFeriasInput
@@ -1844,6 +1895,7 @@ export type feriasCreateManyGestoresInput = {
   cancelada_en?: Date | string | null
   cancelada_por?: bigint | number | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
 }
 
 export type feriasCreateManyGestores_cancelada_porInput = {
@@ -1863,6 +1915,7 @@ export type feriasCreateManyGestores_cancelada_porInput = {
   aprobada_en?: Date | string | null
   cancelada_en?: Date | string | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
 }
 
 export type feriasUpdateWithoutGestoresInput = {
@@ -1879,6 +1932,7 @@ export type feriasUpdateWithoutGestoresInput = {
   aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
@@ -1906,6 +1960,7 @@ export type feriasUncheckedUpdateWithoutGestoresInput = {
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
@@ -1930,6 +1985,7 @@ export type feriasUncheckedUpdateManyWithoutGestoresInput = {
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type feriasUpdateWithoutGestores_cancelada_porInput = {
@@ -1946,6 +2002,7 @@ export type feriasUpdateWithoutGestores_cancelada_porInput = {
   aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
@@ -1973,6 +2030,7 @@ export type feriasUncheckedUpdateWithoutGestores_cancelada_porInput = {
   aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
@@ -1997,6 +2055,7 @@ export type feriasUncheckedUpdateManyWithoutGestores_cancelada_porInput = {
   aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type feriasCreateManyOrganizadoresInput = {
@@ -2016,6 +2075,7 @@ export type feriasCreateManyOrganizadoresInput = {
   cancelada_en?: Date | string | null
   cancelada_por?: bigint | number | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
 }
 
 export type feriasUpdateWithoutOrganizadoresInput = {
@@ -2032,6 +2092,7 @@ export type feriasUpdateWithoutOrganizadoresInput = {
   aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
@@ -2059,6 +2120,7 @@ export type feriasUncheckedUpdateWithoutOrganizadoresInput = {
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
@@ -2083,6 +2145,7 @@ export type feriasUncheckedUpdateManyWithoutOrganizadoresInput = {
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type feriasUpdateWithoutZonasInput = {
@@ -2099,6 +2162,7 @@ export type feriasUpdateWithoutZonasInput = {
   aprobada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUpdateManyWithoutFeriasNestedInput
@@ -2126,6 +2190,7 @@ export type feriasUncheckedUpdateWithoutZonasInput = {
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   feria_documentos?: Prisma.feria_documentosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutFeriasNestedInput
   feria_vendedores?: Prisma.feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput
@@ -2150,6 +2215,7 @@ export type feriasCreateManyZonasInput = {
   cancelada_en?: Date | string | null
   cancelada_por?: bigint | number | null
   actualizado_en?: Date | string
+  participantes_enviados_en?: Date | string | null
 }
 
 export type feriasUncheckedUpdateManyWithoutZonasInput = {
@@ -2169,6 +2235,7 @@ export type feriasUncheckedUpdateManyWithoutZonasInput = {
   cancelada_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelada_por?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  participantes_enviados_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -2256,6 +2323,7 @@ export type feriasSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   cancelada_en?: boolean
   cancelada_por?: boolean
   actualizado_en?: boolean
+  participantes_enviados_en?: boolean
   feria_documentos?: boolean | Prisma.ferias$feria_documentosArgs<ExtArgs>
   feria_productos?: boolean | Prisma.ferias$feria_productosArgs<ExtArgs>
   feria_vendedores?: boolean | Prisma.ferias$feria_vendedoresArgs<ExtArgs>
@@ -2286,6 +2354,7 @@ export type feriasSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   cancelada_en?: boolean
   cancelada_por?: boolean
   actualizado_en?: boolean
+  participantes_enviados_en?: boolean
   organizadores?: boolean | Prisma.organizadoresDefaultArgs<ExtArgs>
   gestores?: boolean | Prisma.ferias$gestoresArgs<ExtArgs>
   gestores_cancelada_por?: boolean | Prisma.ferias$gestores_cancelada_porArgs<ExtArgs>
@@ -2310,6 +2379,7 @@ export type feriasSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   cancelada_en?: boolean
   cancelada_por?: boolean
   actualizado_en?: boolean
+  participantes_enviados_en?: boolean
   organizadores?: boolean | Prisma.organizadoresDefaultArgs<ExtArgs>
   gestores?: boolean | Prisma.ferias$gestoresArgs<ExtArgs>
   gestores_cancelada_por?: boolean | Prisma.ferias$gestores_cancelada_porArgs<ExtArgs>
@@ -2334,9 +2404,10 @@ export type feriasSelectScalar = {
   cancelada_en?: boolean
   cancelada_por?: boolean
   actualizado_en?: boolean
+  participantes_enviados_en?: boolean
 }
 
-export type feriasOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "numero_radicado" | "organizador_id" | "nombre" | "tipo_feria" | "zona_id" | "fecha_inicio" | "fecha_fin" | "numero_puestos" | "estado" | "revisor_id" | "radicada_en" | "motivo_cancelacion" | "aprobada_en" | "cancelada_en" | "cancelada_por" | "actualizado_en", ExtArgs["result"]["ferias"]>
+export type feriasOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "numero_radicado" | "organizador_id" | "nombre" | "tipo_feria" | "zona_id" | "fecha_inicio" | "fecha_fin" | "numero_puestos" | "estado" | "revisor_id" | "radicada_en" | "motivo_cancelacion" | "aprobada_en" | "cancelada_en" | "cancelada_por" | "actualizado_en" | "participantes_enviados_en", ExtArgs["result"]["ferias"]>
 export type feriasInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   feria_documentos?: boolean | Prisma.ferias$feria_documentosArgs<ExtArgs>
   feria_productos?: boolean | Prisma.ferias$feria_productosArgs<ExtArgs>
@@ -2393,6 +2464,7 @@ export type $feriasPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     cancelada_en: Date | null
     cancelada_por: bigint | null
     actualizado_en: Date
+    participantes_enviados_en: Date | null
   }, ExtArgs["result"]["ferias"]>
   composites: {}
 }
@@ -2842,6 +2914,7 @@ export interface feriasFieldRefs {
   readonly cancelada_en: Prisma.FieldRef<"ferias", 'DateTime'>
   readonly cancelada_por: Prisma.FieldRef<"ferias", 'BigInt'>
   readonly actualizado_en: Prisma.FieldRef<"ferias", 'DateTime'>
+  readonly participantes_enviados_en: Prisma.FieldRef<"ferias", 'DateTime'>
 }
     
 

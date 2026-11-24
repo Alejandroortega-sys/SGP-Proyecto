@@ -782,7 +782,7 @@ En `/gestor/panel` verás:
 - totales de permisos por estado;
 - totales de ferias por estado.
 
-> Los indicadores de solicitudes, permisos y ferias se alimentan de la base de datos. En la demostración verás cifras del seed. Las pantallas de solicitudes, radicación y calendario de ferias ya están disponibles; la inscripción de vendedores sigue pendiente (HU-23).
+> Los indicadores de solicitudes, permisos y ferias se alimentan de la base de datos. En la demostración verás cifras del seed. Las pantallas de solicitudes, radicación, calendario de ferias e inscripción de vendedores ya están disponibles.
 
 ### 13.2.1 Calendario de ferias (HU-22)
 
@@ -795,6 +795,19 @@ En **Ferias** (`/gestor/ferias`) puedes administrar la agenda de ferias y evento
 5. **Mover** permite cambiar zona y fechas. Antes de guardar se consultan los cruces y se ofrecen fechas alternativas.
 6. **Cancelar** exige un motivo. La feria pasa a cancelada, los espacios se liberan y el organizador recibe el motivo.
 7. El organizador recibe una notificación en la plataforma y un correo por aprobación, movimiento o cancelación.
+
+### 13.2.2 Participantes de una feria (HU-23)
+
+El **organizador** gestiona los vendedores desde `/organizador/ferias/[id]/participantes`:
+
+1. Solo puede agregar, editar o retirar participantes si la feria está **aprobada** y el listado final no se ha enviado.
+2. El formulario pide nombre, documento opcional y los productos que venderá el vendedor.
+3. Los productos fuera del catálogo de la zona aparecen deshabilitados.
+4. La lista muestra el cupo aprobado, los ocupados y los disponibles. Al llenarse el cupo no se pueden agregar más vendedores.
+5. Retirar un vendedor aplica una baja lógica y libera su cupo.
+6. **Enviar listado final** exige al menos un participante y bloquea la lista. Después del envío no se puede modificar.
+
+El **gestor** consulta el listado final desde el detalle de la feria del calendario o en `/gestor/ferias/[id]/participantes`. Antes del envío, la vista indica que el organizador aún no ha enviado el listado.
 
 ### 13.3 Mi perfil
 
@@ -1486,7 +1499,7 @@ La radicación (HU-21) y la administración del calendario (HU-22) están implem
 | Sin solicitudes | No hay botón ni formulario para pedir un espacio. |
 | Sin permisos QR | No se emiten carnés ni se verifica QR desde la interfaz. |
 | Sin cobros | No hay pagos ni recibos en la interfaz. |
-| Sin inscripción de vendedores | El calendario y la aprobación/cancelación de ferias ya están en la interfaz (HU-22); la inscripción de vendedores (HU-23) sigue pendiente. |
+| Sin edición tras el envío | Una vez enviado el listado final de participantes, la lista queda bloqueada por diseño. |
 | Sin dashboard analítico | Solo el panel básico de indicadores. |
 | Sin factibilidad visible | El motor existe en la base, pero no se puede ejecutar desde la interfaz. |
 | Sin buscador de calles/barrios | Se excluyó del alcance; el mapa se centra manualmente. |

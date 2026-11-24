@@ -202,6 +202,7 @@ export type productosWhereInput = {
   activo?: Prisma.BoolFilter<"productos"> | boolean
   evaluaciones_factibilidad?: Prisma.Evaluaciones_factibilidadListRelationFilter
   feria_productos?: Prisma.Feria_productosListRelationFilter
+  feria_vendedor_productos?: Prisma.Feria_vendedor_productosListRelationFilter
   solicitud_productos?: Prisma.Solicitud_productosListRelationFilter
   zona_productos?: Prisma.Zona_productosListRelationFilter
 }
@@ -212,6 +213,7 @@ export type productosOrderByWithRelationInput = {
   activo?: Prisma.SortOrder
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadOrderByRelationAggregateInput
   feria_productos?: Prisma.feria_productosOrderByRelationAggregateInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosOrderByRelationAggregateInput
   solicitud_productos?: Prisma.solicitud_productosOrderByRelationAggregateInput
   zona_productos?: Prisma.zona_productosOrderByRelationAggregateInput
 }
@@ -225,6 +227,7 @@ export type productosWhereUniqueInput = Prisma.AtLeast<{
   activo?: Prisma.BoolFilter<"productos"> | boolean
   evaluaciones_factibilidad?: Prisma.Evaluaciones_factibilidadListRelationFilter
   feria_productos?: Prisma.Feria_productosListRelationFilter
+  feria_vendedor_productos?: Prisma.Feria_vendedor_productosListRelationFilter
   solicitud_productos?: Prisma.Solicitud_productosListRelationFilter
   zona_productos?: Prisma.Zona_productosListRelationFilter
 }, "id" | "nombre">
@@ -255,6 +258,7 @@ export type productosCreateInput = {
   activo?: boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadCreateNestedManyWithoutProductosInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutProductosInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosCreateNestedManyWithoutProductosInput
   solicitud_productos?: Prisma.solicitud_productosCreateNestedManyWithoutProductosInput
   zona_productos?: Prisma.zona_productosCreateNestedManyWithoutProductosInput
 }
@@ -265,6 +269,7 @@ export type productosUncheckedCreateInput = {
   activo?: boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedCreateNestedManyWithoutProductosInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutProductosInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedCreateNestedManyWithoutProductosInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedCreateNestedManyWithoutProductosInput
   zona_productos?: Prisma.zona_productosUncheckedCreateNestedManyWithoutProductosInput
 }
@@ -275,6 +280,7 @@ export type productosUpdateInput = {
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUpdateManyWithoutProductosNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutProductosNestedInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUpdateManyWithoutProductosNestedInput
   solicitud_productos?: Prisma.solicitud_productosUpdateManyWithoutProductosNestedInput
   zona_productos?: Prisma.zona_productosUpdateManyWithoutProductosNestedInput
 }
@@ -285,6 +291,7 @@ export type productosUncheckedUpdateInput = {
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedUpdateManyWithoutProductosNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutProductosNestedInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedUpdateManyWithoutProductosNestedInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedUpdateManyWithoutProductosNestedInput
   zona_productos?: Prisma.zona_productosUncheckedUpdateManyWithoutProductosNestedInput
 }
@@ -367,6 +374,20 @@ export type productosUpdateOneRequiredWithoutFeria_productosNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.productosUpdateToOneWithWhereWithoutFeria_productosInput, Prisma.productosUpdateWithoutFeria_productosInput>, Prisma.productosUncheckedUpdateWithoutFeria_productosInput>
 }
 
+export type productosCreateNestedOneWithoutFeria_vendedor_productosInput = {
+  create?: Prisma.XOR<Prisma.productosCreateWithoutFeria_vendedor_productosInput, Prisma.productosUncheckedCreateWithoutFeria_vendedor_productosInput>
+  connectOrCreate?: Prisma.productosCreateOrConnectWithoutFeria_vendedor_productosInput
+  connect?: Prisma.productosWhereUniqueInput
+}
+
+export type productosUpdateOneRequiredWithoutFeria_vendedor_productosNestedInput = {
+  create?: Prisma.XOR<Prisma.productosCreateWithoutFeria_vendedor_productosInput, Prisma.productosUncheckedCreateWithoutFeria_vendedor_productosInput>
+  connectOrCreate?: Prisma.productosCreateOrConnectWithoutFeria_vendedor_productosInput
+  upsert?: Prisma.productosUpsertWithoutFeria_vendedor_productosInput
+  connect?: Prisma.productosWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.productosUpdateToOneWithWhereWithoutFeria_vendedor_productosInput, Prisma.productosUpdateWithoutFeria_vendedor_productosInput>, Prisma.productosUncheckedUpdateWithoutFeria_vendedor_productosInput>
+}
+
 export type productosCreateNestedOneWithoutSolicitud_productosInput = {
   create?: Prisma.XOR<Prisma.productosCreateWithoutSolicitud_productosInput, Prisma.productosUncheckedCreateWithoutSolicitud_productosInput>
   connectOrCreate?: Prisma.productosCreateOrConnectWithoutSolicitud_productosInput
@@ -400,6 +421,7 @@ export type productosCreateWithoutEvaluaciones_factibilidadInput = {
   nombre: string
   activo?: boolean
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutProductosInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosCreateNestedManyWithoutProductosInput
   solicitud_productos?: Prisma.solicitud_productosCreateNestedManyWithoutProductosInput
   zona_productos?: Prisma.zona_productosCreateNestedManyWithoutProductosInput
 }
@@ -409,6 +431,7 @@ export type productosUncheckedCreateWithoutEvaluaciones_factibilidadInput = {
   nombre: string
   activo?: boolean
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutProductosInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedCreateNestedManyWithoutProductosInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedCreateNestedManyWithoutProductosInput
   zona_productos?: Prisma.zona_productosUncheckedCreateNestedManyWithoutProductosInput
 }
@@ -434,6 +457,7 @@ export type productosUpdateWithoutEvaluaciones_factibilidadInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   feria_productos?: Prisma.feria_productosUpdateManyWithoutProductosNestedInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUpdateManyWithoutProductosNestedInput
   solicitud_productos?: Prisma.solicitud_productosUpdateManyWithoutProductosNestedInput
   zona_productos?: Prisma.zona_productosUpdateManyWithoutProductosNestedInput
 }
@@ -443,6 +467,7 @@ export type productosUncheckedUpdateWithoutEvaluaciones_factibilidadInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutProductosNestedInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedUpdateManyWithoutProductosNestedInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedUpdateManyWithoutProductosNestedInput
   zona_productos?: Prisma.zona_productosUncheckedUpdateManyWithoutProductosNestedInput
 }
@@ -452,6 +477,7 @@ export type productosCreateWithoutFeria_productosInput = {
   nombre: string
   activo?: boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadCreateNestedManyWithoutProductosInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosCreateNestedManyWithoutProductosInput
   solicitud_productos?: Prisma.solicitud_productosCreateNestedManyWithoutProductosInput
   zona_productos?: Prisma.zona_productosCreateNestedManyWithoutProductosInput
 }
@@ -461,6 +487,7 @@ export type productosUncheckedCreateWithoutFeria_productosInput = {
   nombre: string
   activo?: boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedCreateNestedManyWithoutProductosInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedCreateNestedManyWithoutProductosInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedCreateNestedManyWithoutProductosInput
   zona_productos?: Prisma.zona_productosUncheckedCreateNestedManyWithoutProductosInput
 }
@@ -486,6 +513,7 @@ export type productosUpdateWithoutFeria_productosInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUpdateManyWithoutProductosNestedInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUpdateManyWithoutProductosNestedInput
   solicitud_productos?: Prisma.solicitud_productosUpdateManyWithoutProductosNestedInput
   zona_productos?: Prisma.zona_productosUpdateManyWithoutProductosNestedInput
 }
@@ -495,6 +523,63 @@ export type productosUncheckedUpdateWithoutFeria_productosInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedUpdateManyWithoutProductosNestedInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedUpdateManyWithoutProductosNestedInput
+  solicitud_productos?: Prisma.solicitud_productosUncheckedUpdateManyWithoutProductosNestedInput
+  zona_productos?: Prisma.zona_productosUncheckedUpdateManyWithoutProductosNestedInput
+}
+
+export type productosCreateWithoutFeria_vendedor_productosInput = {
+  id?: bigint | number
+  nombre: string
+  activo?: boolean
+  evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadCreateNestedManyWithoutProductosInput
+  feria_productos?: Prisma.feria_productosCreateNestedManyWithoutProductosInput
+  solicitud_productos?: Prisma.solicitud_productosCreateNestedManyWithoutProductosInput
+  zona_productos?: Prisma.zona_productosCreateNestedManyWithoutProductosInput
+}
+
+export type productosUncheckedCreateWithoutFeria_vendedor_productosInput = {
+  id?: bigint | number
+  nombre: string
+  activo?: boolean
+  evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedCreateNestedManyWithoutProductosInput
+  feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutProductosInput
+  solicitud_productos?: Prisma.solicitud_productosUncheckedCreateNestedManyWithoutProductosInput
+  zona_productos?: Prisma.zona_productosUncheckedCreateNestedManyWithoutProductosInput
+}
+
+export type productosCreateOrConnectWithoutFeria_vendedor_productosInput = {
+  where: Prisma.productosWhereUniqueInput
+  create: Prisma.XOR<Prisma.productosCreateWithoutFeria_vendedor_productosInput, Prisma.productosUncheckedCreateWithoutFeria_vendedor_productosInput>
+}
+
+export type productosUpsertWithoutFeria_vendedor_productosInput = {
+  update: Prisma.XOR<Prisma.productosUpdateWithoutFeria_vendedor_productosInput, Prisma.productosUncheckedUpdateWithoutFeria_vendedor_productosInput>
+  create: Prisma.XOR<Prisma.productosCreateWithoutFeria_vendedor_productosInput, Prisma.productosUncheckedCreateWithoutFeria_vendedor_productosInput>
+  where?: Prisma.productosWhereInput
+}
+
+export type productosUpdateToOneWithWhereWithoutFeria_vendedor_productosInput = {
+  where?: Prisma.productosWhereInput
+  data: Prisma.XOR<Prisma.productosUpdateWithoutFeria_vendedor_productosInput, Prisma.productosUncheckedUpdateWithoutFeria_vendedor_productosInput>
+}
+
+export type productosUpdateWithoutFeria_vendedor_productosInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUpdateManyWithoutProductosNestedInput
+  feria_productos?: Prisma.feria_productosUpdateManyWithoutProductosNestedInput
+  solicitud_productos?: Prisma.solicitud_productosUpdateManyWithoutProductosNestedInput
+  zona_productos?: Prisma.zona_productosUpdateManyWithoutProductosNestedInput
+}
+
+export type productosUncheckedUpdateWithoutFeria_vendedor_productosInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedUpdateManyWithoutProductosNestedInput
+  feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutProductosNestedInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedUpdateManyWithoutProductosNestedInput
   zona_productos?: Prisma.zona_productosUncheckedUpdateManyWithoutProductosNestedInput
 }
@@ -505,6 +590,7 @@ export type productosCreateWithoutSolicitud_productosInput = {
   activo?: boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadCreateNestedManyWithoutProductosInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutProductosInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosCreateNestedManyWithoutProductosInput
   zona_productos?: Prisma.zona_productosCreateNestedManyWithoutProductosInput
 }
 
@@ -514,6 +600,7 @@ export type productosUncheckedCreateWithoutSolicitud_productosInput = {
   activo?: boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedCreateNestedManyWithoutProductosInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutProductosInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedCreateNestedManyWithoutProductosInput
   zona_productos?: Prisma.zona_productosUncheckedCreateNestedManyWithoutProductosInput
 }
 
@@ -539,6 +626,7 @@ export type productosUpdateWithoutSolicitud_productosInput = {
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUpdateManyWithoutProductosNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutProductosNestedInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUpdateManyWithoutProductosNestedInput
   zona_productos?: Prisma.zona_productosUpdateManyWithoutProductosNestedInput
 }
 
@@ -548,6 +636,7 @@ export type productosUncheckedUpdateWithoutSolicitud_productosInput = {
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedUpdateManyWithoutProductosNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutProductosNestedInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedUpdateManyWithoutProductosNestedInput
   zona_productos?: Prisma.zona_productosUncheckedUpdateManyWithoutProductosNestedInput
 }
 
@@ -557,6 +646,7 @@ export type productosCreateWithoutZona_productosInput = {
   activo?: boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadCreateNestedManyWithoutProductosInput
   feria_productos?: Prisma.feria_productosCreateNestedManyWithoutProductosInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosCreateNestedManyWithoutProductosInput
   solicitud_productos?: Prisma.solicitud_productosCreateNestedManyWithoutProductosInput
 }
 
@@ -566,6 +656,7 @@ export type productosUncheckedCreateWithoutZona_productosInput = {
   activo?: boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedCreateNestedManyWithoutProductosInput
   feria_productos?: Prisma.feria_productosUncheckedCreateNestedManyWithoutProductosInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedCreateNestedManyWithoutProductosInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedCreateNestedManyWithoutProductosInput
 }
 
@@ -591,6 +682,7 @@ export type productosUpdateWithoutZona_productosInput = {
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUpdateManyWithoutProductosNestedInput
   feria_productos?: Prisma.feria_productosUpdateManyWithoutProductosNestedInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUpdateManyWithoutProductosNestedInput
   solicitud_productos?: Prisma.solicitud_productosUpdateManyWithoutProductosNestedInput
 }
 
@@ -600,6 +692,7 @@ export type productosUncheckedUpdateWithoutZona_productosInput = {
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   evaluaciones_factibilidad?: Prisma.evaluaciones_factibilidadUncheckedUpdateManyWithoutProductosNestedInput
   feria_productos?: Prisma.feria_productosUncheckedUpdateManyWithoutProductosNestedInput
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedUpdateManyWithoutProductosNestedInput
   solicitud_productos?: Prisma.solicitud_productosUncheckedUpdateManyWithoutProductosNestedInput
 }
 
@@ -611,6 +704,7 @@ export type productosUncheckedUpdateWithoutZona_productosInput = {
 export type ProductosCountOutputType = {
   evaluaciones_factibilidad: number
   feria_productos: number
+  feria_vendedor_productos: number
   solicitud_productos: number
   zona_productos: number
 }
@@ -618,6 +712,7 @@ export type ProductosCountOutputType = {
 export type ProductosCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   evaluaciones_factibilidad?: boolean | ProductosCountOutputTypeCountEvaluaciones_factibilidadArgs
   feria_productos?: boolean | ProductosCountOutputTypeCountFeria_productosArgs
+  feria_vendedor_productos?: boolean | ProductosCountOutputTypeCountFeria_vendedor_productosArgs
   solicitud_productos?: boolean | ProductosCountOutputTypeCountSolicitud_productosArgs
   zona_productos?: boolean | ProductosCountOutputTypeCountZona_productosArgs
 }
@@ -649,6 +744,13 @@ export type ProductosCountOutputTypeCountFeria_productosArgs<ExtArgs extends run
 /**
  * ProductosCountOutputType without action
  */
+export type ProductosCountOutputTypeCountFeria_vendedor_productosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.feria_vendedor_productosWhereInput
+}
+
+/**
+ * ProductosCountOutputType without action
+ */
 export type ProductosCountOutputTypeCountSolicitud_productosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.solicitud_productosWhereInput
 }
@@ -667,6 +769,7 @@ export type productosSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   activo?: boolean
   evaluaciones_factibilidad?: boolean | Prisma.productos$evaluaciones_factibilidadArgs<ExtArgs>
   feria_productos?: boolean | Prisma.productos$feria_productosArgs<ExtArgs>
+  feria_vendedor_productos?: boolean | Prisma.productos$feria_vendedor_productosArgs<ExtArgs>
   solicitud_productos?: boolean | Prisma.productos$solicitud_productosArgs<ExtArgs>
   zona_productos?: boolean | Prisma.productos$zona_productosArgs<ExtArgs>
   _count?: boolean | Prisma.ProductosCountOutputTypeDefaultArgs<ExtArgs>
@@ -694,6 +797,7 @@ export type productosOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs 
 export type productosInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   evaluaciones_factibilidad?: boolean | Prisma.productos$evaluaciones_factibilidadArgs<ExtArgs>
   feria_productos?: boolean | Prisma.productos$feria_productosArgs<ExtArgs>
+  feria_vendedor_productos?: boolean | Prisma.productos$feria_vendedor_productosArgs<ExtArgs>
   solicitud_productos?: boolean | Prisma.productos$solicitud_productosArgs<ExtArgs>
   zona_productos?: boolean | Prisma.productos$zona_productosArgs<ExtArgs>
   _count?: boolean | Prisma.ProductosCountOutputTypeDefaultArgs<ExtArgs>
@@ -706,6 +810,7 @@ export type $productosPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   objects: {
     evaluaciones_factibilidad: Prisma.$evaluaciones_factibilidadPayload<ExtArgs>[]
     feria_productos: Prisma.$feria_productosPayload<ExtArgs>[]
+    feria_vendedor_productos: Prisma.$feria_vendedor_productosPayload<ExtArgs>[]
     solicitud_productos: Prisma.$solicitud_productosPayload<ExtArgs>[]
     zona_productos: Prisma.$zona_productosPayload<ExtArgs>[]
   }
@@ -1109,6 +1214,7 @@ export interface Prisma__productosClient<T, Null = never, ExtArgs extends runtim
   readonly [Symbol.toStringTag]: "PrismaPromise"
   evaluaciones_factibilidad<T extends Prisma.productos$evaluaciones_factibilidadArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.productos$evaluaciones_factibilidadArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$evaluaciones_factibilidadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   feria_productos<T extends Prisma.productos$feria_productosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.productos$feria_productosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$feria_productosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  feria_vendedor_productos<T extends Prisma.productos$feria_vendedor_productosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.productos$feria_vendedor_productosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$feria_vendedor_productosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   solicitud_productos<T extends Prisma.productos$solicitud_productosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.productos$solicitud_productosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$solicitud_productosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   zona_productos<T extends Prisma.productos$zona_productosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.productos$zona_productosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$zona_productosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1581,6 +1687,30 @@ export type productos$feria_productosArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.Feria_productosScalarFieldEnum | Prisma.Feria_productosScalarFieldEnum[]
+}
+
+/**
+ * productos.feria_vendedor_productos
+ */
+export type productos$feria_vendedor_productosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the feria_vendedor_productos
+   */
+  select?: Prisma.feria_vendedor_productosSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the feria_vendedor_productos
+   */
+  omit?: Prisma.feria_vendedor_productosOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.feria_vendedor_productosInclude<ExtArgs> | null
+  where?: Prisma.feria_vendedor_productosWhereInput
+  orderBy?: Prisma.feria_vendedor_productosOrderByWithRelationInput | Prisma.feria_vendedor_productosOrderByWithRelationInput[]
+  cursor?: Prisma.feria_vendedor_productosWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.Feria_vendedor_productosScalarFieldEnum | Prisma.Feria_vendedor_productosScalarFieldEnum[]
 }
 
 /**

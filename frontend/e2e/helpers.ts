@@ -253,6 +253,23 @@ export async function crearFeriaApi(
   return (await respuesta.json()) as { id: string; numeroRadicado: string };
 }
 
+/** Aprueba una feria por la API para preparar un escenario de participantes. */
+export async function aprobarFeriaApi(
+  request: APIRequestContext,
+  token: string,
+  feriaId: string,
+): Promise<void> {
+  const respuesta = await request.post(
+    `${API_URL}/gestor/ferias/${feriaId}/aprobar`,
+    cabecerasApi(token),
+  );
+  if (!respuesta.ok()) {
+    throw new Error(
+      `No se pudo aprobar la feria de prueba (${respuesta.status()}): ${await respuesta.text()}`,
+    );
+  }
+}
+
 /** Consulta los espacios con su disponibilidad efectiva en una fecha. */
 export async function obtenerEspaciosApi(
   request: APIRequestContext,

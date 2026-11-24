@@ -93,9 +93,15 @@ export type excepciones_factibilidad = Prisma.excepciones_factibilidadModel
 export type feria_productos = Prisma.feria_productosModel
 /**
  * Model feria_vendedores
+ * This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
  * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
  */
 export type feria_vendedores = Prisma.feria_vendedoresModel
+/**
+ * Model feria_vendedor_productos
+ * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+ */
+export type feria_vendedor_productos = Prisma.feria_vendedor_productosModel
 /**
  * Model feria_documentos
  * Documentación opcional adjunta a una feria (HU-21).

@@ -162,16 +162,34 @@ model feria_productos {
   @@id([feria_id, producto_id])
 }
 
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model feria_vendedores {
-  id                 BigInt  @id @default(autoincrement())
-  feria_id           BigInt
-  nombre_vendedor    String  @db.VarChar(150)
-  documento          String? @db.VarChar(30)
-  producto_principal String? @db.VarChar(150)
-  ferias             ferias  @relation(fields: [feria_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                       BigInt                     @id @default(autoincrement())
+  feria_id                 BigInt
+  nombre_vendedor          String                     @db.VarChar(150)
+  documento                String?                    @db.VarChar(30)
+  producto_principal       String?                    @db.VarChar(150)
+  activo                   Boolean                    @default(true)
+  creado_en                DateTime                   @default(now()) @db.Timestamptz(6)
+  actualizado_en           DateTime                   @default(now()) @db.Timestamptz(6)
+  eliminado_en             DateTime?                  @db.Timestamptz(6)
+  feria_vendedor_productos feria_vendedor_productos[]
+  ferias                   ferias                     @relation(fields: [feria_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([feria_id, documento])
+  @@index([feria_id, activo], map: "idx_feria_vendedores_feria_activo")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model feria_vendedor_productos {
+  vendedor_id      BigInt
+  producto_id      BigInt
+  feria_vendedores feria_vendedores @relation(fields: [vendedor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  productos        productos        @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([vendedor_id, producto_id])
+  @@index([producto_id], map: "idx_feria_vendedor_productos_producto")
 }
 
 /// Documentación opcional adjunta a una feria (HU-21).
@@ -193,32 +211,33 @@ model feria_documentos {
 /// This table contains exclusion constraints and requires additional setup for migrations. Visit https://pris.ly/d/exclusion-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model ferias {
-  id                     BigInt             @id @default(autoincrement())
-  numero_radicado        String             @unique @default(dbgenerated("('FER-2026-'::text || lpad((nextval('seq_radicado_feria'::regclass))::text, 5, '0'::text))")) @db.VarChar(30)
-  organizador_id         BigInt
-  nombre                 String             @db.VarChar(200)
-  tipo_feria             String             @db.VarChar(100)
-  zona_id                BigInt
-  fecha_inicio           DateTime           @db.Date
-  fecha_fin              DateTime           @db.Date
-  numero_puestos         Int
-  estado                 estado_feria       @default(radicada)
-  revisor_id             BigInt?
-  radicada_en            DateTime           @default(now()) @db.Timestamptz(6)
-  motivo_cancelacion     String?
-  aprobada_en            DateTime?          @db.Timestamptz(6)
-  cancelada_en           DateTime?          @db.Timestamptz(6)
-  cancelada_por          BigInt?
-  actualizado_en         DateTime           @default(now()) @db.Timestamptz(6)
-  feria_documentos       feria_documentos[]
-  feria_productos        feria_productos[]
-  feria_vendedores       feria_vendedores[]
-  notificaciones         notificaciones[]
-  espacio_bloqueos       espacio_bloqueos[]
-  organizadores          organizadores      @relation(fields: [organizador_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
-  gestores               gestores?          @relation(fields: [revisor_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
-  gestores_cancelada_por gestores?          @relation("ferias_cancelada_por", fields: [cancelada_por], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
-  zonas                  zonas              @relation(fields: [zona_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                        BigInt             @id @default(autoincrement())
+  numero_radicado           String             @unique @default(dbgenerated("('FER-2026-'::text || lpad((nextval('seq_radicado_feria'::regclass))::text, 5, '0'::text))")) @db.VarChar(30)
+  organizador_id            BigInt
+  nombre                    String             @db.VarChar(200)
+  tipo_feria                String             @db.VarChar(100)
+  zona_id                   BigInt
+  fecha_inicio              DateTime           @db.Date
+  fecha_fin                 DateTime           @db.Date
+  numero_puestos            Int
+  estado                    estado_feria       @default(radicada)
+  revisor_id                BigInt?
+  radicada_en               DateTime           @default(now()) @db.Timestamptz(6)
+  motivo_cancelacion        String?
+  aprobada_en               DateTime?          @db.Timestamptz(6)
+  cancelada_en              DateTime?          @db.Timestamptz(6)
+  cancelada_por             BigInt?
+  actualizado_en            DateTime           @default(now()) @db.Timestamptz(6)
+  participantes_enviados_en DateTime?          @db.Timestamptz(6)
+  feria_documentos          feria_documentos[]
+  feria_productos           feria_productos[]
+  feria_vendedores          feria_vendedores[]
+  notificaciones            notificaciones[]
+  espacio_bloqueos          espacio_bloqueos[]
+  organizadores             organizadores      @relation(fields: [organizador_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  gestores                  gestores?          @relation(fields: [revisor_id], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  gestores_cancelada_por    gestores?          @relation("ferias_cancelada_por", fields: [cancelada_por], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  zonas                     zonas              @relation(fields: [zona_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([zona_id], map: "idx_ferias_zona")
 }
@@ -367,6 +386,7 @@ model productos {
   activo                    Boolean                     @default(true)
   evaluaciones_factibilidad evaluaciones_factibilidad[]
   feria_productos           feria_productos[]
+  feria_vendedor_productos  feria_vendedor_productos[]
   solicitud_productos       solicitud_productos[]
   zona_productos            zona_productos[]
 }

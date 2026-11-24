@@ -62,6 +62,7 @@ export const ModelName = {
   excepciones_factibilidad: 'excepciones_factibilidad',
   feria_productos: 'feria_productos',
   feria_vendedores: 'feria_vendedores',
+  feria_vendedor_productos: 'feria_vendedor_productos',
   feria_documentos: 'feria_documentos',
   ferias: 'ferias',
   gestores: 'gestores',
@@ -235,10 +236,22 @@ export const Feria_vendedoresScalarFieldEnum = {
   feria_id: 'feria_id',
   nombre_vendedor: 'nombre_vendedor',
   documento: 'documento',
-  producto_principal: 'producto_principal'
+  producto_principal: 'producto_principal',
+  activo: 'activo',
+  creado_en: 'creado_en',
+  actualizado_en: 'actualizado_en',
+  eliminado_en: 'eliminado_en'
 } as const
 
 export type Feria_vendedoresScalarFieldEnum = (typeof Feria_vendedoresScalarFieldEnum)[keyof typeof Feria_vendedoresScalarFieldEnum]
+
+
+export const Feria_vendedor_productosScalarFieldEnum = {
+  vendedor_id: 'vendedor_id',
+  producto_id: 'producto_id'
+} as const
+
+export type Feria_vendedor_productosScalarFieldEnum = (typeof Feria_vendedor_productosScalarFieldEnum)[keyof typeof Feria_vendedor_productosScalarFieldEnum]
 
 
 export const Feria_documentosScalarFieldEnum = {
@@ -272,7 +285,8 @@ export const FeriasScalarFieldEnum = {
   aprobada_en: 'aprobada_en',
   cancelada_en: 'cancelada_en',
   cancelada_por: 'cancelada_por',
-  actualizado_en: 'actualizado_en'
+  actualizado_en: 'actualizado_en',
+  participantes_enviados_en: 'participantes_enviados_en'
 } as const
 
 export type FeriasScalarFieldEnum = (typeof FeriasScalarFieldEnum)[keyof typeof FeriasScalarFieldEnum]

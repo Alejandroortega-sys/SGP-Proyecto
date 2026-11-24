@@ -1877,6 +1877,78 @@ export interface RespuestaCancelarFeria {
   mensaje: string;
 }
 
+/* ------------------------------------------------------------------ */
+/* Participantes de una feria (HU-23)                                  */
+/* ------------------------------------------------------------------ */
+
+export interface ParticipanteFeria {
+  id: string;
+  nombre: string;
+  documento: string | null;
+  productos: ProductoFeria[];
+  creadoEn: string;
+  actualizadoEn: string;
+}
+
+export interface CupoParticipantes {
+  aprobado: number;
+  ocupados: number;
+  disponibles: number;
+  completo: boolean;
+}
+
+export interface FeriaParticipantes {
+  id: string;
+  numeroRadicado: string;
+  nombre: string;
+  estado: EstadoFeria;
+  fechaInicio: string;
+  fechaFin: string;
+  numeroPuestos: number;
+  zona: { id: string; nombre: string };
+}
+
+export interface ListadoFinalParticipantes {
+  enviado: boolean;
+  enviadoEn: string | null;
+}
+
+export interface ListadoParticipantesFeria {
+  feria: FeriaParticipantes;
+  cupo: CupoParticipantes;
+  productosPermitidos: ProductoFeria[];
+  productosCatalogo: ProductoFeria[];
+  participantes: ParticipanteFeria[];
+  listadoFinal: ListadoFinalParticipantes;
+}
+
+export interface OrganizadorParticipantes {
+  id: string;
+  nombre: string;
+  apellido: string | null;
+  correo: string;
+  organizacion: string;
+  nit: string;
+}
+
+export interface ListadoParticipantesGestor
+  extends ListadoParticipantesFeria {
+  organizador: OrganizadorParticipantes;
+}
+
+export interface SolicitudParticipante {
+  nombre: string;
+  documento?: string | null;
+  productoIds: string[];
+}
+
+export interface RespuestaEnvioParticipantes {
+  feriaId: string;
+  enviadoEn: string;
+  totalParticipantes: number;
+  mensaje: string;
+}
+
 export interface RespuestaMoverFeria {
   id: string;
   numeroRadicado: string;

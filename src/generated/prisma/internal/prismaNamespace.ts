@@ -408,6 +408,7 @@ export const ModelName = {
   excepciones_factibilidad: 'excepciones_factibilidad',
   feria_productos: 'feria_productos',
   feria_vendedores: 'feria_vendedores',
+  feria_vendedor_productos: 'feria_vendedor_productos',
   feria_documentos: 'feria_documentos',
   ferias: 'ferias',
   gestores: 'gestores',
@@ -448,7 +449,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "alertas_saturacion" | "auditoria" | "cobros" | "comerciantes" | "espacio_bloqueos" | "espacios_temporales" | "evaluacion_reglas" | "evaluaciones_factibilidad" | "excepciones_factibilidad" | "feria_productos" | "feria_vendedores" | "feria_documentos" | "ferias" | "gestores" | "modulos" | "notificaciones" | "organizadores" | "parametros_motor" | "permiso_eventos" | "permisos" | "productos" | "solicitud_documentos" | "solicitud_productos" | "requisitos_documentales" | "solicitud_historial" | "solicitudes" | "spatial_ref_sys" | "tarifas" | "tokens_seguridad" | "usuarios" | "verificaciones_qr" | "zona_productos" | "zonas" | "sesiones" | "zona_versiones" | "solicitud_revisiones"
+    modelProps: "alertas_saturacion" | "auditoria" | "cobros" | "comerciantes" | "espacio_bloqueos" | "espacios_temporales" | "evaluacion_reglas" | "evaluaciones_factibilidad" | "excepciones_factibilidad" | "feria_productos" | "feria_vendedores" | "feria_vendedor_productos" | "feria_documentos" | "ferias" | "gestores" | "modulos" | "notificaciones" | "organizadores" | "parametros_motor" | "permiso_eventos" | "permisos" | "productos" | "solicitud_documentos" | "solicitud_productos" | "requisitos_documentales" | "solicitud_historial" | "solicitudes" | "spatial_ref_sys" | "tarifas" | "tokens_seguridad" | "usuarios" | "verificaciones_qr" | "zona_productos" | "zonas" | "sesiones" | "zona_versiones" | "solicitud_revisiones"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1231,6 +1232,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.feria_vendedoresCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.Feria_vendedoresCountAggregateOutputType> | number
+        }
+      }
+    }
+    feria_vendedor_productos: {
+      payload: Prisma.$feria_vendedor_productosPayload<ExtArgs>
+      fields: Prisma.feria_vendedor_productosFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.feria_vendedor_productosFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_vendedor_productosPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.feria_vendedor_productosFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_vendedor_productosPayload>
+        }
+        findFirst: {
+          args: Prisma.feria_vendedor_productosFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_vendedor_productosPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.feria_vendedor_productosFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_vendedor_productosPayload>
+        }
+        findMany: {
+          args: Prisma.feria_vendedor_productosFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_vendedor_productosPayload>[]
+        }
+        create: {
+          args: Prisma.feria_vendedor_productosCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_vendedor_productosPayload>
+        }
+        createMany: {
+          args: Prisma.feria_vendedor_productosCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.feria_vendedor_productosCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_vendedor_productosPayload>[]
+        }
+        delete: {
+          args: Prisma.feria_vendedor_productosDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_vendedor_productosPayload>
+        }
+        update: {
+          args: Prisma.feria_vendedor_productosUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_vendedor_productosPayload>
+        }
+        deleteMany: {
+          args: Prisma.feria_vendedor_productosDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.feria_vendedor_productosUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.feria_vendedor_productosUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_vendedor_productosPayload>[]
+        }
+        upsert: {
+          args: Prisma.feria_vendedor_productosUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$feria_vendedor_productosPayload>
+        }
+        aggregate: {
+          args: Prisma.Feria_vendedor_productosAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFeria_vendedor_productos>
+        }
+        groupBy: {
+          args: Prisma.feria_vendedor_productosGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Feria_vendedor_productosGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.feria_vendedor_productosCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Feria_vendedor_productosCountAggregateOutputType> | number
         }
       }
     }
@@ -3205,10 +3280,22 @@ export const Feria_vendedoresScalarFieldEnum = {
   feria_id: 'feria_id',
   nombre_vendedor: 'nombre_vendedor',
   documento: 'documento',
-  producto_principal: 'producto_principal'
+  producto_principal: 'producto_principal',
+  activo: 'activo',
+  creado_en: 'creado_en',
+  actualizado_en: 'actualizado_en',
+  eliminado_en: 'eliminado_en'
 } as const
 
 export type Feria_vendedoresScalarFieldEnum = (typeof Feria_vendedoresScalarFieldEnum)[keyof typeof Feria_vendedoresScalarFieldEnum]
+
+
+export const Feria_vendedor_productosScalarFieldEnum = {
+  vendedor_id: 'vendedor_id',
+  producto_id: 'producto_id'
+} as const
+
+export type Feria_vendedor_productosScalarFieldEnum = (typeof Feria_vendedor_productosScalarFieldEnum)[keyof typeof Feria_vendedor_productosScalarFieldEnum]
 
 
 export const Feria_documentosScalarFieldEnum = {
@@ -3242,7 +3329,8 @@ export const FeriasScalarFieldEnum = {
   aprobada_en: 'aprobada_en',
   cancelada_en: 'cancelada_en',
   cancelada_por: 'cancelada_por',
-  actualizado_en: 'actualizado_en'
+  actualizado_en: 'actualizado_en',
+  participantes_enviados_en: 'participantes_enviados_en'
 } as const
 
 export type FeriasScalarFieldEnum = (typeof FeriasScalarFieldEnum)[keyof typeof FeriasScalarFieldEnum]
@@ -4128,6 +4216,7 @@ export type GlobalOmitConfig = {
   excepciones_factibilidad?: Prisma.excepciones_factibilidadOmit
   feria_productos?: Prisma.feria_productosOmit
   feria_vendedores?: Prisma.feria_vendedoresOmit
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosOmit
   feria_documentos?: Prisma.feria_documentosOmit
   ferias?: Prisma.feriasOmit
   gestores?: Prisma.gestoresOmit

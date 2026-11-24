@@ -5,6 +5,9 @@ import { FeriasController } from './ferias.controller';
 import { FeriasService } from './ferias.service';
 import { GestorFeriasController } from './gestor-ferias.controller';
 import { GestorFeriasService } from './gestor-ferias.service';
+import { GestorParticipantesController } from './gestor-participantes.controller';
+import { ParticipantesController } from './participantes.controller';
+import { ParticipantesService } from './participantes.service';
 
 /**
  * Solicitud de espacio para ferias agroecológicas (HU-21).
@@ -14,7 +17,12 @@ import { GestorFeriasService } from './gestor-ferias.service';
  */
 @Module({
   imports: [CorreoModule, NotificacionesModule],
-  controllers: [FeriasController, GestorFeriasController],
-  providers: [FeriasService, GestorFeriasService],
+  controllers: [
+    FeriasController,
+    GestorFeriasController,
+    ParticipantesController,
+    GestorParticipantesController,
+  ],
+  providers: [FeriasService, GestorFeriasService, ParticipantesService],
 })
 export class FeriasModule {}

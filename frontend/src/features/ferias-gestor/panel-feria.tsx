@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Boton } from "@/components/ui/boton";
 import { Cargando } from "@/components/ui/estado-vacio";
 import { BloqueError } from "@/components/ui/bloque-error";
@@ -185,6 +186,12 @@ export function PanelFeria({
           </p>
 
           <div className="flex flex-col-reverse gap-2 border-t border-borde pt-4 sm:flex-row sm:justify-end">
+            <Link
+              href={`/gestor/ferias/${evento.id}/participantes`}
+              className="inline-flex min-h-11 items-center justify-center rounded-lg border border-primario bg-white px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+            >
+              Ver participantes
+            </Link>
             <Boton variante="fantasma" onClick={onCerrar}>
               Cerrar
             </Boton>

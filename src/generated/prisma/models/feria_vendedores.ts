@@ -14,6 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model feria_vendedores
+ * This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
  * This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
  */
 export type feria_vendedoresModel = runtime.Types.Result.DefaultSelection<Prisma.$feria_vendedoresPayload>
@@ -42,6 +43,10 @@ export type Feria_vendedoresMinAggregateOutputType = {
   nombre_vendedor: string | null
   documento: string | null
   producto_principal: string | null
+  activo: boolean | null
+  creado_en: Date | null
+  actualizado_en: Date | null
+  eliminado_en: Date | null
 }
 
 export type Feria_vendedoresMaxAggregateOutputType = {
@@ -50,6 +55,10 @@ export type Feria_vendedoresMaxAggregateOutputType = {
   nombre_vendedor: string | null
   documento: string | null
   producto_principal: string | null
+  activo: boolean | null
+  creado_en: Date | null
+  actualizado_en: Date | null
+  eliminado_en: Date | null
 }
 
 export type Feria_vendedoresCountAggregateOutputType = {
@@ -58,6 +67,10 @@ export type Feria_vendedoresCountAggregateOutputType = {
   nombre_vendedor: number
   documento: number
   producto_principal: number
+  activo: number
+  creado_en: number
+  actualizado_en: number
+  eliminado_en: number
   _all: number
 }
 
@@ -78,6 +91,10 @@ export type Feria_vendedoresMinAggregateInputType = {
   nombre_vendedor?: true
   documento?: true
   producto_principal?: true
+  activo?: true
+  creado_en?: true
+  actualizado_en?: true
+  eliminado_en?: true
 }
 
 export type Feria_vendedoresMaxAggregateInputType = {
@@ -86,6 +103,10 @@ export type Feria_vendedoresMaxAggregateInputType = {
   nombre_vendedor?: true
   documento?: true
   producto_principal?: true
+  activo?: true
+  creado_en?: true
+  actualizado_en?: true
+  eliminado_en?: true
 }
 
 export type Feria_vendedoresCountAggregateInputType = {
@@ -94,6 +115,10 @@ export type Feria_vendedoresCountAggregateInputType = {
   nombre_vendedor?: true
   documento?: true
   producto_principal?: true
+  activo?: true
+  creado_en?: true
+  actualizado_en?: true
+  eliminado_en?: true
   _all?: true
 }
 
@@ -189,6 +214,10 @@ export type Feria_vendedoresGroupByOutputType = {
   nombre_vendedor: string
   documento: string | null
   producto_principal: string | null
+  activo: boolean
+  creado_en: Date
+  actualizado_en: Date
+  eliminado_en: Date | null
   _count: Feria_vendedoresCountAggregateOutputType | null
   _avg: Feria_vendedoresAvgAggregateOutputType | null
   _sum: Feria_vendedoresSumAggregateOutputType | null
@@ -220,6 +249,11 @@ export type feria_vendedoresWhereInput = {
   nombre_vendedor?: Prisma.StringFilter<"feria_vendedores"> | string
   documento?: Prisma.StringNullableFilter<"feria_vendedores"> | string | null
   producto_principal?: Prisma.StringNullableFilter<"feria_vendedores"> | string | null
+  activo?: Prisma.BoolFilter<"feria_vendedores"> | boolean
+  creado_en?: Prisma.DateTimeFilter<"feria_vendedores"> | Date | string
+  actualizado_en?: Prisma.DateTimeFilter<"feria_vendedores"> | Date | string
+  eliminado_en?: Prisma.DateTimeNullableFilter<"feria_vendedores"> | Date | string | null
+  feria_vendedor_productos?: Prisma.Feria_vendedor_productosListRelationFilter
   ferias?: Prisma.XOR<Prisma.FeriasScalarRelationFilter, Prisma.feriasWhereInput>
 }
 
@@ -229,6 +263,11 @@ export type feria_vendedoresOrderByWithRelationInput = {
   nombre_vendedor?: Prisma.SortOrder
   documento?: Prisma.SortOrderInput | Prisma.SortOrder
   producto_principal?: Prisma.SortOrderInput | Prisma.SortOrder
+  activo?: Prisma.SortOrder
+  creado_en?: Prisma.SortOrder
+  actualizado_en?: Prisma.SortOrder
+  eliminado_en?: Prisma.SortOrderInput | Prisma.SortOrder
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosOrderByRelationAggregateInput
   ferias?: Prisma.feriasOrderByWithRelationInput
 }
 
@@ -242,6 +281,11 @@ export type feria_vendedoresWhereUniqueInput = Prisma.AtLeast<{
   nombre_vendedor?: Prisma.StringFilter<"feria_vendedores"> | string
   documento?: Prisma.StringNullableFilter<"feria_vendedores"> | string | null
   producto_principal?: Prisma.StringNullableFilter<"feria_vendedores"> | string | null
+  activo?: Prisma.BoolFilter<"feria_vendedores"> | boolean
+  creado_en?: Prisma.DateTimeFilter<"feria_vendedores"> | Date | string
+  actualizado_en?: Prisma.DateTimeFilter<"feria_vendedores"> | Date | string
+  eliminado_en?: Prisma.DateTimeNullableFilter<"feria_vendedores"> | Date | string | null
+  feria_vendedor_productos?: Prisma.Feria_vendedor_productosListRelationFilter
   ferias?: Prisma.XOR<Prisma.FeriasScalarRelationFilter, Prisma.feriasWhereInput>
 }, "id" | "feria_id_documento">
 
@@ -251,6 +295,10 @@ export type feria_vendedoresOrderByWithAggregationInput = {
   nombre_vendedor?: Prisma.SortOrder
   documento?: Prisma.SortOrderInput | Prisma.SortOrder
   producto_principal?: Prisma.SortOrderInput | Prisma.SortOrder
+  activo?: Prisma.SortOrder
+  creado_en?: Prisma.SortOrder
+  actualizado_en?: Prisma.SortOrder
+  eliminado_en?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.feria_vendedoresCountOrderByAggregateInput
   _avg?: Prisma.feria_vendedoresAvgOrderByAggregateInput
   _max?: Prisma.feria_vendedoresMaxOrderByAggregateInput
@@ -267,6 +315,10 @@ export type feria_vendedoresScalarWhereWithAggregatesInput = {
   nombre_vendedor?: Prisma.StringWithAggregatesFilter<"feria_vendedores"> | string
   documento?: Prisma.StringNullableWithAggregatesFilter<"feria_vendedores"> | string | null
   producto_principal?: Prisma.StringNullableWithAggregatesFilter<"feria_vendedores"> | string | null
+  activo?: Prisma.BoolWithAggregatesFilter<"feria_vendedores"> | boolean
+  creado_en?: Prisma.DateTimeWithAggregatesFilter<"feria_vendedores"> | Date | string
+  actualizado_en?: Prisma.DateTimeWithAggregatesFilter<"feria_vendedores"> | Date | string
+  eliminado_en?: Prisma.DateTimeNullableWithAggregatesFilter<"feria_vendedores"> | Date | string | null
 }
 
 export type feria_vendedoresCreateInput = {
@@ -274,6 +326,11 @@ export type feria_vendedoresCreateInput = {
   nombre_vendedor: string
   documento?: string | null
   producto_principal?: string | null
+  activo?: boolean
+  creado_en?: Date | string
+  actualizado_en?: Date | string
+  eliminado_en?: Date | string | null
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosCreateNestedManyWithoutFeria_vendedoresInput
   ferias: Prisma.feriasCreateNestedOneWithoutFeria_vendedoresInput
 }
 
@@ -283,6 +340,11 @@ export type feria_vendedoresUncheckedCreateInput = {
   nombre_vendedor: string
   documento?: string | null
   producto_principal?: string | null
+  activo?: boolean
+  creado_en?: Date | string
+  actualizado_en?: Date | string
+  eliminado_en?: Date | string | null
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedCreateNestedManyWithoutFeria_vendedoresInput
 }
 
 export type feria_vendedoresUpdateInput = {
@@ -290,6 +352,11 @@ export type feria_vendedoresUpdateInput = {
   nombre_vendedor?: Prisma.StringFieldUpdateOperationsInput | string
   documento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   producto_principal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eliminado_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUpdateManyWithoutFeria_vendedoresNestedInput
   ferias?: Prisma.feriasUpdateOneRequiredWithoutFeria_vendedoresNestedInput
 }
 
@@ -299,6 +366,11 @@ export type feria_vendedoresUncheckedUpdateInput = {
   nombre_vendedor?: Prisma.StringFieldUpdateOperationsInput | string
   documento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   producto_principal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eliminado_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedUpdateManyWithoutFeria_vendedoresNestedInput
 }
 
 export type feria_vendedoresCreateManyInput = {
@@ -307,6 +379,10 @@ export type feria_vendedoresCreateManyInput = {
   nombre_vendedor: string
   documento?: string | null
   producto_principal?: string | null
+  activo?: boolean
+  creado_en?: Date | string
+  actualizado_en?: Date | string
+  eliminado_en?: Date | string | null
 }
 
 export type feria_vendedoresUpdateManyMutationInput = {
@@ -314,6 +390,10 @@ export type feria_vendedoresUpdateManyMutationInput = {
   nombre_vendedor?: Prisma.StringFieldUpdateOperationsInput | string
   documento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   producto_principal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eliminado_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type feria_vendedoresUncheckedUpdateManyInput = {
@@ -322,6 +402,10 @@ export type feria_vendedoresUncheckedUpdateManyInput = {
   nombre_vendedor?: Prisma.StringFieldUpdateOperationsInput | string
   documento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   producto_principal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eliminado_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type feria_vendedoresFeria_idDocumentoCompoundUniqueInput = {
@@ -335,6 +419,10 @@ export type feria_vendedoresCountOrderByAggregateInput = {
   nombre_vendedor?: Prisma.SortOrder
   documento?: Prisma.SortOrder
   producto_principal?: Prisma.SortOrder
+  activo?: Prisma.SortOrder
+  creado_en?: Prisma.SortOrder
+  actualizado_en?: Prisma.SortOrder
+  eliminado_en?: Prisma.SortOrder
 }
 
 export type feria_vendedoresAvgOrderByAggregateInput = {
@@ -348,6 +436,10 @@ export type feria_vendedoresMaxOrderByAggregateInput = {
   nombre_vendedor?: Prisma.SortOrder
   documento?: Prisma.SortOrder
   producto_principal?: Prisma.SortOrder
+  activo?: Prisma.SortOrder
+  creado_en?: Prisma.SortOrder
+  actualizado_en?: Prisma.SortOrder
+  eliminado_en?: Prisma.SortOrder
 }
 
 export type feria_vendedoresMinOrderByAggregateInput = {
@@ -356,11 +448,20 @@ export type feria_vendedoresMinOrderByAggregateInput = {
   nombre_vendedor?: Prisma.SortOrder
   documento?: Prisma.SortOrder
   producto_principal?: Prisma.SortOrder
+  activo?: Prisma.SortOrder
+  creado_en?: Prisma.SortOrder
+  actualizado_en?: Prisma.SortOrder
+  eliminado_en?: Prisma.SortOrder
 }
 
 export type feria_vendedoresSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   feria_id?: Prisma.SortOrder
+}
+
+export type Feria_vendedoresScalarRelationFilter = {
+  is?: Prisma.feria_vendedoresWhereInput
+  isNot?: Prisma.feria_vendedoresWhereInput
 }
 
 export type Feria_vendedoresListRelationFilter = {
@@ -371,6 +472,20 @@ export type Feria_vendedoresListRelationFilter = {
 
 export type feria_vendedoresOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type feria_vendedoresCreateNestedOneWithoutFeria_vendedor_productosInput = {
+  create?: Prisma.XOR<Prisma.feria_vendedoresCreateWithoutFeria_vendedor_productosInput, Prisma.feria_vendedoresUncheckedCreateWithoutFeria_vendedor_productosInput>
+  connectOrCreate?: Prisma.feria_vendedoresCreateOrConnectWithoutFeria_vendedor_productosInput
+  connect?: Prisma.feria_vendedoresWhereUniqueInput
+}
+
+export type feria_vendedoresUpdateOneRequiredWithoutFeria_vendedor_productosNestedInput = {
+  create?: Prisma.XOR<Prisma.feria_vendedoresCreateWithoutFeria_vendedor_productosInput, Prisma.feria_vendedoresUncheckedCreateWithoutFeria_vendedor_productosInput>
+  connectOrCreate?: Prisma.feria_vendedoresCreateOrConnectWithoutFeria_vendedor_productosInput
+  upsert?: Prisma.feria_vendedoresUpsertWithoutFeria_vendedor_productosInput
+  connect?: Prisma.feria_vendedoresWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.feria_vendedoresUpdateToOneWithWhereWithoutFeria_vendedor_productosInput, Prisma.feria_vendedoresUpdateWithoutFeria_vendedor_productosInput>, Prisma.feria_vendedoresUncheckedUpdateWithoutFeria_vendedor_productosInput>
 }
 
 export type feria_vendedoresCreateNestedManyWithoutFeriasInput = {
@@ -415,11 +530,80 @@ export type feria_vendedoresUncheckedUpdateManyWithoutFeriasNestedInput = {
   deleteMany?: Prisma.feria_vendedoresScalarWhereInput | Prisma.feria_vendedoresScalarWhereInput[]
 }
 
+export type feria_vendedoresCreateWithoutFeria_vendedor_productosInput = {
+  id?: bigint | number
+  nombre_vendedor: string
+  documento?: string | null
+  producto_principal?: string | null
+  activo?: boolean
+  creado_en?: Date | string
+  actualizado_en?: Date | string
+  eliminado_en?: Date | string | null
+  ferias: Prisma.feriasCreateNestedOneWithoutFeria_vendedoresInput
+}
+
+export type feria_vendedoresUncheckedCreateWithoutFeria_vendedor_productosInput = {
+  id?: bigint | number
+  feria_id: bigint | number
+  nombre_vendedor: string
+  documento?: string | null
+  producto_principal?: string | null
+  activo?: boolean
+  creado_en?: Date | string
+  actualizado_en?: Date | string
+  eliminado_en?: Date | string | null
+}
+
+export type feria_vendedoresCreateOrConnectWithoutFeria_vendedor_productosInput = {
+  where: Prisma.feria_vendedoresWhereUniqueInput
+  create: Prisma.XOR<Prisma.feria_vendedoresCreateWithoutFeria_vendedor_productosInput, Prisma.feria_vendedoresUncheckedCreateWithoutFeria_vendedor_productosInput>
+}
+
+export type feria_vendedoresUpsertWithoutFeria_vendedor_productosInput = {
+  update: Prisma.XOR<Prisma.feria_vendedoresUpdateWithoutFeria_vendedor_productosInput, Prisma.feria_vendedoresUncheckedUpdateWithoutFeria_vendedor_productosInput>
+  create: Prisma.XOR<Prisma.feria_vendedoresCreateWithoutFeria_vendedor_productosInput, Prisma.feria_vendedoresUncheckedCreateWithoutFeria_vendedor_productosInput>
+  where?: Prisma.feria_vendedoresWhereInput
+}
+
+export type feria_vendedoresUpdateToOneWithWhereWithoutFeria_vendedor_productosInput = {
+  where?: Prisma.feria_vendedoresWhereInput
+  data: Prisma.XOR<Prisma.feria_vendedoresUpdateWithoutFeria_vendedor_productosInput, Prisma.feria_vendedoresUncheckedUpdateWithoutFeria_vendedor_productosInput>
+}
+
+export type feria_vendedoresUpdateWithoutFeria_vendedor_productosInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  nombre_vendedor?: Prisma.StringFieldUpdateOperationsInput | string
+  documento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  producto_principal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eliminado_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ferias?: Prisma.feriasUpdateOneRequiredWithoutFeria_vendedoresNestedInput
+}
+
+export type feria_vendedoresUncheckedUpdateWithoutFeria_vendedor_productosInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  feria_id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  nombre_vendedor?: Prisma.StringFieldUpdateOperationsInput | string
+  documento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  producto_principal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eliminado_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+}
+
 export type feria_vendedoresCreateWithoutFeriasInput = {
   id?: bigint | number
   nombre_vendedor: string
   documento?: string | null
   producto_principal?: string | null
+  activo?: boolean
+  creado_en?: Date | string
+  actualizado_en?: Date | string
+  eliminado_en?: Date | string | null
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosCreateNestedManyWithoutFeria_vendedoresInput
 }
 
 export type feria_vendedoresUncheckedCreateWithoutFeriasInput = {
@@ -427,6 +611,11 @@ export type feria_vendedoresUncheckedCreateWithoutFeriasInput = {
   nombre_vendedor: string
   documento?: string | null
   producto_principal?: string | null
+  activo?: boolean
+  creado_en?: Date | string
+  actualizado_en?: Date | string
+  eliminado_en?: Date | string | null
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedCreateNestedManyWithoutFeria_vendedoresInput
 }
 
 export type feria_vendedoresCreateOrConnectWithoutFeriasInput = {
@@ -464,6 +653,10 @@ export type feria_vendedoresScalarWhereInput = {
   nombre_vendedor?: Prisma.StringFilter<"feria_vendedores"> | string
   documento?: Prisma.StringNullableFilter<"feria_vendedores"> | string | null
   producto_principal?: Prisma.StringNullableFilter<"feria_vendedores"> | string | null
+  activo?: Prisma.BoolFilter<"feria_vendedores"> | boolean
+  creado_en?: Prisma.DateTimeFilter<"feria_vendedores"> | Date | string
+  actualizado_en?: Prisma.DateTimeFilter<"feria_vendedores"> | Date | string
+  eliminado_en?: Prisma.DateTimeNullableFilter<"feria_vendedores"> | Date | string | null
 }
 
 export type feria_vendedoresCreateManyFeriasInput = {
@@ -471,6 +664,10 @@ export type feria_vendedoresCreateManyFeriasInput = {
   nombre_vendedor: string
   documento?: string | null
   producto_principal?: string | null
+  activo?: boolean
+  creado_en?: Date | string
+  actualizado_en?: Date | string
+  eliminado_en?: Date | string | null
 }
 
 export type feria_vendedoresUpdateWithoutFeriasInput = {
@@ -478,6 +675,11 @@ export type feria_vendedoresUpdateWithoutFeriasInput = {
   nombre_vendedor?: Prisma.StringFieldUpdateOperationsInput | string
   documento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   producto_principal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eliminado_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUpdateManyWithoutFeria_vendedoresNestedInput
 }
 
 export type feria_vendedoresUncheckedUpdateWithoutFeriasInput = {
@@ -485,6 +687,11 @@ export type feria_vendedoresUncheckedUpdateWithoutFeriasInput = {
   nombre_vendedor?: Prisma.StringFieldUpdateOperationsInput | string
   documento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   producto_principal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eliminado_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  feria_vendedor_productos?: Prisma.feria_vendedor_productosUncheckedUpdateManyWithoutFeria_vendedoresNestedInput
 }
 
 export type feria_vendedoresUncheckedUpdateManyWithoutFeriasInput = {
@@ -492,8 +699,41 @@ export type feria_vendedoresUncheckedUpdateManyWithoutFeriasInput = {
   nombre_vendedor?: Prisma.StringFieldUpdateOperationsInput | string
   documento?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   producto_principal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  actualizado_en?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eliminado_en?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
+
+/**
+ * Count Type Feria_vendedoresCountOutputType
+ */
+
+export type Feria_vendedoresCountOutputType = {
+  feria_vendedor_productos: number
+}
+
+export type Feria_vendedoresCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  feria_vendedor_productos?: boolean | Feria_vendedoresCountOutputTypeCountFeria_vendedor_productosArgs
+}
+
+/**
+ * Feria_vendedoresCountOutputType without action
+ */
+export type Feria_vendedoresCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Feria_vendedoresCountOutputType
+   */
+  select?: Prisma.Feria_vendedoresCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * Feria_vendedoresCountOutputType without action
+ */
+export type Feria_vendedoresCountOutputTypeCountFeria_vendedor_productosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.feria_vendedor_productosWhereInput
+}
 
 
 export type feria_vendedoresSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -502,7 +742,13 @@ export type feria_vendedoresSelect<ExtArgs extends runtime.Types.Extensions.Inte
   nombre_vendedor?: boolean
   documento?: boolean
   producto_principal?: boolean
+  activo?: boolean
+  creado_en?: boolean
+  actualizado_en?: boolean
+  eliminado_en?: boolean
+  feria_vendedor_productos?: boolean | Prisma.feria_vendedores$feria_vendedor_productosArgs<ExtArgs>
   ferias?: boolean | Prisma.feriasDefaultArgs<ExtArgs>
+  _count?: boolean | Prisma.Feria_vendedoresCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["feria_vendedores"]>
 
 export type feria_vendedoresSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -511,6 +757,10 @@ export type feria_vendedoresSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   nombre_vendedor?: boolean
   documento?: boolean
   producto_principal?: boolean
+  activo?: boolean
+  creado_en?: boolean
+  actualizado_en?: boolean
+  eliminado_en?: boolean
   ferias?: boolean | Prisma.feriasDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["feria_vendedores"]>
 
@@ -520,6 +770,10 @@ export type feria_vendedoresSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   nombre_vendedor?: boolean
   documento?: boolean
   producto_principal?: boolean
+  activo?: boolean
+  creado_en?: boolean
+  actualizado_en?: boolean
+  eliminado_en?: boolean
   ferias?: boolean | Prisma.feriasDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["feria_vendedores"]>
 
@@ -529,11 +783,17 @@ export type feria_vendedoresSelectScalar = {
   nombre_vendedor?: boolean
   documento?: boolean
   producto_principal?: boolean
+  activo?: boolean
+  creado_en?: boolean
+  actualizado_en?: boolean
+  eliminado_en?: boolean
 }
 
-export type feria_vendedoresOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "feria_id" | "nombre_vendedor" | "documento" | "producto_principal", ExtArgs["result"]["feria_vendedores"]>
+export type feria_vendedoresOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "feria_id" | "nombre_vendedor" | "documento" | "producto_principal" | "activo" | "creado_en" | "actualizado_en" | "eliminado_en", ExtArgs["result"]["feria_vendedores"]>
 export type feria_vendedoresInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  feria_vendedor_productos?: boolean | Prisma.feria_vendedores$feria_vendedor_productosArgs<ExtArgs>
   ferias?: boolean | Prisma.feriasDefaultArgs<ExtArgs>
+  _count?: boolean | Prisma.Feria_vendedoresCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type feria_vendedoresIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ferias?: boolean | Prisma.feriasDefaultArgs<ExtArgs>
@@ -545,6 +805,7 @@ export type feria_vendedoresIncludeUpdateManyAndReturn<ExtArgs extends runtime.T
 export type $feria_vendedoresPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "feria_vendedores"
   objects: {
+    feria_vendedor_productos: Prisma.$feria_vendedor_productosPayload<ExtArgs>[]
     ferias: Prisma.$feriasPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -553,6 +814,10 @@ export type $feria_vendedoresPayload<ExtArgs extends runtime.Types.Extensions.In
     nombre_vendedor: string
     documento: string | null
     producto_principal: string | null
+    activo: boolean
+    creado_en: Date
+    actualizado_en: Date
+    eliminado_en: Date | null
   }, ExtArgs["result"]["feria_vendedores"]>
   composites: {}
 }
@@ -947,6 +1212,7 @@ readonly fields: feria_vendedoresFieldRefs;
  */
 export interface Prisma__feria_vendedoresClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  feria_vendedor_productos<T extends Prisma.feria_vendedores$feria_vendedor_productosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.feria_vendedores$feria_vendedor_productosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$feria_vendedor_productosPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ferias<T extends Prisma.feriasDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.feriasDefaultArgs<ExtArgs>>): Prisma.Prisma__feriasClient<runtime.Types.Result.GetResult<Prisma.$feriasPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -982,6 +1248,10 @@ export interface feria_vendedoresFieldRefs {
   readonly nombre_vendedor: Prisma.FieldRef<"feria_vendedores", 'String'>
   readonly documento: Prisma.FieldRef<"feria_vendedores", 'String'>
   readonly producto_principal: Prisma.FieldRef<"feria_vendedores", 'String'>
+  readonly activo: Prisma.FieldRef<"feria_vendedores", 'Boolean'>
+  readonly creado_en: Prisma.FieldRef<"feria_vendedores", 'DateTime'>
+  readonly actualizado_en: Prisma.FieldRef<"feria_vendedores", 'DateTime'>
+  readonly eliminado_en: Prisma.FieldRef<"feria_vendedores", 'DateTime'>
 }
     
 
@@ -1380,6 +1650,30 @@ export type feria_vendedoresDeleteManyArgs<ExtArgs extends runtime.Types.Extensi
    * Limit how many feria_vendedores to delete.
    */
   limit?: number
+}
+
+/**
+ * feria_vendedores.feria_vendedor_productos
+ */
+export type feria_vendedores$feria_vendedor_productosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the feria_vendedor_productos
+   */
+  select?: Prisma.feria_vendedor_productosSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the feria_vendedor_productos
+   */
+  omit?: Prisma.feria_vendedor_productosOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.feria_vendedor_productosInclude<ExtArgs> | null
+  where?: Prisma.feria_vendedor_productosWhereInput
+  orderBy?: Prisma.feria_vendedor_productosOrderByWithRelationInput | Prisma.feria_vendedor_productosOrderByWithRelationInput[]
+  cursor?: Prisma.feria_vendedor_productosWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.Feria_vendedor_productosScalarFieldEnum | Prisma.Feria_vendedor_productosScalarFieldEnum[]
 }
 
 /**
