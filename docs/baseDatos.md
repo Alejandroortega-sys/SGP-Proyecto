@@ -60,6 +60,13 @@ psql -U postgres -d "sgp_tulua" -f 14_notificaciones_feria_hu21.sql
 # 15) HU-22: calendario, decisión y bloqueo de espacios de ferias:
 psql -U postgres -d "sgp_tulua" -f 15_ferias_hu22.sql
 
+# 16) HU-23: participantes de ferias (vendedores inscritos):
+psql -U postgres -d "sgp_tulua" -f 16_participantes_hu23.sql
+
+# 17) HU-37 (tarea 1251): índices de trigramas pg_trgm para la búsqueda de
+#     permisos por nombre de titular o de espacio:
+psql -U postgres -d "sgp_tulua" -f 17_permisos_hu37.sql
+
 # Para repetir desde cero:
 psql -U postgres -d postgres -c 'DROP DATABASE "sgp_tulua" WITH (FORCE);'
 ```

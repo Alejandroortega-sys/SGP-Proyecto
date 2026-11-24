@@ -30,6 +30,7 @@ import type {
 } from "@/types/api";
 import { formatearRangoFechas } from "@/features/espacios/estilos-espacio";
 import { EtiquetaEstadoSolicitud } from "@/features/solicitudes/etiqueta-estado-solicitud";
+import { EmitirPermisoSolicitud } from "@/features/permisos/emitir-permiso-solicitud";
 import { AprobarSolicitudModal } from "./aprobar-solicitud";
 import { AvisoBloqueoRevision } from "./bloqueo-revision";
 import { ChecklistRequisitos } from "./checklist-requisitos";
@@ -448,6 +449,8 @@ function RevisionCargada({
             onAprobar={() => setModalAprobar(true)}
             onRechazar={() => setModalRechazar(true)}
           />
+
+          <EmitirPermisoSolicitud solicitud={solicitud} />
 
           <div className="flex flex-col gap-2 sm:flex-row">
             <Boton

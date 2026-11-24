@@ -15,6 +15,7 @@ import type {
   EspacioGestorDetalle,
   FiltrosAuditoria,
   FiltrosComerciantes,
+  FiltrosPermisos,
   FeriaDetalle,
   FiltrosEspacios,
   FiltrosEspaciosGestor,
@@ -24,10 +25,21 @@ import type {
   CrucesFeria,
   FeriaGestorDetalle,
   ListarFeriasGestorResponse,
+  ListarMisCobrosResponse,
+  ListarMisPermisosResponse,
+  ListarPermisosResponse,
+  MiPermisoDetalle,
+  PermisoEmitido,
+  PermisoGestorDetalle,
   RespuestaAprobarFeria,
   RespuestaCancelarFeria,
   RespuestaMoverFeria,
+  RespuestaCambiarEstadoPermiso,
+  RespuestaPagarCobro,
+  RespuestaRenovarPermiso,
   SolicitudMoverFeria,
+  TrazabilidadPermiso,
+  VerificacionQr,
   FiltrosNotificaciones,
   FiltrosSolicitudes,
   FiltrosHistorialZona,
@@ -1769,4 +1781,115 @@ export function obtenerParticipantesFeriaGestor(
   return peticion<ListadoParticipantesGestor>(
     `/gestor/ferias/${feriaId}/participantes`,
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* Permisos digitales y QR (Sprint 5)                                 */
+/* ------------------------------------------------------------------ */
+
+/** Emite el permiso digital de una solicitud aprobada (HU-31). */
+export function emitirPermiso(
+  solicitudId: string,
+  renovadoDesde?: string,
+): Promise<PermisoEmitido> {
+  return peticion<PermisoEmitido>("/gestor/permisos", {
+    method: "POST",
+    cuerpo: renovadoDesde ? { solicitudId, renovadoDesde } : { solicitudId },
+  });
+}
+
+/** Lista los permisos del panel del gestor con búsqueda y filtros (HU-37). */
+export function listarPermisosGestor(
+  filtros: FiltrosPermisos = {},
+): Promise<ListarPermisosResponse> {
+  return peticion<ListarPermisosResponse>(
+    conParametros("/gestor/permisos", {
+      q: filtros.q,
+      estado: filtros.estado,
+      desde: filtros.desde,
+      hasta: filtros.hasta,
+      pagina: filtros.pagina,
+      limite: filtros.limite,
+    }),
+  );
+}
+
+/** Detalle de un permiso para el gestor. */
+export function obtenerPermisoGestor(id: string): Promise<PermisoGestorDetalle> {
+  return peticion<PermisoGestorDetalle>(`/gestor/permisos/${id}`);
+}
+
+/** Trazabilidad del permiso: eventos y verificaciones QR (HU-37). */
+export function obtenerTrazabilidadPermiso(id: string): Promise<TrazabilidadPermiso> {
+  return peticion<TrazabilidadPermiso>(`/gestor/permisos/${id}/trazabilidad`);
+}
+
+/** Suspende, reactiva o revoca un permiso con motivo (HU-35). */
+export function cambiarEstadoPermiso(
+  id: string,
+  datos: { estado: "suspendido" | "vigente" | "revocado"; motivo?: string },
+): Promise<RespuestaCambiarEstadoPermiso> {
+  return peticion<RespuestaCambiarEstadoPermiso>(`/gestor/permisos/${id}/estado`, {
+    method: "PATCH",
+    cuerpo: datos,
+  });
+}
+
+/** Lista los permisos del comerciante autenticado (HU-32). */
+export function listarMisPermisos(
+  filtros: { pagina?: number; limite?: number } = {},
+): Promise<ListarMisPermisosResponse> {
+  return peticion<ListarMisPermisosResponse>(
+    conParametros("/permisos/mios", filtros),
+  );
+}
+
+/** Detalle del permiso propio con los datos del carné (HU-32). */
+export function obtenerMiPermiso(id: string): Promise<MiPermisoDetalle> {
+  return peticion<MiPermisoDetalle>(`/permisos/mios/${id}`);
+}
+
+/** Descarga el carné digital en PDF con el código QR (HU-32). */
+export function descargarCarnePermiso(id: string): Promise<RespuestaArchivo> {
+  return peticionArchivo(`/permisos/mios/${id}/carne`, false, "application/pdf");
+}
+
+/** Radica la solicitud simplificada de renovación (HU-34). */
+export function renovarPermiso(id: string): Promise<RespuestaRenovarPermiso> {
+  return peticion<RespuestaRenovarPermiso>(
+    `/permisos/mios/${id}/renovacion`,
+    { method: "POST" },
+  );
+}
+
+/** Verificación pública de un permiso por el token del QR (HU-33). */
+export function verificarPermisoQr(qrToken: string): Promise<VerificacionQr> {
+  return peticion<VerificacionQr>(`/verificaciones/${qrToken}`, {
+    auth: false,
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Cobros simulados del uso de suelo (HU-36)                           */
+/* ------------------------------------------------------------------ */
+
+/** Lista los cobros de los permisos del comerciante autenticado. */
+export function listarMisCobros(
+  filtros: { pagina?: number; limite?: number } = {},
+): Promise<ListarMisCobrosResponse> {
+  return peticion<ListarMisCobrosResponse>(
+    conParametros("/cobros/mios", filtros),
+  );
+}
+
+/** Registra el pago simulado de un cobro pendiente (HU-36). */
+export function pagarCobro(id: string): Promise<RespuestaPagarCobro> {
+  return peticion<RespuestaPagarCobro>(`/cobros/mios/${id}/pago`, {
+    method: "POST",
+  });
+}
+
+/** Descarga el recibo del pago simulado en PDF (HU-36). */
+export function descargarReciboCobro(id: string): Promise<RespuestaArchivo> {
+  return peticionArchivo(`/cobros/mios/${id}/recibo`, false, "application/pdf");
 }

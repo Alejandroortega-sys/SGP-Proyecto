@@ -1965,3 +1965,198 @@ export interface RespuestaMoverFeria {
   mensajeCorreo: string | null;
   mensaje: string;
 }
+
+/* ------------------------------------------------------------------ */
+/* Permisos digitales, QR y cobros (Sprint 5)                          */
+/* ------------------------------------------------------------------ */
+
+export type EstadoPermiso = "vigente" | "suspendido" | "revocado" | "vencido";
+
+export type EstadoCobro = "pendiente" | "pagado" | "anulado";
+
+export interface CobroPermisoResumen {
+  id: string;
+  valor: string;
+  estado: EstadoCobro;
+  pagadoEn: string | null;
+}
+
+export interface PermisoEmitido {
+  id: string;
+  numero: string;
+  solicitudId: string;
+  titular: { id: string; nombre: string };
+  espacio: { id: string; nombre: string };
+  categoria: string;
+  fechaInicio: string;
+  fechaFin: string;
+  estado: EstadoPermiso;
+  qrToken: string;
+  emitidoEn: string;
+  renovadoDesde: { id: string; numero: string } | null;
+  cobro: CobroPermisoResumen | null;
+  mensaje: string;
+}
+
+export interface FiltrosPermisos {
+  q?: string;
+  estado?: EstadoPermiso;
+  desde?: string;
+  hasta?: string;
+  pagina?: number;
+  limite?: number;
+}
+
+export interface PermisoListado {
+  id: string;
+  numero: string;
+  titularNombre: string;
+  espacioNombre: string | null;
+  categoria: string;
+  fechaInicio: string;
+  fechaFin: string;
+  estado: EstadoPermiso;
+  emitidoEn: string;
+  renovadoDesdeNumero: string | null;
+}
+
+export interface ListarPermisosResponse {
+  datos: PermisoListado[];
+  paginacion: Paginacion;
+}
+
+export interface RenovacionPermisoResumen {
+  id: string;
+  numero: string;
+  fechaInicio: string;
+  fechaFin: string;
+  estado: EstadoPermiso;
+}
+
+export interface PermisoGestorDetalle {
+  id: string;
+  numero: string;
+  solicitudId: string;
+  solicitudNumero: string;
+  titular: { id: string; nombre: string };
+  espacio: { id: string; nombre: string } | null;
+  categoria: string;
+  fechaInicio: string;
+  fechaFin: string;
+  estado: EstadoPermiso;
+  qrToken: string;
+  emitidoPor: { id: string; nombre: string };
+  emitidoEn: string;
+  renovadoDesde: { id: string; numero: string } | null;
+  renovaciones: RenovacionPermisoResumen[];
+  cobro: CobroPermisoResumen | null;
+}
+
+export interface RespuestaCambiarEstadoPermiso {
+  id: string;
+  numero: string;
+  estadoAnterior: EstadoPermiso;
+  estado: EstadoPermiso;
+  motivo: string | null;
+  mensaje: string;
+}
+
+export interface PermisoEvento {
+  id: string;
+  evento: string;
+  motivo: string | null;
+  actorId: string | null;
+  actorNombre: string | null;
+  creadoEn: string;
+}
+
+export interface TrazabilidadPermiso {
+  permiso: {
+    id: string;
+    numero: string;
+    titularNombre: string;
+    espacioNombre: string | null;
+    categoria: string;
+    fechaInicio: string;
+    fechaFin: string;
+    estado: EstadoPermiso;
+  };
+  eventos: PermisoEvento[];
+  verificaciones: { total: number; ultima: string | null };
+}
+
+export interface MiPermiso {
+  id: string;
+  numero: string;
+  estado: EstadoPermiso;
+  categoria: string;
+  espacioNombre: string | null;
+  fechaInicio: string;
+  fechaFin: string;
+  emitidoEn: string;
+  renovadoDesdeNumero: string | null;
+}
+
+export interface ListarMisPermisosResponse {
+  datos: MiPermiso[];
+  paginacion: Paginacion;
+}
+
+export interface MiPermisoDetalle {
+  id: string;
+  numero: string;
+  estado: EstadoPermiso;
+  titularNombre: string;
+  categoria: string;
+  espacioNombre: string | null;
+  fechaInicio: string;
+  fechaFin: string;
+  emitidoEn: string;
+  qrToken: string;
+  urlVerificacion: string;
+}
+
+export interface RespuestaRenovarPermiso {
+  permisoId: string;
+  permisoNumero: string;
+  solicitudId: string;
+  numeroRadicado: string;
+  fechaInicio: string;
+  fechaFin: string;
+  mensaje: string;
+}
+
+export interface VerificacionQr {
+  valido: boolean;
+  estado: EstadoPermiso;
+  vigenciaInicio: string;
+  vigenciaFin: string;
+  categoria: string;
+  titular: string;
+}
+
+export interface CobroListado {
+  id: string;
+  permisoId: string;
+  permisoNumero: string;
+  valor: string;
+  estado: EstadoCobro;
+  pagadoEn: string | null;
+  reciboUrl: string | null;
+  creadoEn: string;
+}
+
+export interface ListarMisCobrosResponse {
+  datos: CobroListado[];
+  paginacion: Paginacion;
+}
+
+export interface RespuestaPagarCobro {
+  id: string;
+  permisoNumero: string;
+  valor: string;
+  estado: EstadoCobro;
+  pagadoEn: string;
+  reciboUrl: string;
+  mensaje: string;
+}
