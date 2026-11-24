@@ -481,3 +481,63 @@ export function IconoLuna({ className }: PropiedadesIcono) {
     </svg>
   );
 }
+
+export function IconoCampana({ className }: PropiedadesIcono) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+      className={clases(className)}
+    >
+      <path d="M18 9.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5" />
+      <path d="M10.3 19.5a2 2 0 0 0 3.4 0" />
+    </svg>
+  );
+}
+
+export function IconoCasita({ className }: PropiedadesIcono) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+      className={clases(className)}
+    >
+      <path d="m3.5 10.8 8.5-7 8.5 7" />
+      <path d="M5.5 9.5V19a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5V9.5" />
+      <path d="M9.5 20.5v-5h5v5" />
+    </svg>
+  );
+}
+
+export function IconoDocumento({ className }: PropiedadesIcono) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+      className={clases(className)}
+    >
+      <path d="M14.5 3H7a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V7L14.5 3Z" />
+      <path d="M14 3v4h4" />
+      <path d="M9 13h6" />
+      <path d="M9 16.5h6" />
+    </svg>
+  );
+}

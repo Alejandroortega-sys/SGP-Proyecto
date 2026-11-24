@@ -33,7 +33,7 @@ export function Th({
     <th
       scope="col"
       className={combinarClases(
-        "whitespace-nowrap border-b border-borde bg-fondo px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-tenue",
+        "whitespace-nowrap border-b border-borde bg-fondo px-4 py-2.5 text-2xs font-semibold uppercase tracking-wide text-tenue",
         className,
       )}
     >
@@ -52,7 +52,7 @@ export function Td({
   return (
     <td
       className={combinarClases(
-        "border-b border-borde px-3 py-3 align-top text-texto",
+        "border-b border-borde px-4 py-3 align-top text-texto",
         className,
       )}
     >

@@ -1,11 +1,14 @@
 import { combinarClases } from "@/lib/clases";
 
-/** Bloque base de carga. Ajusta tamaño con className (p. ej. `h-3 w-24`). */
+/** Bloque base de carga con barrido (docs/DESIGN.md §7.6). Ajusta tamaño con className (p. ej. `h-3 w-24`). */
 export function Esqueleto({ className }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={combinarClases("animate-pulse rounded-md bg-interaccion-fuerte", className)}
+      className={combinarClases(
+        "animate-shimmer rounded-md bg-linear-to-r from-fondo-sutil via-(--bg-hover) to-fondo-sutil bg-[length:200%_100%]",
+        className,
+      )}
     />
   );
 }

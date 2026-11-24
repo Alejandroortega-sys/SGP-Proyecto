@@ -41,7 +41,7 @@ export default function PaginaBienvenida() {
             <span className="inline-flex items-center gap-2 rounded-full border border-exito-borde bg-exito-suave px-3 py-1 text-xs font-semibold uppercase text-exito-texto">
               Alcaldía de Tuluá · Valle del Cauca
             </span>
-            <h1 className="mt-4 text-3xl font-extrabold leading-tight text-titulo sm:text-4xl md:text-[3.25rem] md:leading-[1.1]">
+            <h1 className="mt-4 text-3xl font-extrabold leading-tight text-titulo sm:text-4xl md:text-5xl">
               Hacia un espacio público ordenado, inclusivo y transparente en
               Tuluá
             </h1>
@@ -159,7 +159,7 @@ export default function PaginaBienvenida() {
         </div>
       </section>
 
-      <section id="geo-portal" className="bg-white">
+      <section id="geo-portal" className="bg-superficie">
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 md:py-16">
           <div className="grid gap-8 md:grid-cols-2 md:items-center">
             <div>
@@ -206,7 +206,7 @@ export default function PaginaBienvenida() {
               </p>
               <Link
                 href="/mapa"
-                className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-primario bg-white px-5 py-2.5 text-sm font-semibold text-accent-texto hover:bg-primario-suave"
+                className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-primario bg-superficie px-5 py-2.5 text-sm font-semibold text-accent-texto hover:bg-primario-suave"
               >
                 Explorar el mapa
               </Link>

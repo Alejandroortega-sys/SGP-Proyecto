@@ -67,9 +67,9 @@ export function Pestanas({
             onClick={() => onCambiar(pestana.id)}
             className={combinarClases(
               "relative mb-[-1px] min-h-10 shrink-0 whitespace-nowrap rounded-t-md px-3.5 text-sm font-medium transition-colors duration-150",
-              "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent",
+              "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primario",
               esActiva
-                ? "text-accent-texto after:absolute after:inset-x-2 after:-bottom-px after:h-0.5 after:rounded-full after:bg-accent"
+                ? "font-semibold text-primario-texto after:absolute after:inset-x-2 after:-bottom-px after:h-0.5 after:rounded-full after:bg-primario"
                 : "text-tenue hover:text-texto",
             )}
           >

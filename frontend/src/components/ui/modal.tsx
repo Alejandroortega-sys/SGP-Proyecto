@@ -1,20 +1,31 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { combinarClases } from "@/lib/clases";
 import { Boton } from "./boton";
 import { IconoCerrar } from "./iconos";
+
+const MAX_ANCHO = {
+  sm: "max-w-[400px]",
+  md: "max-w-lg",
+  lg: "max-w-[680px]",
+  xl: "max-w-[860px]",
+} as const;
 
 export function Modal({
   abierto,
   titulo,
   descripcion,
   onCerrar,
+  tamano = "md",
   children,
 }: {
   abierto: boolean;
   titulo: string;
   descripcion?: string;
   onCerrar: () => void;
+  /** Ancho máximo del diálogo — docs/DESIGN.md §9.6. */
+  tamano?: keyof typeof MAX_ANCHO;
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -38,7 +49,10 @@ export function Modal({
         aria-modal="true"
         aria-labelledby="modal-titulo"
         aria-describedby={descripcion ? "modal-descripcion" : undefined}
-        className="max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-xl border border-borde bg-superficie p-5 shadow-xl sm:p-6"
+        className={combinarClases(
+          "max-h-[85dvh] w-full overflow-y-auto rounded-2xl border border-borde bg-superficie p-5 shadow-xl sm:p-6",
+          MAX_ANCHO[tamano],
+        )}
         onClick={(evento) => evento.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">

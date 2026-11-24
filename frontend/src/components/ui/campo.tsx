@@ -11,7 +11,7 @@ import {
 const CLASE_BASE =
   "w-full min-h-10 rounded-lg border bg-superficie px-3 py-2 text-base text-titulo " +
   "placeholder:text-tenue disabled:cursor-not-allowed disabled:bg-interaccion " +
-  "disabled:text-tenue focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent";
+  "disabled:text-tenue focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primario";
 
 interface ComunesCampo {
   etiqueta: string;
@@ -100,7 +100,7 @@ export function Campo({
         aria-describedby={error ? idError : ayuda ? idAyuda : undefined}
         className={combinarClases(
           CLASE_BASE,
-          error ? "border-peligro" : "border-borde",
+          error ? "border-peligro" : "border-borde-fuerte",
           className,
         )}
         {...resto}
@@ -142,7 +142,7 @@ export function Selector({
           className={combinarClases(
             CLASE_BASE,
             "appearance-none pr-9",
-            error ? "border-peligro" : "border-borde",
+            error ? "border-peligro" : "border-borde-fuerte",
             className,
           )}
           {...resto}
@@ -203,7 +203,7 @@ export function CampoPassword({
           className={combinarClases(
             CLASE_BASE,
             "pr-10",
-            error ? "border-peligro" : "border-borde",
+            error ? "border-peligro" : "border-borde-fuerte",
             className,
           )}
           {...resto}
