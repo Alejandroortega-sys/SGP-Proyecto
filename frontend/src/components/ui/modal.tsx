@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 import { Boton } from "./boton";
+import { IconoCerrar } from "./iconos";
 
 export function Modal({
   abierto,
@@ -29,7 +30,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-4 sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-velo p-4 backdrop-blur-sm sm:items-center"
       onClick={onCerrar}
     >
       <div
@@ -37,7 +38,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby="modal-titulo"
         aria-describedby={descripcion ? "modal-descripcion" : undefined}
-        className="w-full max-w-lg rounded-xl border border-borde bg-superficie p-5 shadow-xl sm:p-6"
+        className="max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-xl border border-borde bg-superficie p-5 shadow-xl sm:p-6"
         onClick={(evento) => evento.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
@@ -55,9 +56,9 @@ export function Modal({
             type="button"
             onClick={onCerrar}
             aria-label="Cerrar"
-            className="flex size-11 shrink-0 items-center justify-center rounded-lg text-tenue hover:bg-slate-100 hover:text-titulo"
+            className="flex size-10 shrink-0 items-center justify-center rounded-lg text-tenue transition-colors duration-150 hover:bg-interaccion hover:text-titulo"
           >
-            ✕
+            <IconoCerrar className="size-5" />
           </button>
         </div>
         <div className="mt-5">{children}</div>

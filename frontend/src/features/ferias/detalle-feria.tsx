@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
 import { Boton } from "@/components/ui/boton";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Cargando } from "@/components/ui/estado-vacio";
 import { Tarjeta, TarjetaCuerpo, TarjetaEncabezado } from "@/components/ui/tarjeta";
 import { formatearRangoFechas } from "@/features/espacios/estilos-espacio";
@@ -68,7 +69,7 @@ export function DetalleFeria({ id }: { id: string }) {
       <div>
         <Link
           href="/organizador/ferias"
-          className="inline-flex min-h-11 items-center text-sm font-semibold text-primario hover:underline"
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-accent-texto hover:underline"
         >
           ← Volver a mis ferias
         </Link>
@@ -86,7 +87,7 @@ export function DetalleFeria({ id }: { id: string }) {
 
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+          <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
             Feria
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -95,23 +96,20 @@ export function DetalleFeria({ id }: { id: string }) {
             </h1>
             <EtiquetaEstadoFeria estado={datos.estado} />
           </div>
-          <p className="mt-2 text-base font-semibold text-primario">
+          <p className="mt-2 text-base font-semibold text-accent-texto">
             {datos.numeroRadicado}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link
+          <EnlaceBoton
             href={`/organizador/ferias/${datos.id}/participantes`}
-            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-primario bg-white px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+            variante="contorno"
           >
             Gestionar participantes
-          </Link>
-          <Link
-            href="/organizador/ferias/nueva"
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
-          >
+          </EnlaceBoton>
+          <EnlaceBoton href="/organizador/ferias/nueva">
             Nueva feria
-          </Link>
+          </EnlaceBoton>
         </div>
       </header>
 

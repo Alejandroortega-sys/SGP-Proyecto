@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { Alerta } from "@/components/ui/alerta";
 import { Boton } from "@/components/ui/boton";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Tarjeta, TarjetaCuerpo, TarjetaEncabezado } from "@/components/ui/tarjeta";
 import type { ApiError } from "@/lib/api-client";
 import type { ConfirmacionImportacion, TipoImportacion } from "@/types/api";
@@ -60,12 +60,9 @@ export function PanelReporte({
           >
             Descargar reporte de errores (CSV)
           </Boton>
-          <Link
-            href={rutaDestino}
-            className="inline-flex min-h-11 items-center rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
-          >
+          <EnlaceBoton href={rutaDestino} variante="contorno">
             {textoDestino}
-          </Link>
+          </EnlaceBoton>
           <Boton variante="fantasma" onClick={onReiniciar}>
             Importar otro archivo
           </Boton>
@@ -94,7 +91,7 @@ export function PanelReporte({
               {confirmacion.rechazados.map((rechazado) => (
                 <li
                   key={rechazado.fila}
-                  className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-800"
+                  className="rounded-lg border border-peligro-borde bg-peligro-suave px-3 py-2 text-peligro-texto"
                 >
                   <span className="font-semibold">Fila {rechazado.fila}:</span>{" "}
                   {rechazado.motivo}

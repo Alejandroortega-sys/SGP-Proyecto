@@ -109,7 +109,7 @@ function OtrosDocumentos({
         ))}
       </ul>
       {error ? (
-        <p role="alert" className="mt-2 text-sm text-rose-700">
+        <p role="alert" className="mt-2 text-sm text-peligro-texto">
           {error}
         </p>
       ) : null}

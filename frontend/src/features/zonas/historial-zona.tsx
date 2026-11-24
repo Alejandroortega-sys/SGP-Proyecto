@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { BloqueError } from "@/components/ui/bloque-error";
+import { Boton } from "@/components/ui/boton";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Cargando, EstadoVacio } from "@/components/ui/estado-vacio";
 import { Etiqueta } from "@/components/ui/etiqueta";
 import { Paginacion } from "@/components/ui/paginacion";
@@ -75,7 +77,7 @@ export function HistorialZona({ id }: { id: string }) {
             accion={
               <Link
                 href={`/gestor/zonas/${id}/editar`}
-                className="font-semibold text-primario hover:underline"
+                className="font-semibold text-accent-texto hover:underline"
               >
                 Volver a la zona
               </Link>
@@ -177,7 +179,7 @@ function ItemTimeline({
       <div className="flex w-4 flex-col items-center">
         <span
           className={`mt-4 size-3 rounded-full border-2 border-superficie ${
-            seleccionada ? "bg-primario" : "bg-slate-400"
+            seleccionada ? "bg-primario" : "bg-borde-fuerte"
           }`}
           aria-hidden="true"
         />
@@ -194,7 +196,7 @@ function ItemTimeline({
         <TarjetaCuerpo className="flex flex-col gap-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-slate-900 px-2.5 py-0.5 text-xs font-bold text-white">
+              <span className="rounded-full bg-titulo px-2.5 py-0.5 text-xs font-bold text-superficie">
                 v{version.version}
               </span>
               <span
@@ -208,14 +210,14 @@ function ItemTimeline({
                 {version.estado.activa ? "Activa" : "Inactiva"}
               </Etiqueta>
             </div>
-            <button
-              type="button"
+            <Boton
+              variante="contorno"
+              tamano="sm"
               onClick={onSeleccionar}
-              className="inline-flex min-h-9 items-center rounded-lg border border-primario px-3 py-1.5 text-sm font-semibold text-primario hover:bg-primario-suave"
               aria-pressed={seleccionada}
             >
               {seleccionada ? "En el mapa" : "Ver geometría"}
-            </button>
+            </Boton>
           </div>
 
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-texto">
@@ -287,13 +289,13 @@ function EncabezadoHistorial({
     <div className="flex flex-col gap-2">
       <Link
         href="/gestor/zonas"
-        className="text-sm font-semibold text-primario hover:underline"
+        className="text-sm font-semibold text-accent-texto hover:underline"
       >
         ← Volver al listado de zonas
       </Link>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+          <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
             Gestión del espacio público
           </p>
           <h1 className="text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -312,12 +314,9 @@ function EncabezadoHistorial({
             </Etiqueta>
           ) : null}
           {esAdministrador ? (
-            <Link
-              href={`/gestor/zonas/${id}/editar`}
-              className="inline-flex min-h-11 items-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
-            >
+            <EnlaceBoton href={`/gestor/zonas/${id}/editar`}>
               Editar zona
-            </Link>
+            </EnlaceBoton>
           ) : null}
         </div>
       </div>

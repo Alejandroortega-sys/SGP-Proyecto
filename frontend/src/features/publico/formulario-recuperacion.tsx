@@ -56,7 +56,7 @@ export function FormularioRecuperacion() {
         <p className="text-center text-sm text-texto">
           <Link
             href="/login"
-            className="font-medium text-primario hover:underline"
+            className="font-medium text-accent-texto hover:underline"
           >
             Volver a iniciar sesión
           </Link>
@@ -98,7 +98,7 @@ export function FormularioRecuperacion() {
       </Boton>
 
       <p className="text-center text-sm text-texto">
-        <Link href="/login" className="font-medium text-primario hover:underline">
+        <Link href="/login" className="font-medium text-accent-texto hover:underline">
           ← Volver a iniciar sesión
         </Link>
       </p>

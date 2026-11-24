@@ -166,7 +166,7 @@ export function ListaComerciantes() {
                     <Td>
                       <Link
                         href={`/gestor/usuarios/${comerciante.id}`}
-                        className="font-semibold text-primario hover:underline"
+                        className="font-semibold text-accent-texto hover:underline"
                       >
                         Ver detalle
                       </Link>

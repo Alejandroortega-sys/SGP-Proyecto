@@ -83,7 +83,7 @@ export function FormularioParticipante({
 
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-semibold text-titulo">
-          Productos que venderá <span className="text-rose-600">*</span>
+          Productos que venderá <span className="text-peligro-texto">*</span>
         </legend>
         <p className="text-sm text-tenue">
           Selecciona al menos uno. Los productos no permitidos por la zona
@@ -107,8 +107,8 @@ export function FormularioParticipante({
                   <label
                     className={
                       permitido
-                        ? "flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-borde bg-white px-3 py-2 text-sm text-titulo"
-                        : "flex min-h-11 cursor-not-allowed items-center gap-3 rounded-lg border border-borde bg-slate-50 px-3 py-2 text-sm text-tenue"
+                        ? "flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-borde bg-superficie px-3 py-2 text-sm text-titulo"
+                        : "flex min-h-11 cursor-not-allowed items-center gap-3 rounded-lg border border-borde bg-interaccion px-3 py-2 text-sm text-tenue"
                     }
                   >
                     <input

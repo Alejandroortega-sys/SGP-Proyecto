@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
 import { Boton } from "@/components/ui/boton";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Campo, Selector } from "@/components/ui/campo";
 import { Cargando, EstadoVacio } from "@/components/ui/estado-vacio";
 import { Etiqueta } from "@/components/ui/etiqueta";
@@ -105,7 +105,7 @@ export function ListaZonas() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+          <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
             Gestión del espacio público
           </p>
           <h1 className="text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -118,12 +118,7 @@ export function ListaZonas() {
           </p>
         </div>
         {esAdministrador ? (
-          <Link
-            href="/gestor/zonas/nueva"
-            className="inline-flex min-h-11 items-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
-          >
-            Crear zona
-          </Link>
+          <EnlaceBoton href="/gestor/zonas/nueva">Crear zona</EnlaceBoton>
         ) : null}
       </div>
 
@@ -384,18 +379,20 @@ function AccionesZona({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Link
+      <EnlaceBoton
         href={`/gestor/zonas/${zona.id}/editar`}
-        className="inline-flex min-h-9 items-center rounded-lg border border-primario px-3 py-1.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+        tamano="sm"
+        variante="contorno"
       >
         {esAdministrador ? "Editar" : "Ver"}
-      </Link>
-      <Link
+      </EnlaceBoton>
+      <EnlaceBoton
         href={`/gestor/zonas/${zona.id}/historial`}
-        className="inline-flex min-h-9 items-center rounded-lg border border-borde px-3 py-1.5 text-sm font-semibold text-texto hover:bg-slate-100"
+        tamano="sm"
+        variante="contorno"
       >
         Historial
-      </Link>
+      </EnlaceBoton>
       {esAdministrador ? (
         <Boton
           variante={zona.activa ? "peligro" : "contorno"}

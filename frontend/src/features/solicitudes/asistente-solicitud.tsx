@@ -501,7 +501,7 @@ export function AsistenteSolicitud({
     <section className="flex flex-col gap-5">
       <header className="flex flex-col gap-3">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+          <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
             Mis solicitudes
           </p>
           <h1 className="mt-1 text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -524,9 +524,9 @@ export function AsistenteSolicitud({
                 aria-current={activo ? "step" : undefined}
                 className={
                   activo
-                    ? "rounded-lg border border-primario bg-primario-suave px-3 py-2 text-sm font-semibold text-primario"
+                    ? "rounded-lg border border-primario bg-primario-suave px-3 py-2 text-sm font-semibold text-accent-texto"
                     : completado
-                      ? "rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700"
+                      ? "rounded-lg border border-exito-borde bg-exito-suave px-3 py-2 text-sm font-medium text-exito-texto"
                       : "rounded-lg border border-borde bg-superficie px-3 py-2 text-sm text-texto"
                 }
               >
@@ -680,7 +680,7 @@ export function AsistenteSolicitud({
             <span className="inline-flex items-center gap-2 text-xs text-tenue">
               {radicando ? (
                 <>
-                  <Spinner className="size-4 text-primario" />
+                  <Spinner className="size-4 text-accent-texto" />
                   Radicando…
                 </>
               ) : (

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
 import { Boton } from "@/components/ui/boton";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Cargando } from "@/components/ui/estado-vacio";
 import { Tarjeta, TarjetaCuerpo, TarjetaEncabezado } from "@/components/ui/tarjeta";
 import { formatearRangoFechas } from "@/features/espacios/estilos-espacio";
@@ -256,7 +257,7 @@ export function FormularioFeria() {
   return (
     <form onSubmit={enviar} className="flex flex-col gap-6" noValidate>
       <header className="flex flex-col gap-2">
-        <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+        <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
           Portal del organizador
         </p>
         <h1 className="text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -301,11 +302,11 @@ export function FormularioFeria() {
               value={valores.nombre}
               maxLength={200}
               required
-              className="w-full rounded-lg border border-borde bg-white px-3.5 py-2.5 text-base text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
+              className="w-full rounded-lg border border-borde bg-superficie px-3.5 py-2.5 text-base text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
               onChange={(evento) => cambiar({ nombre: evento.target.value })}
             />
             {errores.nombre ? (
-              <span className="text-sm text-rose-700">{errores.nombre}</span>
+              <span className="text-sm text-peligro-texto">{errores.nombre}</span>
             ) : null}
           </label>
 
@@ -320,7 +321,7 @@ export function FormularioFeria() {
               onChange={(evento) => cambiar({ tipoFeria: evento.target.value })}
             />
             {errores.tipoFeria ? (
-              <span className="text-sm text-rose-700">{errores.tipoFeria}</span>
+              <span className="text-sm text-peligro-texto">{errores.tipoFeria}</span>
             ) : null}
           </label>
         </TarjetaCuerpo>
@@ -377,7 +378,7 @@ export function FormularioFeria() {
                         className={
                           permitido
                             ? "flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-borde bg-white px-3 py-2 text-sm text-titulo"
-                            : "flex min-h-11 cursor-not-allowed items-center gap-3 rounded-lg border border-borde bg-slate-50 px-3 py-2 text-sm text-tenue"
+                            : "flex min-h-11 cursor-not-allowed items-center gap-3 rounded-lg border border-borde bg-interaccion px-3 py-2 text-sm text-tenue"
                         }
                       >
                         <input
@@ -484,7 +485,7 @@ export function FormularioFeria() {
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={progreso.porcentaje}
-            className="h-2 w-full overflow-hidden rounded-full bg-slate-200"
+            className="h-2 w-full overflow-hidden rounded-full bg-interaccion-fuerte"
           >
             <div
               className="h-full rounded-full bg-primario transition-all"
@@ -506,12 +507,9 @@ export function FormularioFeria() {
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link
-          href="/organizador/ferias"
-          className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-texto hover:bg-slate-100"
-        >
+        <EnlaceBoton href="/organizador/ferias" variante="fantasma">
           Volver a mis ferias
-        </Link>
+        </EnlaceBoton>
         <Boton
           type="submit"
           tamano="lg"

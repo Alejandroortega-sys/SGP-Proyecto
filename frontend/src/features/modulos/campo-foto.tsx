@@ -55,10 +55,10 @@ export function CampoFoto({
             const archivo = evento.target.files?.[0] ?? null;
             onCambiar(archivo);
           }}
-          className="block w-full cursor-pointer rounded-lg border border-borde bg-white px-3 py-2 text-sm text-texto file:mr-3 file:rounded-md file:border-0 file:bg-primario file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-primario-hover"
+          className="block w-full cursor-pointer rounded-lg border border-borde bg-superficie px-3 py-2 text-sm text-texto file:mr-3 file:rounded-md file:border-0 file:bg-primario file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-primario-hover"
         />
         {error ? (
-          <p id={idError} className="text-sm text-rose-700">
+          <p id={idError} className="text-sm text-peligro-texto">
             {error}
           </p>
         ) : (

@@ -141,7 +141,7 @@ export function FormularioModulo({
       <div className="flex flex-col gap-2">
         <div>
           <p className="text-sm font-medium text-titulo">
-            Titular <span className="text-rose-600">*</span>
+            Titular <span className="text-peligro-texto">*</span>
           </p>
           <p className="mt-1 text-sm text-tenue">
             Puede ser un comerciante con cuenta en la plataforma o una persona
@@ -216,7 +216,7 @@ export function FormularioModulo({
                 </div>
 
                 {errorBusqueda ? (
-                  <p className="text-sm text-rose-700">{errorBusqueda}</p>
+                  <p className="text-sm text-peligro-texto">{errorBusqueda}</p>
                 ) : null}
 
                 {resultados.length > 0 ? (
@@ -254,7 +254,7 @@ export function FormularioModulo({
             )}
 
             {errores.titular ? (
-              <p className="text-sm text-rose-700">{errores.titular}</p>
+              <p className="text-sm text-peligro-texto">{errores.titular}</p>
             ) : null}
           </div>
         ) : (
@@ -288,9 +288,9 @@ export function FormularioModulo({
       ) : null}
 
       <p className="text-xs text-tenue">
-        Los campos marcados con <span className="text-rose-600">*</span> son
+        Los campos marcados con <span className="text-peligro-texto">*</span> son
         obligatorios. El código del módulo se asigna automáticamente.{" "}
-        <Link href="/gestor/modulos" className="font-semibold text-primario hover:underline">
+        <Link href="/gestor/modulos" className="font-semibold text-accent-texto hover:underline">
           Volver al listado
         </Link>
       </p>

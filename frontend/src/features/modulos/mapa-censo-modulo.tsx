@@ -231,7 +231,7 @@ export function MapaCensoModulo({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="relative overflow-hidden rounded-xl border border-borde bg-slate-200">
+      <div className="relative overflow-hidden rounded-xl border border-borde bg-interaccion-fuerte">
         <div
           ref={contenedorRef}
           role="application"

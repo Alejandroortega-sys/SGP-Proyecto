@@ -189,7 +189,7 @@ export function FormularioRestablecer({
       <p className="text-center text-sm text-texto">
         <Link
           href="/recuperar"
-          className="font-medium text-primario hover:underline"
+          className="font-medium text-accent-texto hover:underline"
         >
           ← Solicitar otro código
         </Link>

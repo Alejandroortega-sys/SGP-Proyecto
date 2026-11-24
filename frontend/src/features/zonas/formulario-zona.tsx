@@ -125,7 +125,7 @@ export function FormularioZona({
             />
           </div>
           {errores.horario ? (
-            <p role="alert" className="text-sm text-rose-700">
+            <p role="alert" className="text-sm text-peligro-texto">
               {errores.horario}
             </p>
           ) : (
@@ -181,7 +181,7 @@ export function FormularioZona({
               {productosActivos.map((producto) => (
                 <label
                   key={producto.id}
-                  className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-borde bg-superficie px-3 py-2 text-sm text-texto hover:bg-slate-50"
+                  className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-borde bg-superficie px-3 py-2 text-sm text-texto hover:bg-interaccion"
                 >
                   <input
                     type="checkbox"
@@ -200,7 +200,7 @@ export function FormularioZona({
         )}
 
         {errores.productos ? (
-          <p role="alert" className="text-sm text-rose-700">
+          <p role="alert" className="text-sm text-peligro-texto">
             {errores.productos}
           </p>
         ) : null}

@@ -258,7 +258,7 @@ export function GestionParticipantes({ feriaId }: { feriaId: string }) {
       <div>
         <Link
           href={`/organizador/ferias/${feriaId}`}
-          className="inline-flex min-h-11 items-center text-sm font-semibold text-primario hover:underline"
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-accent-texto hover:underline"
         >
           ← Volver al detalle de la feria
         </Link>
@@ -266,7 +266,7 @@ export function GestionParticipantes({ feriaId }: { feriaId: string }) {
 
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+          <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
             Portal del organizador
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -280,7 +280,7 @@ export function GestionParticipantes({ feriaId }: { feriaId: string }) {
               <Etiqueta tono="pendiente">Listado en borrador</Etiqueta>
             )}
           </div>
-          <p className="mt-2 text-sm font-semibold text-primario">
+          <p className="mt-2 text-sm font-semibold text-accent-texto">
             {datos.feria.numeroRadicado} · {datos.feria.nombre}
           </p>
           <p className="mt-1 text-sm text-texto">
@@ -332,12 +332,12 @@ export function GestionParticipantes({ feriaId }: { feriaId: string }) {
             aria-valuemin={0}
             aria-valuemax={datos.cupo.aprobado}
             aria-valuenow={datos.cupo.ocupados}
-            className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200"
+            className="h-2.5 w-full overflow-hidden rounded-full bg-interaccion-fuerte"
           >
             <div
               className={
                 datos.cupo.completo
-                  ? "h-full rounded-full bg-amber-500 transition-all"
+                  ? "h-full rounded-full bg-advertencia transition-all"
                   : "h-full rounded-full bg-primario transition-all"
               }
               style={{

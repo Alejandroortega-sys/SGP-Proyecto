@@ -92,7 +92,7 @@ export function AdjuntosFeria({
       <div>
         <label
           htmlFor="adjuntos-feria"
-          className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-primario bg-white px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+          className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-accent bg-superficie px-4 py-2.5 text-sm font-semibold text-accent-texto transition-colors duration-150 hover:bg-accent-suave focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
         >
           Seleccionar archivos
         </label>

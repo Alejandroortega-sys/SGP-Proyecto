@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { Boton } from "@/components/ui/boton";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Cargando } from "@/components/ui/estado-vacio";
 import { BloqueError } from "@/components/ui/bloque-error";
 import { Modal } from "@/components/ui/modal";
@@ -56,11 +56,11 @@ export function PanelFeria({
         <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto pr-1">
           <div className="flex flex-wrap items-center gap-2">
             <EtiquetaEstadoFeria estado={datos.estado} />
-            <span className="text-sm font-semibold text-primario">
+            <span className="text-sm font-semibold text-accent-texto">
               {datos.numeroRadicado}
             </span>
             {evento.tieneCruces ? (
-              <span className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
+              <span className="rounded-full border border-advertencia-borde bg-advertencia-suave px-2.5 py-0.5 text-xs font-semibold text-advertencia-texto">
                 Requiere revisión de cruces
               </span>
             ) : null}
@@ -121,7 +121,7 @@ export function PanelFeria({
           </dl>
 
           {datos.motivoCancelacion ? (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900">
+            <div className="rounded-lg border border-peligro-borde bg-peligro-suave p-3 text-sm text-peligro-texto">
               <p className="font-semibold">Motivo de cancelación</p>
               <p className="mt-1 whitespace-pre-line">
                 {datos.motivoCancelacion}
@@ -186,12 +186,12 @@ export function PanelFeria({
           </p>
 
           <div className="flex flex-col-reverse gap-2 border-t border-borde pt-4 sm:flex-row sm:justify-end">
-            <Link
+            <EnlaceBoton
               href={`/gestor/ferias/${evento.id}/participantes`}
-              className="inline-flex min-h-11 items-center justify-center rounded-lg border border-primario bg-white px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+              variante="contorno"
             >
               Ver participantes
-            </Link>
+            </EnlaceBoton>
             <Boton variante="fantasma" onClick={onCerrar}>
               Cerrar
             </Boton>

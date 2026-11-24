@@ -24,8 +24,8 @@ export const CLASES_ESTADO_REQUISITO: Record<
   EstadoRequisitoDocumental,
   string
 > = {
-  faltante: "border-rose-200 bg-rose-50 text-rose-700",
-  cargado: "border-sky-200 bg-sky-50 text-sky-800",
-  cumple: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  no_cumple: "border-amber-200 bg-amber-50 text-amber-800",
+  faltante: "border-peligro-borde bg-peligro-suave text-peligro-texto",
+  cargado: "border-info-borde bg-info-suave text-info-texto",
+  cumple: "border-exito-borde bg-exito-suave text-exito-texto",
+  no_cumple: "border-advertencia-borde bg-advertencia-suave text-advertencia-texto",
 };

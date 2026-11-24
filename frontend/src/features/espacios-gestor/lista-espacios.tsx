@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
 import { Boton } from "@/components/ui/boton";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Campo, Selector } from "@/components/ui/campo";
 import { Cargando, EstadoVacio } from "@/components/ui/estado-vacio";
 import { Etiqueta } from "@/components/ui/etiqueta";
@@ -100,7 +100,7 @@ export function ListaEspacios() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+          <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
             Espacio público · Administración
           </p>
           <h1 className="text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -111,12 +111,7 @@ export function ListaEspacios() {
             por rango de fechas desde una sola ficha.
           </p>
         </div>
-        <Link
-          href="/gestor/espacios/nuevo"
-          className="inline-flex min-h-11 items-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
-        >
-          Crear espacio
-        </Link>
+        <EnlaceBoton href="/gestor/espacios/nuevo">Crear espacio</EnlaceBoton>
       </div>
 
       {exito ? <Alerta tono="exito">{exito}</Alerta> : null}
@@ -314,7 +309,7 @@ function EstadoBadge({ espacio }: { espacio: EspacioGestorListado }) {
         </span>
       ) : null}
       {espacio.asignacionManual ? (
-        <span className="text-[11px] font-semibold text-primario">
+        <span className="text-[11px] font-semibold text-accent-texto">
           Asignación manual
         </span>
       ) : null}
@@ -331,18 +326,20 @@ function AccionesEspacio({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Link
+      <EnlaceBoton
         href={`/gestor/espacios/${espacio.id}`}
-        className="inline-flex min-h-9 items-center rounded-lg border border-primario px-3 py-1.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+        tamano="sm"
+        variante="contorno"
       >
         Ver ficha
-      </Link>
-      <Link
+      </EnlaceBoton>
+      <EnlaceBoton
         href={`/gestor/espacios/${espacio.id}/editar`}
-        className="inline-flex min-h-9 items-center rounded-lg border border-borde px-3 py-1.5 text-sm font-semibold text-texto hover:bg-slate-100"
+        tamano="sm"
+        variante="contorno"
       >
         Editar
-      </Link>
+      </EnlaceBoton>
       <Boton
         variante="peligro"
         tamano="sm"

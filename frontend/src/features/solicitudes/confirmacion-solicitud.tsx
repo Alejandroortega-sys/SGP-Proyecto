@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Cargando } from "@/components/ui/estado-vacio";
 import { useConsultaApi } from "@/hooks/use-consulta-api";
 import { obtenerMiSolicitud } from "@/lib/api-client";
@@ -33,17 +33,17 @@ export function ConfirmacionSolicitud({
 
   return (
     <section className="mx-auto flex max-w-3xl flex-col gap-5">
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-center">
-        <p className="text-sm font-bold uppercase tracking-wide text-emerald-700">
+      <div className="rounded-xl border border-exito-borde bg-exito-suave p-5 text-center">
+        <p className="text-sm font-bold uppercase tracking-wide text-exito-texto">
           Solicitud radicada
         </p>
-        <h1 className="mt-2 text-2xl font-extrabold text-emerald-900 sm:text-3xl">
+        <h1 className="mt-2 text-2xl font-extrabold text-exito-texto sm:text-3xl">
           ¡Tu solicitud quedó registrada!
         </h1>
-        <p className="mt-2 text-sm text-emerald-800">
+        <p className="mt-2 text-sm text-exito-texto">
           Guarda este número para consultar el estado de tu trámite.
         </p>
-        <p className="mt-4 inline-block rounded-lg border border-emerald-300 bg-white px-4 py-2 text-xl font-extrabold tracking-wide text-emerald-900">
+        <p className="mt-4 inline-block rounded-lg border border-exito-borde bg-superficie px-4 py-2 text-xl font-extrabold tracking-wide text-exito-texto">
           {solicitud.numeroRadicado}
         </p>
       </div>
@@ -99,18 +99,15 @@ export function ConfirmacionSolicitud({
       </section>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-        <Link
+        <EnlaceBoton
           href={`/comerciante/solicitudes/${solicitud.id}`}
-          className="inline-flex min-h-11 items-center justify-center rounded-lg border border-primario bg-white px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+          variante="contorno"
         >
           Ver detalle
-        </Link>
-        <Link
-          href="/comerciante/solicitudes"
-          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
-        >
+        </EnlaceBoton>
+        <EnlaceBoton href="/comerciante/solicitudes">
           Ir a Mis solicitudes
-        </Link>
+        </EnlaceBoton>
       </div>
     </section>
   );

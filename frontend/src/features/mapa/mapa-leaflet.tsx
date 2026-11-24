@@ -374,7 +374,7 @@ export function MapaLeaflet() {
   const sinZonas = datos !== null && datos.features.length === 0;
 
   return (
-    <div className="sgp-mapa relative overflow-hidden border-t border-borde bg-slate-200">
+    <div className="sgp-mapa relative overflow-hidden border-t border-borde bg-interaccion-fuerte">
       <div
         ref={contenedorRef}
         className="sgp-mapa__lienzo h-[calc(100dvh-4rem)] min-h-[520px] w-full"
@@ -384,7 +384,7 @@ export function MapaLeaflet() {
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[500] flex flex-col gap-2 p-3 sm:p-4">
         <div className="pointer-events-auto max-w-md rounded-xl border border-borde bg-superficie/95 p-4 shadow-sm backdrop-blur">
-          <p className="text-xs font-semibold uppercase tracking-wide text-primario">
+          <p className="text-xs font-semibold uppercase tracking-wide text-accent-texto">
             Geo-Portal
           </p>
           <h1 className="mt-1 text-lg font-extrabold text-titulo sm:text-xl">
@@ -419,7 +419,7 @@ export function MapaLeaflet() {
             role="status"
             className="pointer-events-auto inline-flex w-fit items-center gap-2 rounded-full border border-borde bg-superficie/95 px-3 py-1 text-xs text-texto shadow-sm"
           >
-            <Spinner className="size-3.5 text-primario" />
+            <Spinner className="size-3.5 text-accent-texto" />
             Actualizando zonas…
           </p>
         ) : null}
@@ -468,7 +468,7 @@ export function MapaLeaflet() {
             {TIPOS_ZONA.map((tipo) => (
               <label
                 key={tipo}
-                className="flex min-h-9 cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1 text-sm text-texto hover:bg-slate-50"
+                className="flex min-h-9 cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1 text-sm text-texto hover:bg-interaccion"
                 title={DESCRIPCIONES_TIPO[tipo]}
               >
                 <input

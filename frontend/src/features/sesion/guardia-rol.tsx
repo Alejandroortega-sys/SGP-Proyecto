@@ -31,7 +31,7 @@ export function GuardiaRol({
   if (cargando || !usuario || !roles.includes(usuario.rol)) {
     return (
       <div className="flex min-h-dvh items-center justify-center gap-3 text-sm text-texto">
-        <Spinner className="size-6 animate-spin text-primario" />
+        <Spinner className="size-6 animate-spin text-accent-texto" />
         <span>Verificando tu sesión…</span>
       </div>
     );

@@ -156,11 +156,11 @@ function ResolucionRegistrada({
       ) : null}
 
       {solicitud.estado === "rechazada" && solicitud.motivoRechazo ? (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-3">
-          <p className="text-xs font-bold uppercase tracking-wide text-rose-700">
+        <div className="rounded-lg border border-peligro-borde bg-peligro-suave p-3">
+          <p className="text-xs font-bold uppercase tracking-wide text-peligro-texto">
             Motivo del rechazo
           </p>
-          <p className="mt-1 text-sm text-rose-900">
+          <p className="mt-1 text-sm text-peligro-texto">
             {solicitud.motivoRechazo}
           </p>
         </div>

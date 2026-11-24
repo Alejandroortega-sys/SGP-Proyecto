@@ -100,7 +100,7 @@ export function CargaDocumento({
   }
 
   return (
-    <div className="mt-3 rounded-lg border border-sky-200 bg-sky-50/60 p-3">
+    <div className="mt-3 rounded-lg border border-info-borde bg-info-suave/60 p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-titulo">
@@ -123,7 +123,7 @@ export function CargaDocumento({
 
       {archivo ? (
         <div className="mt-3 flex flex-col gap-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-borde bg-white px-3 py-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-borde bg-superficie px-3 py-2">
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-titulo">
                 {archivo.name}
@@ -152,7 +152,7 @@ export function CargaDocumento({
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={progreso.porcentaje}
-                className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200"
+                className="h-2.5 w-full overflow-hidden rounded-full bg-interaccion-fuerte"
               >
                 <div
                   className="h-full rounded-full bg-primario transition-[width] duration-200"
@@ -183,7 +183,7 @@ export function CargaDocumento({
           />
           <label
             htmlFor={idArchivo}
-            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-primario bg-white px-4 py-2 text-sm font-semibold text-primario hover:bg-primario-suave"
+            className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg border border-accent bg-superficie px-4 py-2 text-sm font-semibold text-accent-texto transition-colors duration-150 hover:bg-accent-suave focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
           >
             {reemplazo ? "Elegir archivo de reemplazo" : "Elegir archivo"}
           </label>
@@ -191,7 +191,7 @@ export function CargaDocumento({
       )}
 
       {error ? (
-        <p role="alert" className="mt-2 text-sm text-rose-700">
+        <p role="alert" className="mt-2 text-sm text-peligro-texto">
           {error}
         </p>
       ) : null}

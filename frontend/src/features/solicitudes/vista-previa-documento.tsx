@@ -66,7 +66,7 @@ export function VistaPreviaDocumento({
           <iframe
             src={url}
             title={`Vista previa de ${archivo.nombre}`}
-            className="h-[65vh] w-full rounded-lg border border-borde bg-white"
+            className="h-[65vh] w-full rounded-lg border border-borde bg-superficie"
           />
         ) : (
           <Alerta tono="advertencia">

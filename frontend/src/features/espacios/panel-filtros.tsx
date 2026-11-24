@@ -196,12 +196,12 @@ export function PanelFiltros({
       >
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-base font-bold text-titulo">
-            <IconoFiltro className="size-5 text-primario" />
+            <IconoFiltro className="size-5 text-accent-texto" />
             Filtrar espacios
           </h2>
           {cargandoOpciones ? (
             <span className="inline-flex items-center gap-2 text-xs text-tenue">
-              <Spinner className="size-3.5 text-primario" />
+              <Spinner className="size-3.5 text-accent-texto" />
               Cargando opciones…
             </span>
           ) : null}
@@ -229,13 +229,13 @@ export function PanelFiltros({
             type="button"
             aria-label="Cerrar panel de filtros"
             onClick={() => setAbiertoMovil(false)}
-            className="absolute inset-0 bg-slate-900/40"
+            className="absolute inset-0 bg-velo"
           />
           <aside
             data-testid="panel-filtros-movil"
             className="absolute inset-x-0 bottom-0 max-h-[90dvh] overflow-y-auto rounded-t-2xl border border-borde bg-superficie p-4 shadow-2xl"
           >
-            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-300" />
+            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-borde-fuerte" />
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2
                 id="filtros-movil-titulo"
@@ -247,7 +247,7 @@ export function PanelFiltros({
                 type="button"
                 onClick={() => setAbiertoMovil(false)}
                 aria-label="Cerrar filtros"
-                className="flex size-10 items-center justify-center rounded-lg text-titulo hover:bg-slate-100"
+                className="flex size-10 items-center justify-center rounded-lg text-titulo hover:bg-interaccion"
               >
                 <IconoCerrar className="size-5" />
               </button>

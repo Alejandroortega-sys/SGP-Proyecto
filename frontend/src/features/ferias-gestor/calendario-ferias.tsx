@@ -64,9 +64,9 @@ function indicador(
 ) {
   const clases = {
     neutro: "border-borde bg-fondo text-titulo",
-    info: "border-sky-200 bg-sky-50 text-sky-800",
-    exito: "border-emerald-200 bg-emerald-50 text-emerald-800",
-    peligro: "border-rose-200 bg-rose-50 text-rose-800",
+    info: "border-info-borde bg-info-suave text-info-texto",
+    exito: "border-exito-borde bg-exito-suave text-exito-texto",
+    peligro: "border-peligro-borde bg-peligro-suave text-peligro-texto",
   }[tono];
 
   return (
@@ -186,7 +186,7 @@ export function CalendarioFerias() {
   return (
     <section className="flex flex-col gap-5">
       <header className="flex flex-col gap-2">
-        <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+        <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
           Programación municipal
         </p>
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -245,7 +245,7 @@ export function CalendarioFerias() {
 
             <div className="flex flex-col gap-1.5">
               <span className="text-sm font-medium text-titulo">Estados</span>
-              <label className="flex min-h-11 items-center gap-3 rounded-lg border border-borde bg-white px-3.5 py-2.5 text-sm text-texto">
+              <label className="flex min-h-11 items-center gap-3 rounded-lg border border-borde bg-superficie px-3.5 py-2.5 text-sm text-texto">
                 <input
                   type="checkbox"
                   checked={incluirTodos}
@@ -374,7 +374,7 @@ export function CalendarioFerias() {
               {cargandoPendientes && !pendientes ? (
                 <p className="text-sm text-tenue">Cargando pendientes…</p>
               ) : errorPendientes ? (
-                <p className="text-sm text-rose-700">
+                <p className="text-sm text-peligro-texto">
                   No pudimos cargar las ferias pendientes.
                 </p>
               ) : !pendientes || pendientes.datos.length === 0 ? (

@@ -43,13 +43,13 @@ export function DetalleSolicitud({ id }: DetalleSolicitudProps) {
       <header className="flex flex-col gap-3">
         <Link
           href="/comerciante/solicitudes"
-          className="text-sm font-semibold text-primario hover:underline"
+          className="text-sm font-semibold text-accent-texto hover:underline"
         >
           ← Volver a Mis solicitudes
         </Link>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+            <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
               Solicitud de uso temporal
             </p>
             <h1 className="mt-1 text-2xl font-extrabold text-titulo sm:text-3xl">

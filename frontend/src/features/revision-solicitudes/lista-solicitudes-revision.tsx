@@ -72,7 +72,7 @@ export function ListaSolicitudesRevision() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+        <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
           Gestión municipal · Revisión documental
         </p>
         <h1 className="mt-1 text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -256,7 +256,7 @@ export function ListaSolicitudesRevision() {
                       <Td>
                         <Link
                           href={`/gestor/solicitudes/${solicitud.id}`}
-                          className="font-semibold text-primario hover:underline"
+                          className="font-semibold text-accent-texto hover:underline"
                         >
                           {solicitud.bloqueo && !solicitud.bloqueo.esPropio
                             ? "Ver en solo lectura"
@@ -306,7 +306,7 @@ export function ListaSolicitudesRevision() {
                   </div>
                   <Link
                     href={`/gestor/solicitudes/${solicitud.id}`}
-                    className="mt-3 inline-flex min-h-11 items-center font-semibold text-primario hover:underline"
+                    className="mt-3 inline-flex min-h-11 items-center font-semibold text-accent-texto hover:underline"
                   >
                     {solicitud.bloqueo && !solicitud.bloqueo.esPropio
                       ? "Ver en solo lectura"
@@ -335,20 +335,20 @@ function EstadoBloqueo({
 }) {
   if (!solicitud.bloqueo) {
     return (
-      <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
+      <span className="inline-flex rounded-full border border-borde bg-interaccion px-2.5 py-0.5 text-xs font-semibold text-texto">
         Libre
       </span>
     );
   }
   if (solicitud.bloqueo.esPropio) {
     return (
-      <span className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 text-xs font-semibold text-sky-800">
+      <span className="inline-flex rounded-full border border-info-borde bg-info-suave px-2.5 py-0.5 text-xs font-semibold text-info-texto">
         Tú la estás revisando
       </span>
     );
   }
   return (
-    <span className="inline-flex flex-col text-xs text-amber-800">
+    <span className="inline-flex flex-col text-xs text-advertencia-texto">
       <span className="font-semibold">En revisión por</span>
       <span>
         {solicitud.bloqueo.gestor.nombre}

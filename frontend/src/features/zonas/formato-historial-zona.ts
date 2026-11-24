@@ -86,13 +86,13 @@ export function describirCambio(cambio: CambioZonaVersion): string {
 export function clasesAccionVersion(accion: AccionVersionZona): string {
   switch (accion) {
     case "creacion":
-      return "border-emerald-200 bg-emerald-50 text-emerald-800";
+      return "border-exito-borde bg-exito-suave text-exito-texto";
     case "edicion":
-      return "border-sky-200 bg-sky-50 text-sky-800";
+      return "border-info-borde bg-info-suave text-info-texto";
     case "activacion":
-      return "border-emerald-200 bg-emerald-50 text-emerald-800";
+      return "border-exito-borde bg-exito-suave text-exito-texto";
     case "desactivacion":
-      return "border-rose-200 bg-rose-50 text-rose-800";
+      return "border-peligro-borde bg-peligro-suave text-peligro-texto";
     default:
       return "border-borde bg-fondo text-texto";
   }

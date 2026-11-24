@@ -105,7 +105,7 @@ export function AprobarSolicitudModal({
             maxLength={2_000}
             aria-describedby="ayuda-dictamen-aprobacion"
             aria-invalid={error ? true : undefined}
-            className="mt-1.5 w-full rounded-lg border border-borde bg-white px-3.5 py-2.5 text-sm text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
+            className="mt-1.5 w-full rounded-lg border border-borde bg-superficie px-3.5 py-2.5 text-sm text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
             placeholder="Opcional: explica por qué la solicitud cumple y se aprueba."
           />
           <p
@@ -115,7 +115,7 @@ export function AprobarSolicitudModal({
             {dictamen.length}/2000 caracteres. Será visible para el solicitante.
           </p>
           {error ? (
-            <p role="alert" className="mt-1 text-sm text-rose-700">
+            <p role="alert" className="mt-1 text-sm text-peligro-texto">
               {error}
             </p>
           ) : null}

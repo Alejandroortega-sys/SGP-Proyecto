@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
 import { Boton } from "@/components/ui/boton";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Cargando, EstadoVacio } from "@/components/ui/estado-vacio";
 import { Etiqueta } from "@/components/ui/etiqueta";
 import { AccionesModal, Modal } from "@/components/ui/modal";
@@ -117,7 +118,7 @@ export function DetalleEspacio({ id, mensajeInicial }: DetalleEspacioProps) {
           accion={
             <Link
               href="/gestor/espacios"
-              className="font-semibold text-primario hover:underline"
+              className="font-semibold text-accent-texto hover:underline"
             >
               Volver al catálogo de espacios
             </Link>
@@ -143,13 +144,13 @@ export function DetalleEspacio({ id, mensajeInicial }: DetalleEspacioProps) {
       <div className="flex flex-col gap-2">
         <Link
           href="/gestor/espacios"
-          className="text-sm font-semibold text-primario hover:underline"
+          className="text-sm font-semibold text-accent-texto hover:underline"
         >
           ← Volver al catálogo de espacios
         </Link>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+            <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
               Espacio público · Administración
             </p>
             <h1 className="text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -173,12 +174,12 @@ export function DetalleEspacio({ id, mensajeInicial }: DetalleEspacioProps) {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link
+            <EnlaceBoton
               href={`/gestor/espacios/${espacio.id}/editar`}
-              className="inline-flex min-h-11 items-center rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+              variante="contorno"
             >
               Editar
-            </Link>
+            </EnlaceBoton>
             {espacio.asignacionManual ? (
               <Boton
                 variante="solido"

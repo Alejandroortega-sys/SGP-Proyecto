@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
 import { Boton } from "@/components/ui/boton";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Cargando, EstadoVacio } from "@/components/ui/estado-vacio";
 import { Tarjeta, TarjetaCuerpo } from "@/components/ui/tarjeta";
 import {
@@ -206,7 +207,7 @@ export function EditorEspacio({ id, mensajeInicial }: EditorEspacioProps) {
           accion={
             <Link
               href="/gestor/espacios"
-              className="font-semibold text-primario hover:underline"
+              className="font-semibold text-accent-texto hover:underline"
             >
               Volver al catálogo de espacios
             </Link>
@@ -227,12 +228,12 @@ export function EditorEspacio({ id, mensajeInicial }: EditorEspacioProps) {
       <div className="flex flex-col gap-2">
         <Link
           href="/gestor/espacios"
-          className="text-sm font-semibold text-primario hover:underline"
+          className="text-sm font-semibold text-accent-texto hover:underline"
         >
           ← Volver al catálogo de espacios
         </Link>
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+          <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
             Espacio público · Administración
           </p>
           <h1 className="text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -283,12 +284,12 @@ export function EditorEspacio({ id, mensajeInicial }: EditorEspacioProps) {
           ) : null}
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Link
+            <EnlaceBoton
               href={id ? `/gestor/espacios/${id}` : "/gestor/espacios"}
-              className="inline-flex min-h-11 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-texto hover:bg-slate-100"
+              variante="fantasma"
             >
               Cancelar
-            </Link>
+            </EnlaceBoton>
             <Boton
               onClick={() => void guardar()}
               cargando={guardando}

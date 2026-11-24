@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { BloqueError } from "@/components/ui/bloque-error";
 import { Boton } from "@/components/ui/boton";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Campo, Selector } from "@/components/ui/campo";
 import { Cargando, EstadoVacio } from "@/components/ui/estado-vacio";
 import { EtiquetaEstado } from "@/components/ui/etiqueta";
@@ -71,12 +72,7 @@ export function ListaUsuarios() {
           </p>
         </div>
         {esAdministrador ? (
-          <Link
-            href="/gestor/gestores/nuevo"
-            className="inline-flex min-h-11 items-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
-          >
-            Crear gestor
-          </Link>
+          <EnlaceBoton href="/gestor/gestores/nuevo">Crear gestor</EnlaceBoton>
         ) : null}
       </div>
 
@@ -190,7 +186,7 @@ export function ListaUsuarios() {
                     <Td>
                       <Link
                         href={`/gestor/usuarios/${cuenta.id}`}
-                        className="font-semibold text-primario hover:underline"
+                        className="font-semibold text-accent-texto hover:underline"
                       >
                         Ver detalle
                       </Link>

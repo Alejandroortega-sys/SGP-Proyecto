@@ -13,9 +13,9 @@ function Indicador({
 }) {
   const clases = {
     neutro: "border-borde bg-fondo text-titulo",
-    exito: "border-emerald-200 bg-emerald-50 text-emerald-800",
-    advertencia: "border-amber-200 bg-amber-50 text-amber-800",
-    peligro: "border-rose-200 bg-rose-50 text-rose-800",
+    exito: "border-exito-borde bg-exito-suave text-exito-texto",
+    advertencia: "border-advertencia-borde bg-advertencia-suave text-advertencia-texto",
+    peligro: "border-peligro-borde bg-peligro-suave text-peligro-texto",
   }[tono];
 
   return (

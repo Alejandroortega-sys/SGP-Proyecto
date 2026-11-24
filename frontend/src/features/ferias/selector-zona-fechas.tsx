@@ -158,7 +158,7 @@ export function SelectorZonaFechas({
             {agenda.ocupados.slice(0, 8).map((rango) => (
               <li
                 key={`${rango.fechaInicio}-${rango.fechaFin}`}
-                className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-900"
+                className="rounded-full border border-advertencia-borde bg-advertencia-suave px-3 py-1 text-xs font-medium text-advertencia-texto"
               >
                 {formatearRangoFechas(rango.fechaInicio, rango.fechaFin)}
               </li>
@@ -178,7 +178,7 @@ export function SelectorZonaFechas({
           role="status"
           className="inline-flex items-center gap-2 text-sm text-texto"
         >
-          <Spinner className="size-4 text-primario" />
+          <Spinner className="size-4 text-accent-texto" />
           Verificando la disponibilidad de la zona…
         </span>
       ) : disponibilidad?.disponible ? (
@@ -193,11 +193,11 @@ export function SelectorZonaFechas({
           </Alerta>
 
           {disponibilidad.sugerencias.length > 0 ? (
-            <div className="rounded-lg border border-sky-200 bg-sky-50 p-4">
-              <p className="text-sm font-bold text-sky-900">
+            <div className="rounded-lg border border-info-borde bg-info-suave p-4">
+              <p className="text-sm font-bold text-info-texto">
                 Fechas alternativas disponibles
               </p>
-              <p className="mt-1 text-sm text-sky-800">
+              <p className="mt-1 text-sm text-info-texto">
                 Conservan la misma duración de la feria.
               </p>
               <ul className="mt-3 flex flex-wrap gap-2">

@@ -30,7 +30,7 @@ function Motivos({ fila }: { fila: FilaPreviewImportacion }) {
         <li
           key={`${motivo.tipo}-${indice}`}
           className={
-            motivo.tipo === "error" ? "text-rose-700" : "text-amber-700"
+            motivo.tipo === "error" ? "text-peligro-texto" : "text-advertencia-texto"
           }
         >
           {motivo.texto}
@@ -97,7 +97,7 @@ export function TablaPrevisualizacion({
                     {ETIQUETAS_ESTADO_FILA[fila.estado]}
                   </Etiqueta>
                   {fila.requiereConfirmacion ? (
-                    <p className="mt-1 text-xs font-semibold text-amber-700">
+                    <p className="mt-1 text-xs font-semibold text-advertencia-texto">
                       Requiere confirmación
                     </p>
                   ) : null}
@@ -130,7 +130,7 @@ export function TablaPrevisualizacion({
               <DetalleFila fila={fila} tipo={tipo} />
             </div>
             {fila.requiereConfirmacion ? (
-              <p className="mt-2 text-xs font-semibold text-amber-700">
+              <p className="mt-2 text-xs font-semibold text-advertencia-texto">
                 Requiere confirmación
               </p>
             ) : null}

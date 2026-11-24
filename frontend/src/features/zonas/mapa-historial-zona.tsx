@@ -122,7 +122,7 @@ export function MapaHistorialZona({
   }, [geometria, geometriaAnterior, tipo]);
 
   return (
-    <div className="sgp-mapa relative overflow-hidden rounded-xl border border-borde bg-slate-200">
+    <div className="sgp-mapa relative overflow-hidden rounded-xl border border-borde bg-interaccion-fuerte">
       <div
         ref={contenedorRef}
         className="h-[320px] w-full sm:h-[380px]"
@@ -131,7 +131,7 @@ export function MapaHistorialZona({
       />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[500] p-3">
         <div className="pointer-events-auto max-w-xs rounded-lg border border-borde bg-superficie/95 px-3 py-2 shadow-sm backdrop-blur">
-          <p className="text-xs font-semibold uppercase tracking-wide text-primario">
+          <p className="text-xs font-semibold uppercase tracking-wide text-accent-texto">
             Comparación de geometría
           </p>
           <p className="mt-1 text-xs leading-relaxed text-texto">

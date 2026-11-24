@@ -53,7 +53,7 @@ function crearPopup(
   contenedor.className = "space-y-1 text-sm";
 
   const titulo = document.createElement("p");
-  titulo.className = "font-bold text-slate-900";
+  titulo.className = "font-bold text-titulo";
   titulo.textContent = `Fila ${fila.fila}: ${resumenFilaImportacion(fila, tipo).titulo}`;
   contenedor.append(titulo);
 
@@ -69,7 +69,7 @@ function crearPopup(
 
   if (fila.errores.length > 0) {
     const errores = document.createElement("ul");
-    errores.className = "mt-1 list-disc pl-4 text-rose-700";
+    errores.className = "mt-1 list-disc pl-4 text-peligro-texto";
     for (const error of fila.errores) {
       const item = document.createElement("li");
       item.textContent = error;
@@ -287,7 +287,7 @@ export function MapaPrevisualizacion({
   }, [filas, tipo]);
 
   return (
-    <div className="sgp-mapa relative h-[360px] overflow-hidden rounded-xl border border-borde bg-slate-200 sm:h-[460px]">
+    <div className="sgp-mapa relative h-[360px] overflow-hidden rounded-xl border border-borde bg-interaccion-fuerte sm:h-[460px]">
       <div
         ref={contenedorRef}
         className="h-full w-full"
@@ -316,7 +316,7 @@ export function MapaPrevisualizacion({
           role="status"
           className="pointer-events-none absolute right-3 top-3 z-[500] inline-flex items-center gap-2 rounded-full border border-borde bg-superficie/95 px-3 py-1 text-xs text-texto shadow-sm"
         >
-          <Spinner className="size-3.5 text-primario" />
+          <Spinner className="size-3.5 text-accent-texto" />
           Cargando zonas de contexto…
         </p>
       ) : null}

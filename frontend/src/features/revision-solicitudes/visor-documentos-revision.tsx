@@ -156,7 +156,7 @@ export function VisorDocumentosRevision({
             <iframe
               title={`Vista previa de ${archivo.nombre}`}
               src={archivo.url}
-              className="h-[28rem] w-full bg-white"
+              className="h-[28rem] w-full bg-superficie"
             />
           ) : esImagen ? (
             // eslint-disable-next-line @next/next/no-img-element -- la imagen viene de un blob autenticado
@@ -188,7 +188,7 @@ export function VisorDocumentosRevision({
                   aria-pressed={documento?.id === version.id}
                   className={
                     documento?.id === version.id
-                      ? "min-h-9 rounded-lg border border-primario bg-primario-suave px-3 py-1.5 text-xs font-semibold text-primario"
+                      ? "min-h-9 rounded-lg border border-primario bg-primario-suave px-3 py-1.5 text-xs font-semibold text-accent-texto"
                       : "min-h-9 rounded-lg border border-borde px-3 py-1.5 text-xs font-medium text-texto hover:bg-fondo"
                   }
                 >
@@ -199,7 +199,7 @@ export function VisorDocumentosRevision({
             ))}
           </ul>
           {documento && !documento.esActual ? (
-            <p className="mt-2 text-xs text-amber-800">
+            <p className="mt-2 text-xs text-advertencia-texto">
               Estás viendo una versión anterior cargada el{" "}
               {formatearFechaHora(documento.cargadoEn)}.
             </p>

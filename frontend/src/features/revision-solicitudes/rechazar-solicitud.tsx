@@ -79,7 +79,7 @@ export function RechazarSolicitudModal({
             className="text-sm font-medium text-titulo"
           >
             Motivo del rechazo
-            <span className="ml-1 text-rose-600" aria-hidden="true">
+            <span className="ml-1 text-peligro-texto" aria-hidden="true">
               *
             </span>
           </label>
@@ -91,14 +91,14 @@ export function RechazarSolicitudModal({
             maxLength={2_000}
             aria-describedby="ayuda-motivo-rechazo"
             aria-invalid={error ? true : undefined}
-            className="mt-1.5 w-full rounded-lg border border-borde bg-white px-3.5 py-2.5 text-sm text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
+            className="mt-1.5 w-full rounded-lg border border-borde bg-superficie px-3.5 py-2.5 text-sm text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
             placeholder="Explica por qué no es posible aprobar la solicitud."
           />
           <p id="ayuda-motivo-rechazo" className="mt-1 text-xs text-tenue">
             {motivo.length}/2000 caracteres. Será visible para el solicitante.
           </p>
           {error ? (
-            <p role="alert" className="mt-1 text-sm text-rose-700">
+            <p role="alert" className="mt-1 text-sm text-peligro-texto">
               {error}
             </p>
           ) : null}

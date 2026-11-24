@@ -12,7 +12,7 @@ const MapaEspacio = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[360px] w-full items-center justify-center rounded-xl bg-slate-200 sm:h-[480px]">
+      <div className="flex h-[360px] w-full items-center justify-center rounded-xl bg-interaccion-fuerte sm:h-[480px]">
         <div className="rounded-xl border border-borde bg-superficie px-6 py-4 shadow-sm">
           <Cargando texto="Preparando el mapa del espacio…" />
         </div>

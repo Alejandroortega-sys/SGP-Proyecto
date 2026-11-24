@@ -24,7 +24,7 @@ export function EstadoVacio({
 export function Cargando({ texto = "Cargando información…" }: { texto?: string }) {
   return (
     <div className="flex items-center justify-center gap-3 px-4 py-12 text-sm text-texto">
-      <Spinner className="size-5 animate-spin text-primario" />
+      <Spinner className="size-5 animate-spin text-accent-texto" />
       <span>{texto}</span>
     </div>
   );

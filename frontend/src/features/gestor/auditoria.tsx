@@ -174,7 +174,7 @@ export function Auditoria() {
                     </Td>
                     <Td className="max-w-md">
                       <details>
-                        <summary className="cursor-pointer text-xs font-semibold text-primario">
+                        <summary className="cursor-pointer text-xs font-semibold text-accent-texto">
                           Ver valores
                         </summary>
                         <div className="mt-2 grid gap-2 text-xs">

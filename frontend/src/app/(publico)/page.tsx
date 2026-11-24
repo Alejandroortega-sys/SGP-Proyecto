@@ -35,13 +35,13 @@ const PASOS = [
 export default function PaginaBienvenida() {
   return (
     <>
-      <section className="border-b border-borde bg-white">
+      <section className="border-b border-borde bg-superficie">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 md:items-center md:py-20">
           <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase text-emerald-700">
+            <span className="inline-flex items-center gap-2 rounded-full border border-exito-borde bg-exito-suave px-3 py-1 text-xs font-semibold uppercase text-exito-texto">
               Alcaldía de Tuluá · Valle del Cauca
             </span>
-            <h1 className="mt-4 text-3xl font-extrabold leading-tight text-titulo sm:text-4xl md:text-[2.75rem] md:leading-[1.15]">
+            <h1 className="mt-4 text-3xl font-extrabold leading-tight text-titulo sm:text-4xl md:text-[3.25rem] md:leading-[1.1]">
               Hacia un espacio público ordenado, inclusivo y transparente en
               Tuluá
             </h1>
@@ -59,7 +59,7 @@ export default function PaginaBienvenida() {
               </Link>
               <Link
                 href="/registro/organizador"
-                className="inline-flex min-h-12 items-center justify-center rounded-lg border border-primario bg-white px-6 py-3 text-base font-semibold text-primario transition-colors hover:bg-primario-suave"
+                className="inline-flex min-h-12 items-center justify-center rounded-lg border border-primario bg-superficie px-6 py-3 text-base font-semibold text-accent-texto transition-colors hover:bg-primario-suave"
               >
                 Soy Organizador de Ferias
               </Link>
@@ -68,7 +68,7 @@ export default function PaginaBienvenida() {
               ¿Ya tienes cuenta?{" "}
               <Link
                 href="/login"
-                className="font-semibold text-primario hover:underline"
+                className="font-semibold text-accent-texto hover:underline"
               >
                 Inicia sesión
               </Link>
@@ -77,7 +77,7 @@ export default function PaginaBienvenida() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-xl border border-borde bg-fondo p-5">
-              <span className="flex size-10 items-center justify-center rounded-lg bg-primario-suave text-primario">
+              <span className="flex size-10 items-center justify-center rounded-lg bg-primario-suave text-accent-texto">
                 <IconoTienda />
               </span>
               <h2 className="mt-3 text-sm font-bold text-titulo">
@@ -89,7 +89,7 @@ export default function PaginaBienvenida() {
               </p>
             </div>
             <div className="rounded-xl border border-borde bg-fondo p-5">
-              <span className="flex size-10 items-center justify-center rounded-lg bg-amber-50 text-acento">
+              <span className="flex size-10 items-center justify-center rounded-lg bg-advertencia-suave text-advertencia-texto">
                 <IconoFeria />
               </span>
               <h2 className="mt-3 text-sm font-bold text-titulo">
@@ -101,7 +101,7 @@ export default function PaginaBienvenida() {
               </p>
             </div>
             <div className="rounded-xl border border-borde bg-fondo p-5">
-              <span className="flex size-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+              <span className="flex size-10 items-center justify-center rounded-lg bg-exito-suave text-exito-texto">
                 <IconoQr />
               </span>
               <h2 className="mt-3 text-sm font-bold text-titulo">
@@ -112,7 +112,7 @@ export default function PaginaBienvenida() {
               </p>
             </div>
             <div className="rounded-xl border border-borde bg-fondo p-5">
-              <span className="flex size-10 items-center justify-center rounded-lg bg-sky-50 text-sky-700">
+              <span className="flex size-10 items-center justify-center rounded-lg bg-info-suave text-info-texto">
                 <IconoMapa />
               </span>
               <h2 className="mt-3 text-sm font-bold text-titulo">
@@ -185,7 +185,7 @@ export default function PaginaBienvenida() {
                 </Link>
                 <Link
                   href="/registro"
-                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-borde bg-white px-5 py-2.5 text-sm font-semibold text-texto hover:bg-slate-50"
+                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-borde-fuerte bg-superficie px-5 py-2.5 text-sm font-semibold text-titulo transition-colors duration-150 hover:bg-interaccion"
                 >
                   Crear mi cuenta
                 </Link>
@@ -193,7 +193,7 @@ export default function PaginaBienvenida() {
             </div>
 
             <div className="rounded-xl border border-borde bg-fondo p-6">
-              <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold uppercase text-emerald-700">
+              <span className="inline-flex items-center rounded-full border border-exito-borde bg-exito-suave px-2.5 py-1 text-xs font-semibold uppercase text-exito-texto">
                 Disponible
               </span>
               <h3 className="mt-3 text-base font-bold text-titulo">
@@ -206,7 +206,7 @@ export default function PaginaBienvenida() {
               </p>
               <Link
                 href="/mapa"
-                className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-primario bg-white px-5 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+                className="mt-4 inline-flex min-h-11 items-center justify-center rounded-lg border border-primario bg-white px-5 py-2.5 text-sm font-semibold text-accent-texto hover:bg-primario-suave"
               >
                 Explorar el mapa
               </Link>

@@ -196,7 +196,7 @@ export function FormularioActivacion({
   return (
     <form onSubmit={enviar} noValidate className="flex flex-col gap-5">
       <div className="flex items-start gap-3 rounded-lg border border-borde bg-fondo px-4 py-3">
-        <IconoCorreo className="mt-0.5 size-5 shrink-0 text-primario" />
+        <IconoCorreo className="mt-0.5 size-5 shrink-0 text-accent-texto" />
         <p className="text-sm leading-relaxed text-texto">
           {correoEsEditable ? (
             "Ingresa el correo con el que te registraste y el código de 6 dígitos que enviamos."
@@ -230,7 +230,7 @@ export function FormularioActivacion({
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-medium text-titulo">
           Código de activación
-          <span className="ml-1 text-rose-600" aria-hidden="true">
+          <span className="ml-1 text-peligro-texto" aria-hidden="true">
             *
           </span>
         </legend>
@@ -254,7 +254,7 @@ export function FormularioActivacion({
               }}
               onFocus={(evento) => evento.target.select()}
               maxLength={TOTAL_DIGITOS}
-              className="h-12 min-h-12 w-full rounded-lg border border-borde bg-white text-center text-xl font-bold text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
+              className="h-12 min-h-12 w-full rounded-lg border border-borde bg-superficie text-center text-xl font-bold text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
             />
           ))}
         </div>
@@ -262,7 +262,7 @@ export function FormularioActivacion({
 
       <p
         aria-live="polite"
-        className={`text-sm font-medium ${vigencia === 0 ? "text-rose-700" : "text-texto"}`}
+        className={`text-sm font-medium ${vigencia === 0 ? "text-peligro-texto" : "text-texto"}`}
       >
         {vigencia === 0
           ? "El código ha expirado. Solicita uno nuevo."
@@ -301,7 +301,7 @@ export function FormularioActivacion({
           type="button"
           onClick={reenviar}
           disabled={reenviando || enfriamiento > 0}
-          className="min-h-11 font-semibold text-primario underline hover:text-primario-hover disabled:cursor-not-allowed disabled:text-tenue disabled:no-underline"
+          className="min-h-11 font-semibold text-accent-texto underline hover:text-accent-texto-hover disabled:cursor-not-allowed disabled:text-tenue disabled:no-underline"
         >
           {reenviando
             ? "Enviando…"

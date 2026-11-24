@@ -57,7 +57,7 @@ export function CamposSeguridadCuenta({
 
       <div aria-live="polite">
         <div className="flex items-center gap-3">
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-interaccion-fuerte">
             <div
               className={`h-full rounded-full transition-all ${fortaleza.claseBarra}`}
               style={{ width: `${(fortaleza.nivel / 4) * 100}%` }}

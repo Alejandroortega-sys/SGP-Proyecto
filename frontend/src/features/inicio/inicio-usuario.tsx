@@ -28,7 +28,7 @@ export function InicioUsuario({ rol }: { rol: "comerciante" | "organizador" }) {
   return (
     <div className="flex flex-col gap-6">
       <section>
-        <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+        <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
           {esOrganizador ? "Portal del organizador" : "Portal del comerciante"}
         </p>
         <h1 className="mt-1 text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -86,7 +86,7 @@ export function InicioUsuario({ rol }: { rol: "comerciante" | "organizador" }) {
                   <p>NIT {organizacion.nit}</p>
                   <Link
                     href="/organizador/mi-organizacion"
-                    className="font-semibold text-primario hover:underline"
+                    className="font-semibold text-accent-texto hover:underline"
                   >
                     Ver mi organización →
                   </Link>
@@ -128,7 +128,7 @@ export function InicioUsuario({ rol }: { rol: "comerciante" | "organizador" }) {
               <>
                 <Link
                   href="/comerciante/espacios"
-                  className="rounded-lg border border-primario bg-primario-suave px-3 py-2 font-semibold text-primario hover:bg-primario-suave/80"
+                  className="rounded-lg border border-primario bg-primario-suave px-3 py-2 font-semibold text-accent-texto hover:bg-primario-suave/80"
                 >
                   Consultar espacios disponibles
                 </Link>

@@ -128,7 +128,7 @@ function TarjetaRequisito({
           >
             {ETIQUETAS_ESTADO_REQUISITO[requisito.estado]}
           </span>
-          <span className="rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
+          <span className="rounded-full border border-borde bg-interaccion px-2.5 py-0.5 text-xs font-semibold text-texto">
             {requisito.obligatorio ? "Obligatorio" : "Opcional"}
           </span>
         </div>
@@ -188,14 +188,14 @@ function TarjetaRequisito({
 
       {versionesAnteriores.length > 0 ? (
         <details className="mt-3 rounded-lg border border-borde bg-fondo px-3 py-2">
-          <summary className="cursor-pointer text-sm font-semibold text-primario">
+          <summary className="cursor-pointer text-sm font-semibold text-accent-texto">
             Versiones anteriores ({versionesAnteriores.length})
           </summary>
           <ul className="mt-2 flex flex-col gap-2">
             {versionesAnteriores.map((version) => (
               <li
                 key={version.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-borde bg-white px-3 py-2"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-borde bg-superficie px-3 py-2"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-titulo">
@@ -266,7 +266,7 @@ function TarjetaRequisito({
       ) : null}
 
       {error ? (
-        <p role="alert" className="mt-2 text-sm text-rose-700">
+        <p role="alert" className="mt-2 text-sm text-peligro-texto">
           {error}
         </p>
       ) : null}

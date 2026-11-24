@@ -144,7 +144,7 @@ export function ListaOrganizaciones() {
                     <Td>
                       <Link
                         href={`/gestor/organizaciones/${organizacion.usuarioId}`}
-                        className="font-semibold text-primario hover:underline"
+                        className="font-semibold text-accent-texto hover:underline"
                       >
                         Ver detalle
                       </Link>

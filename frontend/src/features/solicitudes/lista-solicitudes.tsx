@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
 import { Boton } from "@/components/ui/boton";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Selector } from "@/components/ui/campo";
 import { Cargando, EstadoVacio } from "@/components/ui/estado-vacio";
 import { Modal, AccionesModal } from "@/components/ui/modal";
@@ -108,7 +109,7 @@ export function ListaSolicitudes() {
   return (
     <section className="flex flex-col gap-5">
       <header className="flex flex-col gap-2">
-        <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+        <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
           Portal del comerciante
         </p>
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -121,23 +122,20 @@ export function ListaSolicitudes() {
               borrador que hayas dejado en este navegador.
             </p>
           </div>
-          <Link
-            href="/comerciante/solicitudes/nueva"
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
-          >
+          <EnlaceBoton href="/comerciante/solicitudes/nueva">
             Nueva solicitud
-          </Link>
+          </EnlaceBoton>
         </div>
       </header>
 
       {borrador ? (
-        <section className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <section className="rounded-xl border border-advertencia-borde bg-advertencia-suave p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-bold text-amber-900">
+              <p className="text-sm font-bold text-advertencia-texto">
                 Borrador sin radicar
               </p>
-              <p className="mt-1 text-sm text-amber-800">
+              <p className="mt-1 text-sm text-advertencia-texto">
                 {borrador.actividad || "Solicitud en preparación"}
                 {borrador.fechaInicio && borrador.fechaFin
                   ? ` · ${formatearRangoFechas(
@@ -149,14 +147,14 @@ export function ListaSolicitudes() {
                   ? ` · ${archivosBorrador} documento(s) adjunto(s)`
                   : ""}
               </p>
-              <p className="mt-1 text-xs text-amber-700">
+              <p className="mt-1 text-xs text-advertencia-texto">
                 Guardado en este navegador. Se elimina al cerrar sesión.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/comerciante/solicitudes/nueva"
-                className="inline-flex min-h-9 items-center justify-center rounded-lg border border-amber-700 bg-white px-3 py-1.5 text-sm font-semibold text-amber-800 hover:bg-amber-100"
+                className="inline-flex min-h-9 items-center justify-center rounded-lg border border-advertencia bg-superficie px-3 py-1.5 text-sm font-semibold text-advertencia-texto hover:bg-advertencia-suave"
               >
                 Continuar
               </Link>
@@ -220,12 +218,9 @@ export function ListaSolicitudes() {
             }
             accion={
               estado === "todos" ? (
-                <Link
-                  href="/comerciante/solicitudes/nueva"
-                  className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
-                >
+                <EnlaceBoton href="/comerciante/solicitudes/nueva">
                   Crear mi primera solicitud
-                </Link>
+                </EnlaceBoton>
               ) : (
                 <Boton
                   variante="contorno"
@@ -298,12 +293,13 @@ export function ListaSolicitudes() {
                       <EtiquetaEstadoSolicitud estado={solicitud.estado} />
                     </Td>
                     <Td>
-                      <Link
+                      <EnlaceBoton
                         href={`/comerciante/solicitudes/${solicitud.id}`}
-                        className="inline-flex min-h-9 items-center rounded-lg border border-primario px-3 py-1.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+                        tamano="sm"
+                        variante="contorno"
                       >
                         Ver detalle
-                      </Link>
+                      </EnlaceBoton>
                     </Td>
                   </tr>
                 ))}
@@ -336,7 +332,7 @@ export function ListaSolicitudes() {
                 </p>
                 <Link
                   href={`/comerciante/solicitudes/${solicitud.id}`}
-                  className="mt-1 inline-flex min-h-11 items-center justify-center rounded-lg border border-primario px-3 py-2 text-sm font-semibold text-primario hover:bg-primario-suave"
+                  className="mt-1 inline-flex min-h-11 items-center justify-center rounded-lg border border-primario px-3 py-2 text-sm font-semibold text-accent-texto hover:bg-primario-suave"
                 >
                   Ver detalle
                 </Link>

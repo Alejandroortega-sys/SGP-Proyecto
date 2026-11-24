@@ -30,7 +30,7 @@ export default function PaginaLogin() {
       </Tarjeta>
 
       <p className="mt-6 text-center text-sm text-texto">
-        <Link href="/" className="font-medium text-primario hover:underline">
+        <Link href="/" className="font-medium text-accent-texto hover:underline">
           ← Volver al inicio
         </Link>
       </p>

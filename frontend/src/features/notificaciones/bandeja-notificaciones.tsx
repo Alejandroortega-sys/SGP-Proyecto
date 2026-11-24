@@ -1,10 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import { Alerta } from '@/components/ui/alerta';
 import { BloqueError } from '@/components/ui/bloque-error';
 import { Boton } from '@/components/ui/boton';
+import { EnlaceBoton } from '@/components/ui/enlace-boton';
 import { Selector } from '@/components/ui/campo';
 import { Cargando, EstadoVacio } from '@/components/ui/estado-vacio';
 import { Etiqueta } from '@/components/ui/etiqueta';
@@ -176,22 +176,24 @@ export function BandejaNotificaciones() {
                   ) : null}
                   <div className="flex flex-wrap items-center gap-2">
                     {rutaSolicitud ? (
-                      <Link
+                      <EnlaceBoton
                         href={rutaSolicitud}
+                        tamano="sm"
+                        variante="contorno"
                         aria-label={`Ver solicitud ${notificacion.asunto}`}
-                        className="inline-flex min-h-9 items-center justify-center rounded-lg border border-primario px-3 py-1.5 text-sm font-semibold text-primario hover:bg-primario-suave"
                       >
                         Ver solicitud
-                      </Link>
+                      </EnlaceBoton>
                     ) : null}
                     {rutaFeria ? (
-                      <Link
+                      <EnlaceBoton
                         href={rutaFeria}
+                        tamano="sm"
+                        variante="contorno"
                         aria-label={`Ver feria ${notificacion.asunto}`}
-                        className="inline-flex min-h-9 items-center justify-center rounded-lg border border-primario px-3 py-1.5 text-sm font-semibold text-primario hover:bg-primario-suave"
                       >
                         Ver feria
-                      </Link>
+                      </EnlaceBoton>
                     ) : null}
                     {!notificacion.leida ? (
                       <Boton

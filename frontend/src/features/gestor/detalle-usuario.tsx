@@ -189,7 +189,7 @@ export function DetalleUsuario({ id }: { id: string }) {
       <div>
         <Link
           href="/gestor/usuarios"
-          className="text-sm font-semibold text-primario hover:underline"
+          className="text-sm font-semibold text-accent-texto hover:underline"
         >
           ← Volver al listado
         </Link>
@@ -283,7 +283,7 @@ export function DetalleUsuario({ id }: { id: string }) {
             aria-current={pestana === valor ? "page" : undefined}
             className={
               pestana === valor
-                ? "-mb-px border-b-2 border-primario px-4 py-2.5 text-sm font-semibold text-primario"
+                ? "-mb-px border-b-2 border-primario px-4 py-2.5 text-sm font-semibold text-accent-texto"
                 : "-mb-px border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-texto hover:text-titulo"
             }
           >
@@ -368,7 +368,7 @@ export function DetalleUsuario({ id }: { id: string }) {
                   <Dato etiqueta="Contacto" valor={cuenta.organizacion.contacto} />
                   <Link
                     href={`/gestor/organizaciones/${cuenta.id}`}
-                    className="font-semibold text-primario hover:underline"
+                    className="font-semibold text-accent-texto hover:underline"
                   >
                     Ver organización completa →
                   </Link>
@@ -554,7 +554,7 @@ export function DetalleUsuario({ id }: { id: string }) {
                 rows={3}
                 maxLength={300}
                 placeholder="Explica el motivo de la suspensión o inactivación."
-                className="w-full rounded-lg border border-borde bg-white px-3.5 py-2.5 text-base text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
+                className="w-full rounded-lg border border-borde bg-superficie px-3.5 py-2.5 text-base text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
               />
               <p className="text-xs text-tenue">
                 Opcional. Entre 3 y 300 caracteres. Se incluye en el correo al

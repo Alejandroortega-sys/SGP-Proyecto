@@ -370,7 +370,7 @@ export function MapaEspaciosLeaflet({
   }, [seleccionadoId, espacios]);
 
   return (
-    <div className="sgp-mapa relative h-full min-h-[420px] overflow-hidden rounded-xl border border-borde bg-slate-200">
+    <div className="sgp-mapa relative h-full min-h-[420px] overflow-hidden rounded-xl border border-borde bg-interaccion-fuerte">
       <div
         ref={contenedorRef}
         className="h-full min-h-[420px] w-full"
@@ -383,7 +383,7 @@ export function MapaEspaciosLeaflet({
           role="status"
           className="pointer-events-none absolute left-3 top-3 z-[500] inline-flex items-center gap-2 rounded-full border border-borde bg-superficie/95 px-3 py-1 text-xs text-texto shadow-sm"
         >
-          <Spinner className="size-3.5 text-primario" />
+          <Spinner className="size-3.5 text-accent-texto" />
           Cargando zonas de contexto…
         </p>
       ) : null}

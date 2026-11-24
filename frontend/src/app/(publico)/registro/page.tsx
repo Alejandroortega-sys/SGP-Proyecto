@@ -15,7 +15,7 @@ const OPCIONES = [
       "Vendo productos o servicios en casetas, puestos fijos o ambulantes en el espacio público de Tuluá.",
     accion: "Crear cuenta de comerciante",
     icono: IconoTienda,
-    color: "bg-primario-suave text-primario",
+    color: "bg-primario-suave text-accent-texto",
   },
   {
     href: "/registro/organizador",
@@ -24,7 +24,7 @@ const OPCIONES = [
       "Represento una organización o asociación que promueve mercados campesinos y ferias locales.",
     accion: "Crear cuenta de organizador",
     icono: IconoFeria,
-    color: "bg-amber-50 text-acento",
+    color: "bg-advertencia-suave text-advertencia-texto",
   },
 ];
 
@@ -70,7 +70,7 @@ export default function PaginaSelectorRegistro() {
 
       <p className="mt-8 text-center text-sm text-texto">
         ¿Ya tienes cuenta?{" "}
-        <Link href="/login" className="font-semibold text-primario hover:underline">
+        <Link href="/login" className="font-semibold text-accent-texto hover:underline">
           Inicia sesión
         </Link>
       </p>

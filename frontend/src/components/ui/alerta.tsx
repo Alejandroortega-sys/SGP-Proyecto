@@ -9,10 +9,10 @@ import {
 type Tono = "exito" | "error" | "advertencia" | "informacion";
 
 const CLASES_TONO: Record<Tono, string> = {
-  exito: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  error: "border-rose-200 bg-rose-50 text-rose-800",
-  advertencia: "border-amber-200 bg-amber-50 text-amber-800",
-  informacion: "border-sky-200 bg-sky-50 text-sky-900",
+  exito: "border-exito-borde bg-exito-suave text-exito-texto",
+  error: "border-peligro-borde bg-peligro-suave text-peligro-texto",
+  advertencia: "border-advertencia-borde bg-advertencia-suave text-advertencia-texto",
+  informacion: "border-info-borde bg-info-suave text-info-texto",
 };
 
 interface PropiedadesAlerta {

@@ -144,7 +144,7 @@ function TarjetaRequisitoRevision({
           <span className="block text-sm font-bold text-titulo">
             {requisito.nombre}
             {requisito.obligatorio ? (
-              <span className="ml-1 text-rose-600" aria-label="obligatorio">
+              <span className="ml-1 text-peligro-texto" aria-label="obligatorio">
                 *
               </span>
             ) : null}
@@ -166,7 +166,7 @@ function TarjetaRequisitoRevision({
         <button
           type="button"
           onClick={onSeleccionar}
-          className="mt-2 block w-full text-left text-xs text-tenue hover:text-primario"
+          className="mt-2 block w-full text-left text-xs text-tenue hover:text-accent-texto"
         >
           {documento.nombreOriginal ?? documento.tipoDocumento}
           {documento.tamanoBytes !== null
@@ -175,7 +175,7 @@ function TarjetaRequisitoRevision({
           · {formatearFechaHora(documento.cargadoEn)}
         </button>
       ) : (
-        <p className="mt-2 text-xs font-semibold text-rose-700">
+        <p className="mt-2 text-xs font-semibold text-peligro-texto">
           Sin documento vigente cargado.
         </p>
       )}
@@ -194,7 +194,7 @@ function TarjetaRequisitoRevision({
       ) : null}
 
       {requisito.observacion ? (
-        <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+        <p className="mt-2 rounded-lg bg-advertencia-suave px-3 py-2 text-sm text-advertencia-texto">
           <span className="font-semibold">Observación: </span>
           {requisito.observacion}
         </p>
@@ -228,7 +228,7 @@ function TarjetaRequisitoRevision({
                 className="text-sm font-medium text-titulo"
               >
                 Observación para el comerciante
-                <span className="ml-1 text-rose-600" aria-hidden="true">
+                <span className="ml-1 text-peligro-texto" aria-hidden="true">
                   *
                 </span>
               </label>
@@ -239,7 +239,7 @@ function TarjetaRequisitoRevision({
                 maxLength={2_000}
                 rows={3}
                 aria-invalid={error ? true : undefined}
-                className="mt-1.5 w-full rounded-lg border border-borde bg-white px-3.5 py-2.5 text-sm text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
+                className="mt-1.5 w-full rounded-lg border border-borde bg-superficie px-3.5 py-2.5 text-sm text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
                 placeholder="Explica qué debe corregir el comerciante."
               />
               <p className="mt-1 text-xs text-tenue">
@@ -249,7 +249,7 @@ function TarjetaRequisitoRevision({
           ) : null}
 
           {error ? (
-            <p role="alert" className="mt-2 text-sm text-rose-700">
+            <p role="alert" className="mt-2 text-sm text-peligro-texto">
               {error}
             </p>
           ) : null}

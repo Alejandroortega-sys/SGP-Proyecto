@@ -299,14 +299,14 @@ function RevisionCargada({
     <div className="flex flex-col gap-5">
       <Link
         href="/gestor/solicitudes"
-        className="text-sm font-semibold text-primario hover:underline"
+        className="text-sm font-semibold text-accent-texto hover:underline"
       >
         â† Volver a la bandeja de revisión
       </Link>
 
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+          <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
             Revisión de solicitud
           </p>
           <h1 className="mt-1 text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -410,7 +410,7 @@ function RevisionCargada({
               </span>
             </div>
             <div
-              className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200"
+              className="mt-3 h-2 overflow-hidden rounded-full bg-interaccion-fuerte"
               role="progressbar"
               aria-valuemin={0}
               aria-valuemax={solicitud.progreso.total}

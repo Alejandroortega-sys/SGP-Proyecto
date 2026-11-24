@@ -81,7 +81,7 @@ export function DetalleOrganizacion({ id }: { id: string }) {
       <div>
         <Link
           href="/gestor/organizaciones"
-          className="text-sm font-semibold text-primario hover:underline"
+          className="text-sm font-semibold text-accent-texto hover:underline"
         >
           ← Volver al listado
         </Link>
@@ -165,7 +165,7 @@ export function DetalleOrganizacion({ id }: { id: string }) {
             <Dato etiqueta="Registro" valor={formatearFecha(datos.creadoEn)} />
             <Link
               href={`/gestor/usuarios/${datos.usuarioId}`}
-              className="font-semibold text-primario hover:underline sm:col-span-2"
+              className="font-semibold text-accent-texto hover:underline sm:col-span-2"
             >
               Ver cuenta del organizador →
             </Link>
@@ -196,7 +196,7 @@ export function DetalleOrganizacion({ id }: { id: string }) {
                 rows={3}
                 maxLength={300}
                 placeholder="Explica el motivo de la suspensión."
-                className="w-full rounded-lg border border-borde bg-white px-3.5 py-2.5 text-base text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
+                className="w-full rounded-lg border border-borde bg-superficie px-3.5 py-2.5 text-base text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
               />
               <p className="text-xs text-tenue">
                 Opcional. Entre 3 y 300 caracteres. Se notificará al organizador.

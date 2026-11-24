@@ -5,11 +5,11 @@ import type { EstadoOrganizacion, EstadoUsuario } from "@/types/api";
 type Tono = "exitoso" | "pendiente" | "peligro" | "neutro" | "info";
 
 const CLASES_TONO: Record<Tono, string> = {
-  exitoso: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  pendiente: "border-amber-200 bg-amber-50 text-amber-700",
-  peligro: "border-rose-200 bg-rose-50 text-rose-700",
-  neutro: "border-slate-200 bg-slate-100 text-slate-700",
-  info: "border-sky-200 bg-sky-50 text-sky-700",
+  exitoso: "border-exito-borde bg-exito-suave text-exito-texto",
+  pendiente: "border-advertencia-borde bg-advertencia-suave text-advertencia-texto",
+  peligro: "border-peligro-borde bg-peligro-suave text-peligro-texto",
+  neutro: "border-borde bg-interaccion text-texto",
+  info: "border-info-borde bg-info-suave text-info-texto",
 };
 
 const TEXTOS_ESTADO: Record<string, string> = {

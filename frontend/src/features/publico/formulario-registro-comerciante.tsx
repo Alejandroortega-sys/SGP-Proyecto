@@ -117,7 +117,7 @@ export function FormularioRegistroComerciante() {
         <p className="text-center text-sm text-texto">
           <Link
             href="/registro"
-            className="font-medium text-primario hover:underline"
+            className="font-medium text-accent-texto hover:underline"
           >
             ← Volver a elegir tipo de registro
           </Link>
@@ -177,7 +177,7 @@ export function FormularioRegistroComerciante() {
         <fieldset className="flex flex-col gap-2">
           <legend className="text-sm font-medium text-titulo">
             Categoría de Comercio
-            <span className="ml-1 text-rose-600" aria-hidden="true">
+            <span className="ml-1 text-peligro-texto" aria-hidden="true">
               *
             </span>
           </legend>
@@ -197,10 +197,10 @@ export function FormularioRegistroComerciante() {
                   htmlFor={`categoria-${opcion.valor}`}
                   className={combinarClases(
                     "flex min-h-11 cursor-pointer flex-col justify-center rounded-lg border px-4 py-2.5 text-sm",
-                    "border-borde bg-white text-texto transition-colors",
-                    "peer-checked:border-primario peer-checked:bg-primario-suave peer-checked:text-primario-activo",
+                    "border-borde bg-superficie text-texto transition-colors",
+                    "peer-checked:border-primario peer-checked:bg-primario-suave peer-checked:text-accent-texto-activo",
                     "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primario",
-                    "hover:bg-slate-50",
+                    "hover:bg-interaccion",
                   )}
                 >
                   <span className="font-semibold">{opcion.texto}</span>
@@ -254,7 +254,7 @@ export function FormularioRegistroComerciante() {
           ¿Ya tienes cuenta?{" "}
           <Link
             href="/login"
-            className="font-semibold text-primario hover:underline"
+            className="font-semibold text-accent-texto hover:underline"
           >
             Inicia sesión
           </Link>

@@ -19,9 +19,9 @@ function Indicador({
 }) {
   const clases = {
     neutro: "border-borde bg-fondo text-titulo",
-    exito: "border-emerald-200 bg-emerald-50 text-emerald-800",
-    pendiente: "border-amber-200 bg-amber-50 text-amber-800",
-    peligro: "border-rose-200 bg-rose-50 text-rose-800",
+    exito: "border-exito-borde bg-exito-suave text-exito-texto",
+    pendiente: "border-advertencia-borde bg-advertencia-suave text-advertencia-texto",
+    peligro: "border-peligro-borde bg-peligro-suave text-peligro-texto",
   }[tono];
 
   return (
@@ -48,7 +48,7 @@ export function PanelGestor() {
   return (
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-2">
-        <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+        <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
           Panel administrativo
         </p>
         <h1 className="text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -75,7 +75,7 @@ export function PanelGestor() {
           </div>
           <Link
             href="/gestor/usuarios"
-            className="text-sm font-semibold text-primario hover:underline"
+            className="text-sm font-semibold text-accent-texto hover:underline"
           >
             Ver cuentas →
           </Link>
@@ -189,43 +189,43 @@ export function PanelGestor() {
           </Link>
           <Link
             href="/gestor/zonas"
-            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-accent-texto hover:bg-primario-suave"
           >
             Gestionar zonas
           </Link>
           <Link
             href="/gestor/ferias"
-            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-accent-texto hover:bg-primario-suave"
           >
             Calendario de ferias
           </Link>
           <Link
             href="/gestor/modulos"
-            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-accent-texto hover:bg-primario-suave"
           >
             Censar módulos
           </Link>
           <Link
             href="/gestor/importaciones"
-            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-accent-texto hover:bg-primario-suave"
           >
             Importar datos
           </Link>
           <Link
             href="/gestor/usuarios"
-            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-accent-texto hover:bg-primario-suave"
           >
             Gestionar usuarios
           </Link>
           <Link
             href="/gestor/comerciantes"
-            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-accent-texto hover:bg-primario-suave"
           >
             Ver comerciantes
           </Link>
           <Link
             href="/gestor/organizaciones"
-            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+            className="rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-accent-texto hover:bg-primario-suave"
           >
             Revisar organizaciones
           </Link>

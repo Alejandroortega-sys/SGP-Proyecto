@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
 import { Boton } from "@/components/ui/boton";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Cargando } from "@/components/ui/estado-vacio";
 import { IconoCerrar, IconoUbicacion } from "@/components/ui/iconos";
 import { useConsultaApi } from "@/hooks/use-consulta-api";
@@ -77,15 +77,15 @@ export function FichaEspacio({
         type="button"
         aria-label="Cerrar ficha del espacio"
         onClick={onCerrar}
-        className="absolute inset-0 bg-slate-900/40 lg:hidden"
+        className="absolute inset-0 bg-velo lg:hidden"
       />
 
       <aside className="absolute inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto rounded-t-2xl border border-borde bg-superficie p-4 shadow-2xl lg:static lg:max-h-none lg:rounded-xl lg:p-5 lg:shadow-sm">
-        <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-300 lg:hidden" />
+        <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-borde-fuerte lg:hidden" />
 
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-primario">
+            <p className="text-xs font-semibold uppercase tracking-wide text-accent-texto">
               Ficha del espacio
             </p>
             <h2
@@ -108,7 +108,7 @@ export function FichaEspacio({
             type="button"
             onClick={onCerrar}
             aria-label="Cerrar ficha"
-            className="flex size-10 shrink-0 items-center justify-center rounded-lg text-titulo hover:bg-slate-100"
+            className="flex size-10 shrink-0 items-center justify-center rounded-lg text-titulo hover:bg-interaccion"
           >
             <IconoCerrar className="size-5" />
           </button>
@@ -197,7 +197,7 @@ export function FichaEspacio({
                       {ETIQUETAS_TIPO[espacio.zona.tipo] ?? espacio.zona.tipo}
                     </span>
                     {!espacio.zona.activa ? (
-                      <span className="text-xs font-semibold text-rose-700">
+                      <span className="text-xs font-semibold text-peligro-texto">
                         Zona inactiva
                       </span>
                     ) : null}
@@ -237,12 +237,11 @@ export function FichaEspacio({
 
             {espacio.disponible ? (
               <div className="flex flex-col gap-2">
-                <Link
+                <EnlaceBoton
                   href={`/comerciante/solicitudes/nueva?espacioId=${encodeURIComponent(espacio.id)}`}
-                  className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
                 >
                   Solicitar este espacio
-                </Link>
+                </EnlaceBoton>
                 <p className="text-xs leading-relaxed text-tenue">
                   Podrás elegir fechas, horario, productos y adjuntar los
                   documentos exigidos.

@@ -127,8 +127,8 @@ export function PasoUbicacion({
                       aria-pressed={activo}
                       className={
                         activo
-                          ? "flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border border-primario bg-primario-suave px-3 py-2 text-left text-sm font-semibold text-primario"
-                          : "flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border border-borde bg-superficie px-3 py-2 text-left text-sm text-texto hover:bg-slate-50"
+                          ? "flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border border-primario bg-primario-suave px-3 py-2 text-left text-sm font-semibold text-accent-texto"
+                          : "flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border border-borde bg-superficie px-3 py-2 text-left text-sm text-texto hover:bg-interaccion"
                       }
                     >
                       <span className="min-w-0 truncate">{candidato.nombre}</span>
@@ -151,7 +151,7 @@ export function PasoUbicacion({
               role="status"
               className="inline-flex items-center gap-2 text-sm text-texto"
             >
-              <Spinner className="size-4 text-primario" />
+              <Spinner className="size-4 text-accent-texto" />
               Cargando la ficha del espacio…
             </span>
           ) : errorDetalle ? (
@@ -160,7 +160,7 @@ export function PasoUbicacion({
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-primario">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-accent-texto">
                     Espacio seleccionado
                   </p>
                   <h3 className="mt-1 text-lg font-extrabold text-titulo">

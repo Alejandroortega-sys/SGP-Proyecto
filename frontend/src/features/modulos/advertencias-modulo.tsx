@@ -116,17 +116,17 @@ export function AdvertenciasModulo({
       ))}
 
       {requiereConfirmacion && onAceptar ? (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
+        <div className="rounded-lg border border-advertencia-borde bg-advertencia-suave px-4 py-3">
           <label
             htmlFor={idAceptacion}
-            className="flex cursor-pointer items-start gap-3 text-sm font-medium text-amber-900"
+            className="flex cursor-pointer items-start gap-3 text-sm font-medium text-advertencia-texto"
           >
             <input
               id={idAceptacion}
               type="checkbox"
               checked={aceptaAdvertencia}
               onChange={(evento) => onAceptar(evento.target.checked)}
-              className="mt-0.5 size-5 shrink-0 rounded border-amber-400 accent-amber-600"
+              className="mt-0.5 size-5 shrink-0 rounded border-advertencia-borde accent-advertencia"
             />
             <span>
               Entiendo que el punto está en una zona restringida y deseo

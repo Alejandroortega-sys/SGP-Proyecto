@@ -64,7 +64,7 @@ export function PasoActividad({
 
       <fieldset className="flex flex-col gap-2">
         <legend className="text-sm font-medium text-titulo">
-          Productos <span className="text-rose-600">*</span>
+          Productos <span className="text-peligro-texto">*</span>
         </legend>
         <p className="text-sm text-tenue">
           {permitidos.length > 0
@@ -73,7 +73,7 @@ export function PasoActividad({
         </p>
 
         {errores.productos ? (
-          <p className="text-sm text-rose-700">{errores.productos}</p>
+          <p className="text-sm text-peligro-texto">{errores.productos}</p>
         ) : null}
 
         {disponibles.length === 0 ? (
@@ -90,7 +90,7 @@ export function PasoActividad({
                   key={producto.id}
                   className={
                     marcado
-                      ? "flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-primario bg-primario-suave px-3 py-2 text-sm font-medium text-primario"
+                      ? "flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-primario bg-primario-suave px-3 py-2 text-sm font-medium text-accent-texto"
                       : "flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-borde bg-superficie px-3 py-2 text-sm text-texto hover:bg-fondo"
                   }
                 >

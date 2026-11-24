@@ -71,7 +71,7 @@ export function CrearGestor() {
         </Alerta>
         <Link
           href="/gestor/panel"
-          className="text-sm font-semibold text-primario hover:underline"
+          className="text-sm font-semibold text-accent-texto hover:underline"
         >
           ← Volver al panel
         </Link>
@@ -84,7 +84,7 @@ export function CrearGestor() {
       <div>
         <Link
           href="/gestor/usuarios"
-          className="text-sm font-semibold text-primario hover:underline"
+          className="text-sm font-semibold text-accent-texto hover:underline"
         >
           ← Volver al listado de cuentas
         </Link>

@@ -165,7 +165,7 @@ export function FormularioEspacio({
       ) : null}
 
       <p className="text-xs text-tenue">
-        Los campos marcados con <span className="text-rose-600">*</span> son
+        Los campos marcados con <span className="text-peligro-texto">*</span> son
         obligatorios. El estado bloqueado o asignado no se elige aquí.
       </p>
     </div>

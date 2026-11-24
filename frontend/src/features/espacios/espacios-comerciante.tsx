@@ -96,7 +96,7 @@ export function EspaciosComerciante() {
   return (
     <section className="flex flex-col gap-5">
       <header className="flex flex-col gap-2">
-        <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+        <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
           Espacio público · Tuluá
         </p>
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -116,10 +116,10 @@ export function EspaciosComerciante() {
               className="flex flex-wrap items-center gap-2 text-xs font-semibold"
               aria-live="polite"
             >
-              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">
+              <span className="rounded-full border border-exito-borde bg-exito-suave px-3 py-1 text-exito-texto">
                 {datos.disponibles} disponibles
               </span>
-              <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-slate-700">
+              <span className="rounded-full border border-borde bg-interaccion px-3 py-1 text-texto">
                 {datos.noDisponibles} no disponibles
               </span>
             </div>
@@ -170,7 +170,7 @@ export function EspaciosComerciante() {
                 role="status"
                 className="inline-flex items-center gap-2 text-xs text-tenue"
               >
-                <Spinner className="size-3.5 text-primario" />
+                <Spinner className="size-3.5 text-accent-texto" />
                 Actualizando…
               </span>
             ) : null}

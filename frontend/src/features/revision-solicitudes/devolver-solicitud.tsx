@@ -85,7 +85,7 @@ export function DevolverSolicitudModal({
             className="text-sm font-medium text-titulo"
           >
             Observación general
-            <span className="ml-1 text-rose-600" aria-hidden="true">
+            <span className="ml-1 text-peligro-texto" aria-hidden="true">
               *
             </span>
           </label>
@@ -96,14 +96,14 @@ export function DevolverSolicitudModal({
             rows={4}
             maxLength={2_000}
             aria-invalid={error ? true : undefined}
-            className="mt-1.5 w-full rounded-lg border border-borde bg-white px-3.5 py-2.5 text-sm text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
+            className="mt-1.5 w-full rounded-lg border border-borde bg-superficie px-3.5 py-2.5 text-sm text-titulo focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario"
             placeholder="Explica qué documentos o datos debe corregir el comerciante."
           />
           <p className="mt-1 text-xs text-tenue">
             {observacion.length}/2000 caracteres
           </p>
           {error ? (
-            <p role="alert" className="mt-1 text-sm text-rose-700">
+            <p role="alert" className="mt-1 text-sm text-peligro-texto">
               {error}
             </p>
           ) : null}

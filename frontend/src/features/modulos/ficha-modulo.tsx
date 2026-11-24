@@ -6,6 +6,7 @@ import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
 import { Boton } from "@/components/ui/boton";
 import { Cargando, EstadoVacio } from "@/components/ui/estado-vacio";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Etiqueta } from "@/components/ui/etiqueta";
 import { AccionesModal, Modal } from "@/components/ui/modal";
 import { Tarjeta, TarjetaCuerpo } from "@/components/ui/tarjeta";
@@ -116,7 +117,7 @@ export function FichaModulo({ id, mensajeInicial }: FichaModuloProps) {
           accion={
             <Link
               href="/gestor/modulos"
-              className="font-semibold text-primario hover:underline"
+              className="font-semibold text-accent-texto hover:underline"
             >
               Volver al listado de módulos
             </Link>
@@ -137,13 +138,13 @@ export function FichaModulo({ id, mensajeInicial }: FichaModuloProps) {
       <div className="flex flex-col gap-2">
         <Link
           href="/gestor/modulos"
-          className="text-sm font-semibold text-primario hover:underline"
+          className="text-sm font-semibold text-accent-texto hover:underline"
         >
           ← Volver al listado de módulos
         </Link>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+            <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
               Censo del espacio público
             </p>
             <h1 className="text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -162,12 +163,9 @@ export function FichaModulo({ id, mensajeInicial }: FichaModuloProps) {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link
-              href={`/gestor/modulos/${modulo.id}/editar`}
-              className="inline-flex min-h-11 items-center rounded-lg border border-primario px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
-            >
+            <EnlaceBoton href={`/gestor/modulos/${modulo.id}/editar`} variante="contorno">
               Editar
-            </Link>
+            </EnlaceBoton>
             <Boton
               variante={modulo.estado === "activo" ? "peligro" : "contorno"}
               onClick={() => {

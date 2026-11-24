@@ -24,9 +24,9 @@ export function PasosImportacion({
             className={[
               "rounded-lg border px-3 py-2 text-sm",
               actual
-                ? "border-primario bg-primario-suave text-primario"
+                ? "border-primario bg-primario-suave text-accent-texto"
                 : completado
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  ? "border-exito-borde bg-exito-suave text-exito-texto"
                   : "border-borde bg-superficie text-tenue",
             ].join(" ")}
           >

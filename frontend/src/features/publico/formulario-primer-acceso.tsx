@@ -100,7 +100,7 @@ export function FormularioPrimerAcceso({
 
   return (
     <form onSubmit={enviar} noValidate className="flex flex-col gap-5">
-      <div className="flex gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-relaxed text-emerald-900">
+      <div className="flex gap-3 rounded-lg border border-exito-borde bg-exito-suave px-4 py-3 text-sm leading-relaxed text-exito-texto">
         <IconoEscudo className="mt-0.5 size-5 shrink-0" />
         <p>
           Acceso institucional de la Alcaldía Municipal de Tuluá. Debes cambiar
@@ -186,7 +186,7 @@ export function FormularioPrimerAcceso({
       </Boton>
 
       <p className="text-center text-sm text-texto">
-        <Link href="/login" className="font-medium text-primario hover:underline">
+        <Link href="/login" className="font-medium text-accent-texto hover:underline">
           ← Volver a iniciar sesión
         </Link>
       </p>

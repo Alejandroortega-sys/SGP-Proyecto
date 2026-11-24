@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { BloqueError } from "@/components/ui/bloque-error";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Selector } from "@/components/ui/campo";
 import { Cargando, EstadoVacio } from "@/components/ui/estado-vacio";
 import { Paginacion } from "@/components/ui/paginacion";
@@ -50,7 +50,7 @@ export function ListaFerias() {
   return (
     <section className="flex flex-col gap-5">
       <header className="flex flex-col gap-2">
-        <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+        <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
           Portal del organizador
         </p>
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -63,12 +63,9 @@ export function ListaFerias() {
               cuando tu organización esté activa.
             </p>
           </div>
-          <Link
-            href="/organizador/ferias/nueva"
-            className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
-          >
+          <EnlaceBoton href="/organizador/ferias/nueva">
             Nueva feria
-          </Link>
+          </EnlaceBoton>
         </div>
       </header>
 
@@ -99,12 +96,9 @@ export function ListaFerias() {
           titulo="Aún no tienes ferias radicadas"
           descripcion="Cuando solicites una feria, aparecerá aquí con su número de radicado y su estado."
           accion={
-            <Link
-              href="/organizador/ferias/nueva"
-              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-primario px-4 py-2.5 text-sm font-semibold text-white hover:bg-primario-hover"
-            >
+            <EnlaceBoton href="/organizador/ferias/nueva">
               Solicitar una feria
-            </Link>
+            </EnlaceBoton>
           }
         />
       ) : (
@@ -122,7 +116,7 @@ export function ListaFerias() {
                     </h2>
                     <EtiquetaEstadoFeria estado={feria.estado} />
                   </div>
-                  <p className="mt-1 text-sm font-semibold text-primario">
+                  <p className="mt-1 text-sm font-semibold text-accent-texto">
                     {feria.numeroRadicado}
                   </p>
                   <p className="mt-1 text-sm text-texto">
@@ -135,12 +129,12 @@ export function ListaFerias() {
                     Radicada el {formatearFechaHora(feria.radicadaEn)}
                   </p>
                 </div>
-                <Link
+                <EnlaceBoton
                   href={`/organizador/ferias/${feria.id}`}
-                  className="inline-flex min-h-11 items-center justify-center rounded-lg border border-primario bg-white px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
+                  variante="contorno"
                 >
                   Ver detalle
-                </Link>
+                </EnlaceBoton>
               </div>
             </li>
           ))}

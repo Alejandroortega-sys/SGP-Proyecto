@@ -297,7 +297,7 @@ export function MapaEditorZona({
   const areaActual = areaAproximadaM2(puntos);
 
   return (
-    <div className="sgp-mapa relative overflow-hidden rounded-xl border border-borde bg-slate-200">
+    <div className="sgp-mapa relative overflow-hidden rounded-xl border border-borde bg-interaccion-fuerte">
       <div
         ref={contenedorRef}
         className="h-[420px] w-full sm:h-[520px]"
@@ -307,7 +307,7 @@ export function MapaEditorZona({
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[500] p-3">
         <div className="pointer-events-auto max-w-sm rounded-lg border border-borde bg-superficie/95 px-3 py-2 shadow-sm backdrop-blur">
-          <p className="text-xs font-semibold uppercase tracking-wide text-primario">
+          <p className="text-xs font-semibold uppercase tracking-wide text-accent-texto">
             Dibujo del polígono
           </p>
           <p className="mt-1 text-xs leading-relaxed text-texto">

@@ -88,11 +88,11 @@ export function evaluarFortalezaPassword(
 
   const nivel = Math.min(puntos, 4) as 0 | 1 | 2 | 3 | 4;
   const tabla: Record<number, { etiqueta: string; claseBarra: string }> = {
-    0: { etiqueta: "Muy débil", claseBarra: "bg-rose-500" },
-    1: { etiqueta: "Débil", claseBarra: "bg-rose-500" },
-    2: { etiqueta: "Aceptable", claseBarra: "bg-amber-500" },
-    3: { etiqueta: "Fuerte", claseBarra: "bg-emerald-500" },
-    4: { etiqueta: "Muy fuerte", claseBarra: "bg-emerald-600" },
+    0: { etiqueta: "Muy débil", claseBarra: "bg-peligro" },
+    1: { etiqueta: "Débil", claseBarra: "bg-peligro" },
+    2: { etiqueta: "Aceptable", claseBarra: "bg-advertencia" },
+    3: { etiqueta: "Fuerte", claseBarra: "bg-exito" },
+    4: { etiqueta: "Muy fuerte", claseBarra: "bg-exito" },
   };
 
   return { nivel, ...tabla[nivel] };

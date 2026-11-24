@@ -15,7 +15,7 @@ export default function PaginaRegistroOrganizador() {
     <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
       <Link
         href="/registro"
-        className="inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-medium text-primario hover:underline"
+        className="inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-medium text-accent-texto hover:underline"
       >
         <IconoFlechaIzquierda className="size-4" />
         Cambiar tipo de registro

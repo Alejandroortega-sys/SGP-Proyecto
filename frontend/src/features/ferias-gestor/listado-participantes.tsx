@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
+import { Boton } from "@/components/ui/boton";
 import { Cargando, EstadoVacio } from "@/components/ui/estado-vacio";
 import { Etiqueta } from "@/components/ui/etiqueta";
 import {
@@ -33,7 +34,7 @@ export function ListadoParticipantesGestor({ feriaId }: { feriaId: string }) {
         <div>
           <Link
             href={`/gestor/ferias`}
-            className="inline-flex min-h-11 items-center text-sm font-semibold text-primario hover:underline"
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-accent-texto hover:underline"
           >
             ← Volver al calendario de ferias
           </Link>
@@ -45,13 +46,9 @@ export function ListadoParticipantesGestor({ feriaId }: { feriaId: string }) {
           <p className="mt-1">{error.message}</p>
         </Alerta>
         <div>
-          <button
-            type="button"
-            onClick={recargar}
-            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-primario bg-white px-4 py-2.5 text-sm font-semibold text-primario hover:bg-primario-suave"
-          >
+          <Boton variante="contorno" onClick={recargar}>
             Reintentar
-          </button>
+          </Boton>
         </div>
       </section>
     );
@@ -68,14 +65,14 @@ export function ListadoParticipantesGestor({ feriaId }: { feriaId: string }) {
       <div>
         <Link
           href={`/gestor/ferias`}
-          className="inline-flex min-h-11 items-center text-sm font-semibold text-primario hover:underline"
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-accent-texto hover:underline"
         >
           ← Volver al calendario de ferias
         </Link>
       </div>
 
       <header className="flex flex-col gap-2">
-        <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+        <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
           Panel del gestor
         </p>
         <div className="flex flex-wrap items-center gap-2">
@@ -85,7 +82,7 @@ export function ListadoParticipantesGestor({ feriaId }: { feriaId: string }) {
           <EtiquetaEstadoFeria estado={datos.feria.estado} />
           <Etiqueta tono="exitoso">Enviado</Etiqueta>
         </div>
-        <p className="text-sm font-semibold text-primario">
+        <p className="text-sm font-semibold text-accent-texto">
           {datos.feria.numeroRadicado} · {datos.feria.nombre}
         </p>
         <p className="text-sm text-texto">
@@ -145,7 +142,7 @@ export function ListadoParticipantesGestor({ feriaId }: { feriaId: string }) {
             aria-valuemin={0}
             aria-valuemax={datos.cupo.aprobado}
             aria-valuenow={datos.cupo.ocupados}
-            className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200"
+            className="h-2.5 w-full overflow-hidden rounded-full bg-interaccion-fuerte"
           >
             <div
               className="h-full rounded-full bg-primario"

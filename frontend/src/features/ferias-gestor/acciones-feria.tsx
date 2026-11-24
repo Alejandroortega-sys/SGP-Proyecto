@@ -40,11 +40,11 @@ function ListaConflictos({ conflictos }: { conflictos: ConflictoAgendaFeria[] })
   if (conflictos.length === 0) return null;
 
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-      <p className="text-sm font-semibold text-amber-900">
+    <div className="rounded-lg border border-advertencia-borde bg-advertencia-suave p-3">
+      <p className="text-sm font-semibold text-advertencia-texto">
         No se puede aplicar el cambio por estos cruces:
       </p>
-      <ul className="mt-2 flex list-disc flex-col gap-1 pl-5 text-sm text-amber-900">
+      <ul className="mt-2 flex list-disc flex-col gap-1 pl-5 text-sm text-advertencia-texto">
         {conflictos.map((conflicto, indice) => (
           <li key={`${conflicto.tipo}-${conflicto.referencia ?? indice}-${indice}`}>
             {conflicto.mensaje}
@@ -65,8 +65,8 @@ function Sugerencias({
   if (sugerencias.length === 0) return null;
 
   return (
-    <div className="rounded-lg border border-sky-200 bg-sky-50 p-3">
-      <p className="text-sm font-semibold text-sky-900">
+    <div className="rounded-lg border border-info-borde bg-info-suave p-3">
+      <p className="text-sm font-semibold text-info-texto">
         Fechas alternativas disponibles
       </p>
       <div className="mt-2 flex flex-wrap gap-2">
@@ -400,7 +400,7 @@ export function ModalCancelarFeria({
             className="text-sm font-medium text-titulo"
           >
             Motivo de la cancelación
-            <span className="ml-1 text-rose-600" aria-hidden="true">
+            <span className="ml-1 text-peligro-texto" aria-hidden="true">
               *
             </span>
           </label>
@@ -417,14 +417,14 @@ export function ModalCancelarFeria({
               if (errorMotivo) setErrorMotivo(null);
             }}
             className={[
-              "w-full rounded-lg border bg-white px-3.5 py-2.5 text-base text-titulo",
+              "w-full rounded-lg border bg-superficie px-3.5 py-2.5 text-base text-titulo",
               "placeholder:text-tenue focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario",
-              errorMotivo ? "border-rose-400" : "border-borde",
+              errorMotivo ? "border-peligro" : "border-borde",
             ].join(" ")}
             placeholder="Explica por qué se cancela la feria. El organizador verá este texto."
           />
           {errorMotivo ? (
-            <p className="text-sm text-rose-700">{errorMotivo}</p>
+            <p className="text-sm text-peligro-texto">{errorMotivo}</p>
           ) : (
             <p className="text-sm text-tenue">
               Obligatorio, máximo 2000 caracteres.

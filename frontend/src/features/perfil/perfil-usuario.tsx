@@ -303,7 +303,7 @@ export function PerfilUsuario({ rol }: { rol: "comerciante" | "organizador" }) {
                 )}
                 <Link
                   href="/organizador/mi-organizacion"
-                  className="font-semibold text-primario hover:underline"
+                  className="font-semibold text-accent-texto hover:underline"
                 >
                   Gestionar mi organización →
                 </Link>

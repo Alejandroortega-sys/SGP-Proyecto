@@ -234,7 +234,7 @@ export function ImportadorDatos() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+        <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
           Gestión del territorio
         </p>
         <h1 className="text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -272,8 +272,8 @@ export function ImportadorDatos() {
                     className={[
                       "min-h-11 rounded-lg border px-4 py-2 text-sm font-semibold",
                       activo
-                        ? "border-primario bg-primario-suave text-primario"
-                        : "border-borde bg-white text-texto hover:bg-fondo",
+                        ? "border-primario bg-primario-suave text-accent-texto"
+                        : "border-borde bg-superficie text-texto hover:bg-fondo",
                     ].join(" ")}
                   >
                     {ETIQUETAS_TIPO_IMPORTACION[opcion]}
@@ -421,14 +421,14 @@ export function ImportadorDatos() {
               ) : null}
 
               {requiereConfirmacion ? (
-                <label className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                <label className="flex items-start gap-3 rounded-lg border border-advertencia-borde bg-advertencia-suave p-3 text-sm text-advertencia-texto">
                   <input
                     type="checkbox"
                     checked={aceptaAdvertencia}
                     onChange={(evento) =>
                       setAceptaAdvertencia(evento.target.checked)
                     }
-                    className="mt-0.5 size-5 shrink-0 rounded border-amber-400"
+                    className="mt-0.5 size-5 shrink-0 rounded border-advertencia-borde"
                   />
                   <span>
                     Confirmo importar las filas ubicadas en zona restringida. Si

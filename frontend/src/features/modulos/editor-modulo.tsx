@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { Alerta } from "@/components/ui/alerta";
 import { BloqueError } from "@/components/ui/bloque-error";
 import { Boton } from "@/components/ui/boton";
+import { EnlaceBoton } from "@/components/ui/enlace-boton";
 import { Cargando, EstadoVacio } from "@/components/ui/estado-vacio";
 import { Tarjeta, TarjetaCuerpo } from "@/components/ui/tarjeta";
 import {
@@ -283,7 +284,7 @@ export function EditorModulo({ id, mensajeInicial }: EditorModuloProps) {
           accion={
             <Link
               href="/gestor/modulos"
-              className="font-semibold text-primario hover:underline"
+              className="font-semibold text-accent-texto hover:underline"
             >
               Volver al listado de módulos
             </Link>
@@ -305,13 +306,13 @@ export function EditorModulo({ id, mensajeInicial }: EditorModuloProps) {
       <div className="flex flex-col gap-2">
         <Link
           href="/gestor/modulos"
-          className="text-sm font-semibold text-primario hover:underline"
+          className="text-sm font-semibold text-accent-texto hover:underline"
         >
           ← Volver al listado de módulos
         </Link>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-primario">
+            <p className="text-sm font-semibold uppercase tracking-wide text-accent-texto">
               Censo del espacio público
             </p>
             <h1 className="text-2xl font-extrabold text-titulo sm:text-3xl">
@@ -406,12 +407,12 @@ export function EditorModulo({ id, mensajeInicial }: EditorModuloProps) {
           )}
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Link
+            <EnlaceBoton
               href={id ? `/gestor/modulos/${id}` : "/gestor/modulos"}
-              className="inline-flex min-h-11 items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-texto hover:bg-slate-100"
+              variante="fantasma"
             >
               Cancelar
-            </Link>
+            </EnlaceBoton>
             <Boton
               onClick={() => void guardar()}
               cargando={guardando}

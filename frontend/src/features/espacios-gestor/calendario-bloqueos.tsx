@@ -100,7 +100,7 @@ export function CalendarioBloqueos({
                 className={[
                   "min-h-16 border-b border-r border-borde p-1 text-left align-top transition-colors last:border-r-0",
                   dia.delMes ? "bg-superficie" : "bg-fondo/60",
-                  delDia.length > 0 ? "hover:bg-primario-suave" : "hover:bg-slate-50",
+                  delDia.length > 0 ? "hover:bg-primario-suave" : "hover:bg-interaccion",
                 ].join(" ")}
               >
                 <span
@@ -115,7 +115,7 @@ export function CalendarioBloqueos({
                   {principales.map((bloqueo) => (
                     <span
                       key={bloqueo.id}
-                      className="block truncate rounded bg-sky-100 px-1 py-0.5 text-[10px] font-medium text-sky-800"
+                      className="block truncate rounded bg-info-suave px-1 py-0.5 text-[10px] font-medium text-info-texto"
                       title={bloqueo.motivo ?? "Bloqueo"}
                     >
                       {bloqueo.motivo ?? "Bloqueo"}
@@ -151,7 +151,7 @@ export function CalendarioBloqueos({
                 {onEditarBloqueo ? (
                   <button
                     type="button"
-                    className="font-semibold text-primario hover:underline"
+                    className="font-semibold text-accent-texto hover:underline"
                     onClick={() => onEditarBloqueo(bloqueo)}
                   >
                     Editar

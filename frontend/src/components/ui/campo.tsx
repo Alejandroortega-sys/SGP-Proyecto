@@ -2,12 +2,16 @@
 
 import { useId, useState, type ComponentProps, type ReactNode } from "react";
 import { combinarClases } from "@/lib/clases";
-import { IconoOjo, IconoOjoOculto } from "./iconos";
+import {
+  IconoChevronAbajo,
+  IconoOjo,
+  IconoOjoOculto,
+} from "./iconos";
 
 const CLASE_BASE =
-  "w-full rounded-lg border bg-white px-3.5 py-2.5 text-base text-titulo " +
-  "placeholder:text-tenue disabled:cursor-not-allowed disabled:bg-slate-50 " +
-  "disabled:text-tenue focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primario";
+  "w-full min-h-10 rounded-lg border bg-superficie px-3 py-2 text-base text-titulo " +
+  "placeholder:text-tenue disabled:cursor-not-allowed disabled:bg-interaccion " +
+  "disabled:text-tenue focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent";
 
 interface ComunesCampo {
   etiqueta: string;
@@ -47,14 +51,14 @@ function CampoConEtiqueta({
       <label htmlFor={id} className="text-sm font-medium text-titulo">
         {etiqueta}
         {requerido ? (
-          <span className="ml-1 text-rose-600" aria-hidden="true">
+          <span className="ml-1 text-peligro" aria-hidden="true">
             *
           </span>
         ) : null}
       </label>
       {children}
       {error ? (
-        <p id={idError} className="text-sm text-rose-700">
+        <p id={idError} className="text-sm text-peligro-texto">
           {error}
         </p>
       ) : ayuda ? (
@@ -96,7 +100,7 @@ export function Campo({
         aria-describedby={error ? idError : ayuda ? idAyuda : undefined}
         className={combinarClases(
           CLASE_BASE,
-          error ? "border-rose-400" : "border-borde",
+          error ? "border-peligro" : "border-borde",
           className,
         )}
         {...resto}
@@ -123,29 +127,32 @@ export function Selector({
       <label htmlFor={id} className="text-sm font-medium text-titulo">
         {etiqueta}
         {requerido ? (
-          <span className="ml-1 text-rose-600" aria-hidden="true">
+          <span className="ml-1 text-peligro" aria-hidden="true">
             *
           </span>
         ) : null}
       </label>
-      <select
-        id={id}
-        required={requerido}
-        aria-required={requerido}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? idError : ayuda ? idAyuda : undefined}
-        className={combinarClases(
-          CLASE_BASE,
-          "appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.875rem_center] bg-no-repeat pr-10",
-          error ? "border-rose-400" : "border-borde",
-          className,
-        )}
-        {...resto}
-      >
-        {children}
-      </select>
+      <div className="relative">
+        <select
+          id={id}
+          required={requerido}
+          aria-required={requerido}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? idError : ayuda ? idAyuda : undefined}
+          className={combinarClases(
+            CLASE_BASE,
+            "appearance-none pr-9",
+            error ? "border-peligro" : "border-borde",
+            className,
+          )}
+          {...resto}
+        >
+          {children}
+        </select>
+        <IconoChevronAbajo className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-tenue" />
+      </div>
       {error ? (
-        <p id={idError} className="text-sm text-rose-700">
+        <p id={idError} className="text-sm text-peligro-texto">
           {error}
         </p>
       ) : ayuda ? (
@@ -178,7 +185,7 @@ export function CampoPassword({
         <label htmlFor={id} className="text-sm font-medium text-titulo">
           {etiqueta}
           {requerido ? (
-            <span className="ml-1 text-rose-600" aria-hidden="true">
+            <span className="ml-1 text-peligro" aria-hidden="true">
               *
             </span>
           ) : null}
@@ -195,8 +202,8 @@ export function CampoPassword({
           aria-describedby={error ? idError : ayuda ? idAyuda : undefined}
           className={combinarClases(
             CLASE_BASE,
-            "pr-12",
-            error ? "border-rose-400" : "border-borde",
+            "pr-10",
+            error ? "border-peligro" : "border-borde",
             className,
           )}
           {...resto}
@@ -207,13 +214,13 @@ export function CampoPassword({
           aria-pressed={visible}
           aria-label={textoAlternativo}
           title={textoAlternativo}
-          className="absolute inset-y-0 right-0 flex min-h-11 w-11 items-center justify-center rounded-r-lg text-slate-500 hover:text-titulo"
+          className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-lg text-tenue transition-colors duration-150 hover:bg-interaccion hover:text-titulo focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
         >
           {visible ? <IconoOjoOculto /> : <IconoOjo />}
         </button>
       </div>
       {error ? (
-        <p id={idError} className="text-sm text-rose-700">
+        <p id={idError} className="text-sm text-peligro-texto">
           {error}
         </p>
       ) : ayuda ? (

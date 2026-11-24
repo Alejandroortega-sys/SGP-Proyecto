@@ -97,7 +97,7 @@ export function FormularioLogin() {
         accionEtiqueta={
           <Link
             href="/recuperar"
-            className="text-sm font-medium text-primario hover:underline"
+            className="text-sm font-medium text-accent-texto hover:underline"
           >
             ¿Olvidaste tu contraseña?
           </Link>
@@ -147,7 +147,7 @@ export function FormularioLogin() {
 
       <p className="text-center text-sm text-texto">
         ¿No tienes una cuenta aún?{" "}
-        <Link href="/registro" className="font-semibold text-primario hover:underline">
+        <Link href="/registro" className="font-semibold text-accent-texto hover:underline">
           Regístrate aquí
         </Link>
       </p>

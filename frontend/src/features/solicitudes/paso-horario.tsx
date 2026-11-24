@@ -106,7 +106,7 @@ export function PasoHorario({
           role="status"
           className="inline-flex items-center gap-2 text-sm text-texto"
         >
-          <Spinner className="size-4 text-primario" />
+          <Spinner className="size-4 text-accent-texto" />
           Verificando la disponibilidad del espacio…
         </span>
       ) : disponibilidad?.disponible ? (

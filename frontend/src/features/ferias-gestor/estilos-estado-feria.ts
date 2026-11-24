@@ -10,32 +10,32 @@ export interface EstiloEstadoFeria {
 /** Colores, símbolos y etiquetas accesibles para el calendario. */
 export const ESTILOS_ESTADO_FERIA: Record<EstadoFeria, EstiloEstadoFeria> = {
   radicada: {
-    chip: "border-sky-300 bg-sky-50 text-sky-900",
-    punto: "bg-sky-500",
+    chip: "border-info-borde bg-info-suave text-info-texto",
+    punto: "bg-info",
     simbolo: "◷",
     etiqueta: "Radicada",
   },
   aprobada: {
-    chip: "border-emerald-300 bg-emerald-50 text-emerald-900",
-    punto: "bg-emerald-500",
+    chip: "border-exito-borde bg-exito-suave text-exito-texto",
+    punto: "bg-exito",
     simbolo: "✓",
     etiqueta: "Aprobada",
   },
   rechazada: {
-    chip: "border-rose-300 bg-rose-50 text-rose-900",
-    punto: "bg-rose-500",
+    chip: "border-peligro-borde bg-peligro-suave text-peligro-texto",
+    punto: "bg-peligro",
     simbolo: "✕",
     etiqueta: "Rechazada",
   },
   cancelada: {
-    chip: "border-slate-300 bg-slate-100 text-slate-800",
-    punto: "bg-slate-500",
+    chip: "border-borde-fuerte bg-interaccion text-titulo",
+    punto: "bg-tenue",
     simbolo: "—",
     etiqueta: "Cancelada",
   },
   realizada: {
-    chip: "border-violet-300 bg-violet-50 text-violet-900",
-    punto: "bg-violet-500",
+    chip: "border-realizada-borde bg-realizada-suave text-realizada-texto",
+    punto: "bg-realizada",
     simbolo: "★",
     etiqueta: "Realizada",
   },

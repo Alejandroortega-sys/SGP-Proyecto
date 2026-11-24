@@ -86,7 +86,7 @@ export function FormularioRegistroOrganizador() {
         <p className="text-center text-sm text-texto">
           <Link
             href="/registro"
-            className="font-medium text-primario hover:underline"
+            className="font-medium text-accent-texto hover:underline"
           >
             ← Volver a elegir tipo de registro
           </Link>
@@ -97,7 +97,7 @@ export function FormularioRegistroOrganizador() {
 
   return (
     <form onSubmit={enviar} noValidate className="flex flex-col gap-8">
-      <div className="flex gap-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm leading-relaxed text-sky-900">
+      <div className="flex gap-3 rounded-lg border border-info-borde bg-info-suave px-4 py-3 text-sm leading-relaxed text-info-texto">
         <IconoInformacion className="mt-0.5 size-5 shrink-0" />
         <p>
           Los datos de tu organización (NIT, personería jurídica, tipo de
@@ -167,7 +167,7 @@ export function FormularioRegistroOrganizador() {
           ¿Ya tienes cuenta?{" "}
           <Link
             href="/login"
-            className="font-semibold text-primario hover:underline"
+            className="font-semibold text-accent-texto hover:underline"
           >
             Inicia sesión
           </Link>

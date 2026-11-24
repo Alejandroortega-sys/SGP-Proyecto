@@ -41,7 +41,7 @@ export function FooterPublico() {
             <li>
               <Link
                 href="/registro"
-                className="font-medium text-primario hover:underline"
+                className="font-medium text-accent-texto hover:underline"
               >
                 Crear cuenta
               </Link>
@@ -49,7 +49,7 @@ export function FooterPublico() {
             <li>
               <Link
                 href="/login"
-                className="font-medium text-primario hover:underline"
+                className="font-medium text-accent-texto hover:underline"
               >
                 Ingresar a la plataforma
               </Link>
@@ -57,7 +57,7 @@ export function FooterPublico() {
             <li>
               <Link
                 href="/recuperar"
-                className="font-medium text-primario hover:underline"
+                className="font-medium text-accent-texto hover:underline"
               >
                 Recuperar contraseña
               </Link>
@@ -65,7 +65,7 @@ export function FooterPublico() {
             <li>
               <Link
                 href="/#como-funciona"
-                className="font-medium text-primario hover:underline"
+                className="font-medium text-accent-texto hover:underline"
               >
                 Cómo funciona el trámite
               </Link>
